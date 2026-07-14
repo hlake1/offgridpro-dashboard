@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OffGrid Pro — Google Ads Performance Dashboard</title>
+<title>OffGrid Pro — June 2026 Performance Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,9 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-  .gradient-bg {
-    background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%);
-  }
+  .gradient-bg { background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%); }
   .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
   .trend-up { color: #059669; }
@@ -37,7 +35,7 @@
           <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center font-bold text-2xl">⚡</div>
           <div>
             <p class="text-xs uppercase tracking-widest text-white text-opacity-70">Tweak Marketing · Client Report</p>
-            <h1 class="text-3xl font-extrabold">OffGrid Pro</h1>
+            <h1 class="text-3xl font-extrabold">OffGrid Pro — June 2026</h1>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-6 mt-4 text-sm">
@@ -46,8 +44,8 @@
             <p class="font-semibold">OffGrid Pro Ltd.</p>
           </div>
           <div class="border-l border-white border-opacity-30 pl-6">
-            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Industry</p>
-            <p class="font-semibold">Solar &amp; Battery Storage</p>
+            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Sector</p>
+            <p class="font-semibold">Battery Storage &amp; Microgrids</p>
           </div>
           <div class="border-l border-white border-opacity-30 pl-6">
             <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Reporting Period</p>
@@ -60,13 +58,12 @@
         </div>
       </div>
       <div class="flex flex-col items-end gap-3">
-        <span class="mock-badge text-white text-xs px-3 py-1 rounded-full font-semibold">MOCK · PROOF OF CONCEPT</span>
+        <span class="mock-badge text-white text-xs px-3 py-1 rounded-full font-semibold">DASHBOARD PROTOTYPE</span>
         <div class="flex gap-2">
           <select class="bg-white bg-opacity-20 backdrop-blur border border-white border-opacity-30 rounded-lg px-4 py-2 text-white text-sm">
             <option>June 2026</option>
             <option>May 2026</option>
             <option>April 2026</option>
-            <option>Last 90 days</option>
           </select>
           <button class="bg-white text-emerald-700 font-semibold px-4 py-2 rounded-lg hover:bg-opacity-90 text-sm">Export PDF</button>
         </div>
@@ -80,307 +77,271 @@
   <!-- Executive Summary Cards -->
   <section>
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">📊 Executive Summary</h2>
+      <h2 class="text-lg font-bold text-gray-800">📊 Month Overview</h2>
       <span class="text-xs text-gray-500">vs. previous month</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Total Spend</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">£8,642</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ 14.2%</span> <span class="text-gray-500">vs May</span></p>
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">3</p>
+        <p class="text-xs text-gray-500 mt-2">2 phone calls · 1 contact form</p>
       </div>
       <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Qualified Leads</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">63</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ 40.0%</span> <span class="text-gray-500">vs May</span></p>
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Victron Clicks</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+453%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Big win</span></p>
       </div>
       <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Est. Pipeline Value</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">£412K</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ 28.6%</span> <span class="text-gray-500">vs May</span></p>
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Home Energy Clicks</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+113%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Strong growth</span></p>
       </div>
       <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Cost / Lead</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">£137.17</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↓ 18.5%</span> <span class="text-gray-500">vs May (better)</span></p>
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Site Health Score</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">88%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">Strong</span> <span class="text-gray-500">technical SEO</span></p>
       </div>
     </div>
   </section>
 
   <!-- Highlight Banner -->
-  <section class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 flex items-center gap-4">
+  <section class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 flex items-start gap-4">
     <div class="text-3xl">🎯</div>
     <div class="flex-1">
-      <p class="font-bold text-emerald-900">Best month on record for qualified commercial leads.</p>
-      <p class="text-sm text-emerald-800 mt-1">Commercial &amp; industrial battery storage campaigns delivered 42% of total leads at a 22% lower CPL than the account average.</p>
+      <p class="font-bold text-emerald-900">Victron campaign optimisation delivered a 453% lift in clicks.</p>
+      <p class="text-sm text-emerald-800 mt-1">Home Energy also grew 113%. The Victron landing page climbed from position #7 to <span class="font-bold">#3</span> in organic search this month.</p>
     </div>
   </section>
 
-  <!-- Charts Row -->
+  <!-- Conversions Detail -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-md font-bold text-gray-800">📞 Conversions This Month</h3>
+      <span class="text-xs text-gray-500">Source: Google Ads conversion tracking</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Tuesday 23rd June</p>
+        <p class="font-bold text-gray-900 mt-1">Contact Form Submission</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
+      </div>
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Wednesday 24th June</p>
+        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
+      </div>
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Saturday 27th June</p>
+        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Home Energy</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO + Traffic Row -->
   <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- 6-Month Trend -->
-    <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h3 class="text-md font-bold text-gray-800">6-Month Performance Trend</h3>
-          <p class="text-xs text-gray-500 mt-1">Spend vs. qualified leads</p>
-        </div>
-        <div class="flex gap-3 text-xs">
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-emerald-500 rounded-full"></span> Spend (£)</span>
-          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-teal-400 rounded-full"></span> Leads</span>
-        </div>
-      </div>
-      <canvas id="trendChart" height="90"></canvas>
-    </div>
-
-    <!-- Device Breakdown -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">Device Breakdown</h3>
-      <canvas id="deviceChart" height="180"></canvas>
+      <h3 class="text-md font-bold text-gray-800 mb-4">🔍 Technical SEO</h3>
+      <div class="flex items-baseline gap-2">
+        <p class="text-4xl font-bold text-emerald-600 metric-value">88%</p>
+        <p class="text-sm text-gray-500">Site Health</p>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2 mt-3">
+        <div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div>
+      </div>
       <div class="mt-4 space-y-2 text-sm">
-        <div class="flex justify-between"><span class="text-gray-600 flex items-center gap-2"><span class="w-3 h-3 bg-emerald-500 rounded"></span> Desktop</span><span class="font-semibold">54%</span></div>
-        <div class="flex justify-between"><span class="text-gray-600 flex items-center gap-2"><span class="w-3 h-3 bg-teal-400 rounded"></span> Mobile</span><span class="font-semibold">39%</span></div>
-        <div class="flex justify-between"><span class="text-gray-600 flex items-center gap-2"><span class="w-3 h-3 bg-cyan-300 rounded"></span> Tablet</span><span class="font-semibold">7%</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">Total keywords</span><span class="font-semibold">81</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">Organic traffic</span><span class="font-semibold">50</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">UK traffic share</span><span class="font-semibold">100%</span></div>
       </div>
-      <p class="text-xs text-gray-500 mt-4 italic">B2B skew — decisions made on desktop.</p>
+      <p class="text-xs text-emerald-700 mt-4 italic">✓ New keywords added around "off grid"</p>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📈 Victron Page Ranking</h3>
+      <div class="flex items-baseline gap-2">
+        <p class="text-5xl font-bold text-emerald-600 metric-value">#3</p>
+        <p class="text-sm text-gray-500">up from #7</p>
+      </div>
+      <p class="text-sm text-gray-600 mt-3">Moved 4 positions in June — now on page 1, above the fold for target keywords.</p>
+      <div class="mt-4 flex items-center gap-2 text-xs">
+        <span class="bg-gray-100 px-2 py-1 rounded">May: #7</span>
+        <span class="text-gray-400">→</span>
+        <span class="bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded">June: #3</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">🌐 Traffic Sources</h3>
+      <div class="space-y-3 text-sm">
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Direct / Referral</span><span class="text-gray-500">Highest</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Organic Search</span><span class="text-gray-500">2nd highest</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 75%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Paid Search</span><span class="text-gray-500">Growing</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 55%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Social</span><span class="text-gray-500">Stable</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 30%"></div></div>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-3 italic">Pageviews grew by ~200 vs May</p>
     </div>
   </section>
 
-  <!-- Traffic Metrics -->
-  <section>
-    <h2 class="text-lg font-bold text-gray-800 mb-4">🎯 Traffic &amp; Engagement</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase font-semibold">Impressions</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">218,441</p>
-        <p class="text-xs trend-up mt-1">↑ 11.2%</p>
-      </div>
-      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase font-semibold">Clicks</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">4,876</p>
-        <p class="text-xs trend-up mt-1">↑ 24.8%</p>
-      </div>
-      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase font-semibold">CTR</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">2.23%</p>
-        <p class="text-xs trend-up mt-1">↑ 0.31%</p>
-      </div>
-      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs text-gray-500 uppercase font-semibold">Lead Conv. Rate</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">1.29%</p>
-        <p class="text-xs trend-up mt-1">↑ 0.24%</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Campaign Performance -->
-  <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+  <!-- LinkedIn 3-Month Trend -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
       <div>
-        <h3 class="text-md font-bold text-gray-800">🏆 Campaign Performance</h3>
-        <p class="text-sm text-gray-500 mt-1">Top and bottom performers this month</p>
+        <h3 class="text-md font-bold text-gray-800">💼 LinkedIn Performance</h3>
+        <p class="text-xs text-gray-500 mt-1">3-month trend · followers up 25 in June</p>
       </div>
-      <button class="text-xs text-emerald-600 font-semibold hover:underline">View all campaigns →</button>
     </div>
-    <div class="overflow-x-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <canvas id="linkedinChart" height="180"></canvas>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr class="text-left text-xs uppercase text-gray-500">
+              <th class="px-4 py-2">Metric</th>
+              <th class="px-4 py-2 text-right">April</th>
+              <th class="px-4 py-2 text-right">May</th>
+              <th class="px-4 py-2 text-right">June</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="px-4 py-2 font-semibold">Page views</td><td class="px-4 py-2 text-right">52</td><td class="px-4 py-2 text-right">69</td><td class="px-4 py-2 text-right trend-up font-semibold">80</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Visitors</td><td class="px-4 py-2 text-right">27</td><td class="px-4 py-2 text-right">29</td><td class="px-4 py-2 text-right trend-up font-semibold">36</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Impressions</td><td class="px-4 py-2 text-right">564</td><td class="px-4 py-2 text-right">1,563</td><td class="px-4 py-2 text-right font-semibold">1,496</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Reactions</td><td class="px-4 py-2 text-right">12</td><td class="px-4 py-2 text-right">46</td><td class="px-4 py-2 text-right font-semibold">44</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Comments</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">4</td><td class="px-4 py-2 text-right">2</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Reposts</td><td class="px-4 py-2 text-right">2</td><td class="px-4 py-2 text-right">5</td><td class="px-4 py-2 text-right">1</td></tr>
+            <tr class="bg-emerald-50"><td class="px-4 py-2 font-bold">Followers</td><td class="px-4 py-2 text-right">194</td><td class="px-4 py-2 text-right">208</td><td class="px-4 py-2 text-right trend-up font-bold">233</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Post -->
+    <div class="mt-6 pt-6 border-t border-gray-100">
+      <p class="text-xs uppercase text-gray-500 font-semibold mb-3">🏆 Top LinkedIn Post (by clicks)</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">83</p>
+          <p class="text-xs text-gray-600">Clicks</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">54.6%</p>
+          <p class="text-xs text-gray-600">Engagement</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">103</p>
+          <p class="text-xs text-gray-600">Members reached</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">152</p>
+          <p class="text-xs text-gray-600">Impressions</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Facebook + Instagram -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📘 Facebook</h3>
       <table class="w-full text-sm">
         <thead class="bg-gray-50">
           <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-6 py-3">Campaign</th>
-            <th class="px-6 py-3">Spend</th>
-            <th class="px-6 py-3">Leads</th>
-            <th class="px-6 py-3">CPL</th>
-            <th class="px-6 py-3">Conv. Rate</th>
-            <th class="px-6 py-3">Status</th>
+            <th class="px-3 py-2">Metric</th>
+            <th class="px-3 py-2 text-right">Apr</th>
+            <th class="px-3 py-2 text-right">May</th>
+            <th class="px-3 py-2 text-right">Jun</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr>
-            <td class="px-6 py-3 font-semibold">Commercial Battery Storage</td>
-            <td class="px-6 py-3">£3,124</td>
-            <td class="px-6 py-3">26</td>
-            <td class="px-6 py-3">£120.15</td>
-            <td class="px-6 py-3 trend-up font-semibold">1.68%</td>
-            <td class="px-6 py-3"><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-semibold">Top</span></td>
-          </tr>
-          <tr>
-            <td class="px-6 py-3 font-semibold">Solar + Battery Hybrid</td>
-            <td class="px-6 py-3">£2,187</td>
-            <td class="px-6 py-3">18</td>
-            <td class="px-6 py-3">£121.50</td>
-            <td class="px-6 py-3 trend-up font-semibold">1.42%</td>
-            <td class="px-6 py-3"><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-semibold">Top</span></td>
-          </tr>
-          <tr>
-            <td class="px-6 py-3 font-semibold">Off-Grid Power Systems</td>
-            <td class="px-6 py-3">£1,468</td>
-            <td class="px-6 py-3">11</td>
-            <td class="px-6 py-3">£133.45</td>
-            <td class="px-6 py-3 font-semibold">1.21%</td>
-            <td class="px-6 py-3"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">Stable</span></td>
-          </tr>
-          <tr>
-            <td class="px-6 py-3 font-semibold">Microgrid – Industrial</td>
-            <td class="px-6 py-3">£1,246</td>
-            <td class="px-6 py-3">7</td>
-            <td class="px-6 py-3">£178.00</td>
-            <td class="px-6 py-3 font-semibold">0.98%</td>
-            <td class="px-6 py-3"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">Stable</span></td>
-          </tr>
-          <tr>
-            <td class="px-6 py-3 font-semibold">Emergency Backup Power</td>
-            <td class="px-6 py-3">£617</td>
-            <td class="px-6 py-3">1</td>
-            <td class="px-6 py-3">£617.00</td>
-            <td class="px-6 py-3 trend-down font-semibold">0.21%</td>
-            <td class="px-6 py-3"><span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">Review</span></td>
-          </tr>
+          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">2.6k</td><td class="px-3 py-2 text-right">3.8k</td><td class="px-3 py-2 text-right trend-down">2.4k</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">29</td><td class="px-3 py-2 text-right">73</td><td class="px-3 py-2 text-right trend-down">27</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Visits</td><td class="px-3 py-2 text-right">489</td><td class="px-3 py-2 text-right">419</td><td class="px-3 py-2 text-right trend-down">174</td></tr>
+          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers</td><td class="px-3 py-2 text-right">215</td><td class="px-3 py-2 text-right">222</td><td class="px-3 py-2 text-right trend-up font-bold">231</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Link clicks</td><td class="px-3 py-2 text-right">5</td><td class="px-3 py-2 text-right">4</td><td class="px-3 py-2 text-right">1</td></tr>
         </tbody>
       </table>
+      <p class="text-xs text-gray-500 mt-3 italic">Videos performing best — dip due to reduced static posting.</p>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📸 Instagram</h3>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-3 py-2">Metric</th>
+            <th class="px-3 py-2 text-right">Apr</th>
+            <th class="px-3 py-2 text-right">May</th>
+            <th class="px-3 py-2 text-right">Jun</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">28.4k</td><td class="px-3 py-2 text-right">22.6k</td><td class="px-3 py-2 text-right trend-down">7.8k</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">102</td><td class="px-3 py-2 text-right">284</td><td class="px-3 py-2 text-right">197</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Reach</td><td class="px-3 py-2 text-right">9.7k</td><td class="px-3 py-2 text-right">5.3k</td><td class="px-3 py-2 text-right">3.3k</td></tr>
+          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers gained</td><td class="px-3 py-2 text-right">68</td><td class="px-3 py-2 text-right">60</td><td class="px-3 py-2 text-right trend-up font-bold">+34</td></tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-gray-500 mt-3 italic">Video content driving the highest engagement rates.</p>
     </div>
   </section>
 
-  <!-- Two Column: Keywords + Geo -->
-  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">🔍 Top Keywords Driving Leads</h3>
-      <div class="space-y-3">
-        <div class="flex justify-between items-center py-2 border-b border-gray-50">
-          <div>
-            <p class="font-semibold text-sm">"commercial battery storage uk"</p>
-            <p class="text-xs text-gray-500">14 leads · £108 CPL · 2.1% CTR</p>
-          </div>
-          <span class="bg-green-50 text-green-700 font-bold text-xs px-2 py-1 rounded">Top</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-50">
-          <div>
-            <p class="font-semibold text-sm">"solar battery installation"</p>
-            <p class="text-xs text-gray-500">11 leads · £115 CPL · 1.9% CTR</p>
-          </div>
-          <span class="bg-green-50 text-green-700 font-bold text-xs px-2 py-1 rounded">Top</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-50">
-          <div>
-            <p class="font-semibold text-sm">"off grid solar systems"</p>
-            <p class="text-xs text-gray-500">9 leads · £128 CPL · 1.6% CTR</p>
-          </div>
-          <span class="bg-blue-50 text-blue-700 font-bold text-xs px-2 py-1 rounded">Good</span>
-        </div>
-        <div class="flex justify-between items-center py-2 border-b border-gray-50">
-          <div>
-            <p class="font-semibold text-sm">"industrial ups battery"</p>
-            <p class="text-xs text-gray-500">7 leads · £141 CPL · 1.4% CTR</p>
-          </div>
-          <span class="bg-blue-50 text-blue-700 font-bold text-xs px-2 py-1 rounded">Good</span>
-        </div>
-        <div class="flex justify-between items-center py-2">
-          <div>
-            <p class="font-semibold text-sm">"tesla powerwall alternative"</p>
-            <p class="text-xs text-gray-500">6 leads · £152 CPL · 1.3% CTR</p>
-          </div>
-          <span class="bg-yellow-50 text-yellow-700 font-bold text-xs px-2 py-1 rounded">Watch</span>
-        </div>
+  <!-- July Strategy / Priority Ad Groups -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 July Strategy — Priority Ad Groups</h3>
+    <p class="text-sm text-gray-600 mb-4">Focus initial budget on the highest-intent searches:</p>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 1</p>
+        <p class="font-bold mt-1">Microgrid Systems</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 2</p>
+        <p class="font-bold mt-1">Energy Savings</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 3</p>
+        <p class="font-bold mt-1">Victron Installers</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 4</p>
+        <p class="font-bold mt-1">Home Energy Storage</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 5</p>
+        <p class="font-bold mt-1">Off-Grid Energy Solutions</p>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">📍 Lead Origin (Top Regions)</h3>
-      <div class="space-y-4">
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-semibold">South East (Hampshire, Surrey)</span>
-            <span class="text-gray-500">21 leads · 33%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="bg-emerald-500 h-2 rounded-full" style="width: 33%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-semibold">South West (Devon, Cornwall)</span>
-            <span class="text-gray-500">15 leads · 24%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="bg-emerald-500 h-2 rounded-full" style="width: 24%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-semibold">London &amp; Home Counties</span>
-            <span class="text-gray-500">12 leads · 19%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="bg-emerald-500 h-2 rounded-full" style="width: 19%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-semibold">Midlands</span>
-            <span class="text-gray-500">9 leads · 14%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="bg-emerald-500 h-2 rounded-full" style="width: 14%"></div>
-          </div>
-        </div>
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-semibold">North &amp; Scotland</span>
-            <span class="text-gray-500">6 leads · 10%</span>
-          </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="bg-emerald-500 h-2 rounded-full" style="width: 10%"></div>
-          </div>
-        </div>
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Recommended budget</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£15 / day</p>
+        <p class="text-xs text-gray-600 mt-1">per ad group</p>
       </div>
-    </div>
-  </section>
-
-  <!-- Search vs Display -->
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">Search Impression Share</h3>
-      <div class="flex items-baseline gap-2">
-        <p class="text-4xl font-bold text-emerald-600 metric-value">64%</p>
-        <p class="text-sm trend-up font-semibold">↑ 7%</p>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Avg top-of-page CPC</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£2.50</p>
+        <p class="text-xs text-gray-600 mt-1">~6–7 clicks/day</p>
       </div>
-      <p class="text-xs text-gray-500 mt-2">Capturing 64% of possible impressions in target markets.</p>
-      <div class="w-full bg-gray-100 rounded-full h-2 mt-3">
-        <div class="bg-emerald-500 h-2 rounded-full" style="width: 64%"></div>
-      </div>
-      <p class="text-xs text-gray-400 mt-2 italic">Room to grow — increase budgets on top campaigns.</p>
-    </div>
-
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">Quality Score (avg.)</h3>
-      <div class="flex items-baseline gap-2">
-        <p class="text-4xl font-bold text-emerald-600 metric-value">7.8</p>
-        <span class="text-sm text-gray-500">/ 10</span>
-      </div>
-      <p class="text-xs text-gray-500 mt-2">Ad relevance and landing page score across account.</p>
-      <div class="mt-3 flex gap-1">
-        <div class="flex-1 h-2 bg-emerald-500 rounded"></div>
-        <div class="flex-1 h-2 bg-emerald-500 rounded"></div>
-        <div class="flex-1 h-2 bg-emerald-500 rounded"></div>
-        <div class="flex-1 h-2 bg-emerald-400 rounded"></div>
-        <div class="flex-1 h-2 bg-gray-200 rounded"></div>
-      </div>
-      <p class="text-xs text-gray-400 mt-2 italic">Strong. Above industry average (6.4).</p>
-    </div>
-
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">Best Time of Day</h3>
-      <p class="text-2xl font-bold text-gray-900">10am – 2pm</p>
-      <p class="text-xs text-gray-500 mt-2">Weekday business hours — 58% of leads.</p>
-      <div class="mt-3 grid grid-cols-6 gap-1">
-        <div class="h-8 bg-gray-100 rounded"></div>
-        <div class="h-8 bg-emerald-200 rounded"></div>
-        <div class="h-8 bg-emerald-500 rounded"></div>
-        <div class="h-8 bg-emerald-500 rounded"></div>
-        <div class="h-8 bg-emerald-300 rounded"></div>
-        <div class="h-8 bg-gray-100 rounded"></div>
-      </div>
-      <div class="grid grid-cols-6 gap-1 text-[10px] text-gray-400 mt-1 text-center">
-        <span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Additional monthly investment</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£45 / day</p>
+        <p class="text-xs text-gray-600 mt-1">for all priority campaigns</p>
       </div>
     </div>
   </section>
@@ -388,66 +349,93 @@
   <!-- Tweak's Value Add -->
   <section class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl p-6 border border-emerald-100">
     <div class="flex items-center gap-2 mb-4">
-      <h3 class="text-md font-bold text-gray-800">✨ What Tweak Did This Month</h3>
-      <span class="text-xs bg-white text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">Value delivered</span>
+      <h3 class="text-md font-bold text-gray-800">✨ Work Delivered This Month</h3>
+      <span class="text-xs bg-white text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">By Tweak</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 class="font-semibold text-sm text-gray-700 mb-3">Optimisations completed</h4>
+        <h4 class="font-semibold text-sm text-gray-700 mb-3">✅ Going well</h4>
         <ul class="space-y-2 text-sm text-gray-700">
-          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Restructured Commercial Battery Storage campaign into 4 ad groups by industry (agriculture, manufacturing, marine, remote sites) — CTR +26%</li>
-          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Added 68 negative keywords targeting DIY/residential searches — saved ~£420 in wasted spend</li>
-          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Rewrote landing page headlines for Solar+Battery Hybrid — conversion rate 0.9% → 1.42%</li>
-          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Enabled call tracking + location extensions across all campaigns</li>
-          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Shifted 15% budget from Emergency Backup → Commercial Battery Storage based on ROAS</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Optimised Victron campaign — clicks up 453%</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Home Energy campaign clicks up 113%</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> 3 conversions: 2 phone calls + 1 contact form</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Web analytics stable, pageviews up 200</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Victron page ranking: #7 → #3</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> LinkedIn +25 followers, videos on FB/IG performing best</li>
         </ul>
       </div>
       <div>
-        <h4 class="font-semibold text-sm text-gray-700 mb-3">Recommendations for July</h4>
+        <h4 class="font-semibold text-sm text-gray-700 mb-3">🚧 To be worked on</h4>
         <ul class="space-y-2 text-sm text-gray-700">
-          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Pause "Emergency Backup Power" campaign — reallocate £600 to Commercial Battery Storage</li>
-          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Launch LinkedIn Ads pilot targeting Facilities Managers &amp; Ops Directors (B2B skew shows opportunity)</li>
-          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Test YouTube video ads showing site installations (product is visual + technical)</li>
-          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Build retargeting audiences for site visitors who didn't submit a quote</li>
-          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Increase South East regional budget by 20% — highest lead density</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Focus budget on the 5 priority ad groups</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Calculator research &amp; discovery (savings tool for lead gen)</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> New landing page designs</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Contact page design update</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Homepage redesign</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Roll videos into August's TikTok / IG / FB calendar</li>
         </ul>
       </div>
     </div>
-    <div class="mt-6 pt-6 border-t border-emerald-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Hours saved for client</p>
-        <p class="text-2xl font-bold text-gray-900">~22 hrs</p>
+  </section>
+
+  <!-- July Projects Summary -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🗓️ July Projects</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">1 · Calculator</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Confirm CRM integration (Zoho + Fluent Forms)</li>
+          <li>Finalise calculator logic &amp; savings maths</li>
+          <li>Define postcode dataset requirements</li>
+          <li>Wireframe + user journey</li>
+          <li>Begin build in Fluent Forms</li>
+          <li>Design automated results email</li>
+        </ul>
       </div>
-      <div>
-        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Wasted spend prevented</p>
-        <p class="text-2xl font-bold text-gray-900">£420</p>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">2 · Website Redesign</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Homepage</li>
+          <li>Contact page</li>
+          <li>Landing page creation</li>
+          <li>Farm &amp; home page updates</li>
+        </ul>
       </div>
-      <div>
-        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Lead uplift vs May</p>
-        <p class="text-2xl font-bold text-gray-900">+40%</p>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">3 · PPC &amp; Meta Ads</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Client to review keywords</li>
+          <li>Client to approve budget &amp; ads</li>
+          <li>Tweak to set up ads</li>
+          <li>Meta Farming Sector campaign (£10/day)</li>
+          <li>Meta Cost Savings campaign (£10/day)</li>
+          <li>Summer AC seasonal campaign concept</li>
+        </ul>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="text-center text-xs text-gray-400 py-6">
-    <p>Generated automatically from Google Ads API · Data through 30 June 2026 · Refreshed daily</p>
-    <p class="mt-1">Tweak Marketing · Client Success Platform · v0.1 · <span class="italic">Mock — figures for demonstration only</span></p>
+    <p>Live dashboard prototype · Data derived from Tweak Marketing's June 2026 OffGrid Pro report</p>
+    <p class="mt-1">Once approved, will auto-refresh monthly from Google Ads, Search Console, LinkedIn, Meta &amp; SEMrush APIs</p>
+    <p class="mt-1 text-gray-300">© Tweak Marketing UK · Client Success Platform</p>
   </footer>
 
 </main>
 
 <script>
-  // 6-Month Trend Chart
-  const trendCtx = document.getElementById('trendChart').getContext('2d');
-  new Chart(trendCtx, {
+  // LinkedIn 3-Month Chart
+  const liCtx = document.getElementById('linkedinChart').getContext('2d');
+  new Chart(liCtx, {
     type: 'line',
     data: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      labels: ['April', 'May', 'June'],
       datasets: [
         {
-          label: 'Spend (£)',
-          data: [5200, 5800, 6400, 7100, 7568, 8642],
+          label: 'Followers',
+          data: [194, 208, 233],
           borderColor: '#059669',
           backgroundColor: 'rgba(5, 150, 105, 0.08)',
           tension: 0.4,
@@ -455,8 +443,8 @@
           yAxisID: 'y'
         },
         {
-          label: 'Leads',
-          data: [28, 34, 39, 42, 45, 63],
+          label: 'Impressions',
+          data: [564, 1563, 1496],
           borderColor: '#14b8a6',
           backgroundColor: 'rgba(20, 184, 166, 0.08)',
           tension: 0.4,
@@ -467,30 +455,11 @@
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+      plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
       scales: {
-        y: { type: 'linear', position: 'left', beginAtZero: true, ticks: { callback: v => '£' + v.toLocaleString() } },
-        y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false } }
+        y: { type: 'linear', position: 'left', beginAtZero: false, title: { display: true, text: 'Followers' } },
+        y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Impressions' } }
       }
-    }
-  });
-
-  // Device Doughnut
-  const deviceCtx = document.getElementById('deviceChart').getContext('2d');
-  new Chart(deviceCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Desktop', 'Mobile', 'Tablet'],
-      datasets: [{
-        data: [54, 39, 7],
-        backgroundColor: ['#10b981', '#2dd4bf', '#67e8f9'],
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      cutout: '70%'
     }
   });
 </script>
