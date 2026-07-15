@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OffGrid Pro — June 2026 Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  .gradient-bg { background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%); }
+  .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+  .trend-up { color: #059669; }
+  .trend-down { color: #dc2626; }
+  .metric-value { font-variant-numeric: tabular-nums; }
+  .mock-badge {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  /* Anchor scroll offset so sticky nav doesn't cover the target */
+  section[id] { scroll-margin-top: 80px; }
+  .nav-link { transition: color 0.15s ease, background 0.15s ease; }
+  .nav-link:hover { color: #059669; background: #ecfdf5; }
+</style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Header -->
+<header class="gradient-bg text-white shadow-xl">
+  <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex justify-between items-start flex-wrap gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center font-bold text-2xl">⚡</div>
+          <div>
+            <p class="text-xs uppercase tracking-widest text-white text-opacity-70">Tweak Marketing · Client Report</p>
+            <h1 class="text-3xl font-extrabold">OffGrid Pro — June 2026</h1>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-6 mt-4 text-sm">
+          <div>
+            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Client</p>
+            <p class="font-semibold">OffGrid Pro Ltd.</p>
+          </div>
+          <div class="border-l border-white border-opacity-30 pl-6">
+            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Sector</p>
+            <p class="font-semibold">Battery Storage &amp; Microgrids</p>
+          </div>
+          <div class="border-l border-white border-opacity-30 pl-6">
+            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Reporting Period</p>
+            <p class="font-semibold">1 – 30 June 2026</p>
+          </div>
+          <div class="border-l border-white border-opacity-30 pl-6">
+            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Account Manager</p>
+            <p class="font-semibold">Louise · Tweak</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col items-end gap-3">
+        <span class="mock-badge text-white text-xs px-3 py-1 rounded-full font-semibold">DASHBOARD PROTOTYPE</span>
+        <div class="flex gap-2">
+          <select class="bg-white bg-opacity-20 backdrop-blur border border-white border-opacity-30 rounded-lg px-4 py-2 text-white text-sm">
+            <option>June 2026</option>
+            <option>May 2026</option>
+            <option>April 2026</option>
+          </select>
+          <button class="bg-white text-emerald-700 font-semibold px-4 py-2 rounded-lg hover:bg-opacity-90 text-sm">Export PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Sticky Nav -->
+<nav class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-center justify-between h-14">
+      <div class="flex items-center gap-2">
+        <a href="../" class="text-xs text-gray-500 hover:text-emerald-700 font-semibold uppercase tracking-wide">← All Reports</a>
+        <span class="text-gray-300">·</span>
+        <span class="text-sm font-bold text-gray-800">June 2026</span>
+      </div>
+      <div class="flex items-center gap-1 text-sm font-medium text-gray-700 overflow-x-auto">
+        <a href="#overview" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Overview</a>
+        <a href="#keywords" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Keywords</a>
+        <a href="#social" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Social</a>
+        <a href="#google-ads" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Google Ads</a>
+        <a href="#web-analytics" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Web Analytics</a>
+        <a href="#next-steps" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Next Steps</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+  <!-- Executive Summary Cards -->
+  <section id="overview">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-gray-800">📊 Month Overview</h2>
+      <span class="text-xs text-gray-500">vs. previous month</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">3</p>
+        <p class="text-xs text-gray-500 mt-2">2 phone calls · 1 contact form</p>
+      </div>
+      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Victron Clicks</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+453%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Big win</span></p>
+      </div>
+      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Home Energy Clicks</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+113%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Strong growth</span></p>
+      </div>
+      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Site Health Score</p>
+        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">88%</p>
+        <p class="text-sm mt-2"><span class="trend-up font-semibold">Strong</span> <span class="text-gray-500">technical SEO</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlight Banner -->
+  <section class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 flex items-start gap-4">
+    <div class="text-3xl">🎯</div>
+    <div class="flex-1">
+      <p class="font-bold text-emerald-900">Victron campaign optimisation delivered a 453% lift in clicks.</p>
+      <p class="text-sm text-emerald-800 mt-1">Home Energy also grew 113%. The Victron landing page climbed from position #7 to <span class="font-bold">#3</span> in organic search this month.</p>
+    </div>
+  </section>
+
+  <!-- Work Delivered This Month (moved up per client feedback) -->
+  <section class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl p-6 border border-emerald-100">
+    <div class="flex items-center gap-2 mb-4">
+      <h3 class="text-md font-bold text-gray-800">✨ Work Delivered This Month</h3>
+      <span class="text-xs bg-white text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">By Tweak</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-semibold text-sm text-gray-700 mb-3">✅ Going well</h4>
+        <ul class="space-y-2 text-sm text-gray-700">
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Optimised Victron campaign — clicks up 453%</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Home Energy campaign clicks up 113%</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> 3 conversions: 2 phone calls + 1 contact form</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Web analytics stable, pageviews up 200</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Victron page ranking: #7 → #3</li>
+          <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> LinkedIn +25 followers, videos on FB/IG performing best</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm text-gray-700 mb-3">🚧 To be worked on</h4>
+        <ul class="space-y-2 text-sm text-gray-700">
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Focus budget on the 5 priority ad groups</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Calculator research &amp; discovery (savings tool for lead gen)</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> New landing page designs</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Contact page design update</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Homepage redesign</li>
+          <li class="flex gap-2"><span class="text-teal-600 font-bold">→</span> Roll videos into August's TikTok / IG / FB calendar</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conversions Detail -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-md font-bold text-gray-800">📞 Conversions This Month</h3>
+      <span class="text-xs text-gray-500">Source: Google Ads conversion tracking</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Tuesday 23rd June</p>
+        <p class="font-bold text-gray-900 mt-1">Contact Form Submission</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
+      </div>
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Wednesday 24th June</p>
+        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
+      </div>
+      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-semibold">Saturday 27th June</p>
+        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
+        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Home Energy</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO + Traffic Row -->
+  <section id="keywords" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">🔍 Technical SEO</h3>
+      <div class="flex items-baseline gap-2">
+        <p class="text-4xl font-bold text-emerald-600 metric-value">88%</p>
+        <p class="text-sm text-gray-500">Site Health</p>
+      </div>
+      <div class="w-full bg-gray-100 rounded-full h-2 mt-3">
+        <div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div>
+      </div>
+      <div class="mt-4 space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-600">Total keywords tracked</span><span class="font-semibold">130</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">Ranking keywords</span><span class="font-semibold">81</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">Organic traffic</span><span class="font-semibold">50</span></div>
+        <div class="flex justify-between"><span class="text-gray-600">UK traffic share</span><span class="font-semibold">100%</span></div>
+      </div>
+      <div class="mt-4 pt-3 border-t border-gray-100 grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-xs text-gray-500">Domain Trust</p>
+          <p class="text-lg font-bold text-gray-900">12<span class="text-xs text-gray-500">/100</span></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Page Trust</p>
+          <p class="text-lg font-bold text-gray-900">3<span class="text-xs text-gray-500">/100</span></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Referring Domains</p>
+          <p class="text-lg font-bold text-gray-900">33</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Backlinks</p>
+          <p class="text-lg font-bold text-gray-900">53</p>
+        </div>
+      </div>
+      <p class="text-xs text-emerald-700 mt-4 italic">✓ New keywords added around "off grid"</p>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📈 Victron Page Ranking</h3>
+      <div class="flex items-baseline gap-2">
+        <p class="text-5xl font-bold text-emerald-600 metric-value">#3</p>
+        <p class="text-sm text-gray-500">up from #7</p>
+      </div>
+      <p class="text-sm text-gray-600 mt-3">Moved 4 positions in June — now on page 1, above the fold for target keywords.</p>
+      <div class="mt-4 flex items-center gap-2 text-xs">
+        <span class="bg-gray-100 px-2 py-1 rounded">May: #7</span>
+        <span class="text-gray-400">→</span>
+        <span class="bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded">June: #3</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">🌐 Traffic Sources</h3>
+      <div class="space-y-3 text-sm">
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Direct / Referral</span><span class="text-gray-500">Highest</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Organic Search</span><span class="text-gray-500">2nd highest</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 75%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Paid Search</span><span class="text-gray-500">Growing</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 55%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between mb-1"><span class="font-semibold">Social</span><span class="text-gray-500">Stable</span></div>
+          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 30%"></div></div>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-3 italic">Pageviews grew by ~200 vs May</p>
+    </div>
+  </section>
+
+  <!-- Ranking Keywords Table -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-md font-bold text-gray-800">🎯 Ranking Keywords — Position &amp; Competition</h3>
+        <p class="text-xs text-gray-500 mt-1">Where OffGrid Pro ranks in organic search this month</p>
+      </div>
+      <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-1 rounded-full border border-emerald-200">130 keywords tracked</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-4 py-2">Keyword</th>
+            <th class="px-4 py-2 text-right">Position</th>
+            <th class="px-4 py-2 text-right">Change</th>
+            <th class="px-4 py-2 text-right">Competition</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off grid pro (branded)</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.61</td></tr>
+          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off grid energy uk</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.49</td></tr>
+          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off-grid energy solutions</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.77</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">off grid solution</td><td class="px-4 py-2 text-right font-bold">#5</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.77</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">off grid electricity solutions</td><td class="px-4 py-2 text-right font-bold">#6</td><td class="px-4 py-2 text-right"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">↑ 1</span></td><td class="px-4 py-2 text-right">0.94</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">offgrid electric</td><td class="px-4 py-2 text-right font-bold">#6</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.99</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-500 italic mt-3">3 keywords ranking #1 (branded + "off grid energy uk" + "off-grid energy solutions"). Non-branded keywords climbing steadily.</p>
+  </section>
+
+  <!-- LinkedIn 3-Month Trend -->
+  <section id="social" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-md font-bold text-gray-800">💼 LinkedIn Performance</h3>
+        <p class="text-xs text-gray-500 mt-1">3-month trend · followers up 25 in June</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <canvas id="linkedinChart" height="180"></canvas>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr class="text-left text-xs uppercase text-gray-500">
+              <th class="px-4 py-2">Metric</th>
+              <th class="px-4 py-2 text-right">April</th>
+              <th class="px-4 py-2 text-right">May</th>
+              <th class="px-4 py-2 text-right">June</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="px-4 py-2 font-semibold">Page views</td><td class="px-4 py-2 text-right">52</td><td class="px-4 py-2 text-right">69</td><td class="px-4 py-2 text-right trend-up font-semibold">80</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Visitors</td><td class="px-4 py-2 text-right">27</td><td class="px-4 py-2 text-right">29</td><td class="px-4 py-2 text-right trend-up font-semibold">36</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Impressions</td><td class="px-4 py-2 text-right">564</td><td class="px-4 py-2 text-right">1,563</td><td class="px-4 py-2 text-right font-semibold">1,496</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Reactions</td><td class="px-4 py-2 text-right">12</td><td class="px-4 py-2 text-right">46</td><td class="px-4 py-2 text-right font-semibold">44</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Comments</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">4</td><td class="px-4 py-2 text-right">2</td></tr>
+            <tr><td class="px-4 py-2 font-semibold">Reposts</td><td class="px-4 py-2 text-right">2</td><td class="px-4 py-2 text-right">5</td><td class="px-4 py-2 text-right">1</td></tr>
+            <tr class="bg-emerald-50"><td class="px-4 py-2 font-bold">Followers</td><td class="px-4 py-2 text-right">194</td><td class="px-4 py-2 text-right">208</td><td class="px-4 py-2 text-right trend-up font-bold">233</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Post -->
+    <div class="mt-6 pt-6 border-t border-gray-100">
+      <p class="text-xs uppercase text-gray-500 font-semibold mb-3">🏆 Top LinkedIn Post (by clicks)</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">83</p>
+          <p class="text-xs text-gray-600">Clicks</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">54.6%</p>
+          <p class="text-xs text-gray-600">Engagement</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">103</p>
+          <p class="text-xs text-gray-600">Members reached</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">152</p>
+          <p class="text-xs text-gray-600">Impressions</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Facebook + Instagram -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📘 Facebook</h3>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-3 py-2">Metric</th>
+            <th class="px-3 py-2 text-right">Apr</th>
+            <th class="px-3 py-2 text-right">May</th>
+            <th class="px-3 py-2 text-right">Jun</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">2.6k</td><td class="px-3 py-2 text-right">3.8k</td><td class="px-3 py-2 text-right trend-down">2.4k</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">29</td><td class="px-3 py-2 text-right">73</td><td class="px-3 py-2 text-right trend-down">27</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Visits</td><td class="px-3 py-2 text-right">489</td><td class="px-3 py-2 text-right">419</td><td class="px-3 py-2 text-right trend-down">174</td></tr>
+          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers</td><td class="px-3 py-2 text-right">215</td><td class="px-3 py-2 text-right">222</td><td class="px-3 py-2 text-right trend-up font-bold">231</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Link clicks</td><td class="px-3 py-2 text-right">5</td><td class="px-3 py-2 text-right">4</td><td class="px-3 py-2 text-right">1</td></tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-gray-500 mt-3 italic">Videos performing best — dip due to reduced static posting.</p>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-md font-bold text-gray-800 mb-4">📸 Instagram</h3>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-3 py-2">Metric</th>
+            <th class="px-3 py-2 text-right">Apr</th>
+            <th class="px-3 py-2 text-right">May</th>
+            <th class="px-3 py-2 text-right">Jun</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">28.4k</td><td class="px-3 py-2 text-right">22.6k</td><td class="px-3 py-2 text-right trend-down">7.8k</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">102</td><td class="px-3 py-2 text-right">284</td><td class="px-3 py-2 text-right">197</td></tr>
+          <tr><td class="px-3 py-2 font-semibold">Reach</td><td class="px-3 py-2 text-right">9.7k</td><td class="px-3 py-2 text-right">5.3k</td><td class="px-3 py-2 text-right">3.3k</td></tr>
+          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers gained</td><td class="px-3 py-2 text-right">68</td><td class="px-3 py-2 text-right">60</td><td class="px-3 py-2 text-right trend-up font-bold">+34</td></tr>
+        </tbody>
+      </table>
+      <p class="text-xs text-gray-500 mt-3 italic">Video content driving the highest engagement rates.</p>
+    </div>
+  </section>
+
+  <!-- Google Ads - Most Shown Ads (Slide 5) -->
+  <section id="google-ads" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 Most Shown Ads</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="border border-gray-100 rounded-lg p-4 bg-gray-50">
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-1">Home Energy › Home Energy Storage</p>
+        <p class="font-bold text-blue-700 text-sm">House Energy Storage | Backup Power For Your Home | Cut Your Energy Bills</p>
+        <p class="text-xs text-green-700 mt-1">Ad · offgridpro.co.uk/home-energy/storage</p>
+        <p class="text-xs text-gray-600 mt-2">Never lose power again. Our home backup battery systems provide 24/7 energy security. Instant emergency power supply for large homes. Protection from UK power cuts and outages.</p>
+        <div class="mt-3 text-xs text-blue-600 space-x-3">
+          <span>Cut Your Electricity Bill</span> <span>Save £6000 on Electricity</span> <span>Free Energy Consultation</span>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-200 grid grid-cols-3 text-center">
+          <div><p class="text-xs text-gray-500">Impressions</p><p class="font-bold text-gray-900">3,068</p></div>
+          <div><p class="text-xs text-gray-500">Clicks</p><p class="font-bold text-gray-900">228</p></div>
+          <div><p class="text-xs text-gray-500">CTR</p><p class="font-bold text-emerald-600">7.43%</p></div>
+        </div>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4 bg-gray-50">
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-1">Victron › Victron</p>
+        <p class="font-bold text-blue-700 text-sm">Victron Energy Installer | Certified Victron Experts | Victron Installer UK</p>
+        <p class="text-xs text-green-700 mt-1">Ad · offgridpro.co.uk/victron/energy-solution</p>
+        <p class="text-xs text-gray-600 mt-2">Bespoke Victron solar, battery and inverter systems installed UK-wide. Protect against outages with Victron backup power solutions.</p>
+        <div class="mt-3 text-xs text-blue-600 space-x-3">
+          <span>Smart Energy Solutions</span> <span>Farm Energy Solutions</span> <span>Energy Security Solutions</span>
+        </div>
+        <div class="mt-4 pt-3 border-t border-gray-200 grid grid-cols-3 text-center">
+          <div><p class="text-xs text-gray-500">Impressions</p><p class="font-bold text-gray-900">2,176</p></div>
+          <div><p class="text-xs text-gray-500">Clicks</p><p class="font-bold text-gray-900">105</p></div>
+          <div><p class="text-xs text-gray-500">CTR</p><p class="font-bold text-emerald-600">4.83%</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Google Ads - Home Energy (Slide 6) -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🔋 Google Ads — Home Energy Campaign</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div class="bg-blue-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Clicks</p>
+        <p class="text-2xl font-bold mt-1">228</p>
+      </div>
+      <div class="bg-red-500 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Impressions</p>
+        <p class="text-2xl font-bold mt-1">3.07K</p>
+      </div>
+      <div class="bg-yellow-500 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Avg. CPC</p>
+        <p class="text-2xl font-bold mt-1">£1.34</p>
+      </div>
+      <div class="bg-emerald-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Cost</p>
+        <p class="text-2xl font-bold mt-1">£306</p>
+      </div>
+      <div class="bg-blue-500 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">CTR</p>
+        <p class="text-2xl font-bold mt-1">7.43%</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <p class="text-xs uppercase text-gray-500 font-semibold mb-3">Top searches &amp; words</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar battery</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">home battery storage</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">home battery storage uk</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">power factor saver</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">cheapest electric ni</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar battery storage</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">battery backup for home power outage uk</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">cheapest electricity ni keypad</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">battery storage for home</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar batteries</span>
+          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">electricity saving box</span>
+        </div>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-gray-500 font-semibold mb-3">Keyword performance</p>
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr class="text-left text-xs uppercase text-gray-500">
+              <th class="px-3 py-2">Keyword</th>
+              <th class="px-3 py-2 text-right">Cost</th>
+              <th class="px-3 py-2 text-right">Clicks</th>
+              <th class="px-3 py-2 text-right">CTR</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr><td class="px-3 py-2 font-semibold">"home battery"</td><td class="px-3 py-2 text-right">£35.00</td><td class="px-3 py-2 text-right">9</td><td class="px-3 py-2 text-right trend-up font-semibold">7.76%</td></tr>
+            <tr><td class="px-3 py-2 font-semibold">"best energy deals"</td><td class="px-3 py-2 text-right">£32.80</td><td class="px-3 py-2 text-right">8</td><td class="px-3 py-2 text-right">3.11%</td></tr>
+            <tr class="bg-emerald-50"><td class="px-3 py-2 font-semibold">"battery backup for home"</td><td class="px-3 py-2 text-right">£31.65</td><td class="px-3 py-2 text-right font-bold">35</td><td class="px-3 py-2 text-right trend-up font-bold">9.36%</td></tr>
+            <tr><td class="px-3 py-2 font-semibold">"home solar and battery"</td><td class="px-3 py-2 text-right">£28.21</td><td class="px-3 py-2 text-right">11</td><td class="px-3 py-2 text-right trend-up font-semibold">7.05%</td></tr>
+            <tr><td class="px-3 py-2 font-semibold">"home energy battery storage"</td><td class="px-3 py-2 text-right">£26.80</td><td class="px-3 py-2 text-right">19</td><td class="px-3 py-2 text-right trend-up font-semibold">6.40%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 italic mt-3">"battery backup for home" is the standout — 35 clicks at a 9.36% CTR.</p>
+  </section>
+
+  <!-- Top Pages (Slide 9) -->
+  <section id="web-analytics" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">📄 Top Pages — Google Analytics</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Views</p>
+        <p class="text-xl font-bold text-gray-900">2,358</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Active users</p>
+        <p class="text-xl font-bold text-gray-900">744</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Views / user</p>
+        <p class="text-xl font-bold text-gray-900">3.17</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Avg. engagement</p>
+        <p class="text-xl font-bold text-gray-900">1m 03s</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Event count</p>
+        <p class="text-xl font-bold text-gray-900">6,533</p>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-4 py-2">#</th>
+            <th class="px-4 py-2">Page</th>
+            <th class="px-4 py-2 text-right">Views</th>
+            <th class="px-4 py-2 text-right">Active users</th>
+            <th class="px-4 py-2 text-right">Views/user</th>
+            <th class="px-4 py-2 text-right">Avg. engagement</th>
+            <th class="px-4 py-2 text-right">Events</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr class="bg-emerald-50"><td class="px-4 py-2">1</td><td class="px-4 py-2 font-semibold">/</td><td class="px-4 py-2 text-right">960 <span class="text-xs text-gray-500">(40.71%)</span></td><td class="px-4 py-2 text-right">302 (40.59%)</td><td class="px-4 py-2 text-right">3.18</td><td class="px-4 py-2 text-right">33s</td><td class="px-4 py-2 text-right">2,541 (38.89%)</td></tr>
+          <tr><td class="px-4 py-2">2</td><td class="px-4 py-2 font-semibold">/large-homes-estate-properties-energy-solutions/</td><td class="px-4 py-2 text-right">250 (10.6%)</td><td class="px-4 py-2 text-right">211 (28.36%)</td><td class="px-4 py-2 text-right">1.18</td><td class="px-4 py-2 text-right">17s</td><td class="px-4 py-2 text-right">829 (12.69%)</td></tr>
+          <tr><td class="px-4 py-2">3</td><td class="px-4 py-2 font-semibold">/energy-solutions/victron-energy-solutions/</td><td class="px-4 py-2 text-right">166 (7.04%)</td><td class="px-4 py-2 text-right">133 (17.88%)</td><td class="px-4 py-2 text-right">1.25</td><td class="px-4 py-2 text-right">30s</td><td class="px-4 py-2 text-right">540 (8.27%)</td></tr>
+          <tr><td class="px-4 py-2">4</td><td class="px-4 py-2 font-semibold">/energy-solutions/</td><td class="px-4 py-2 text-right">130 (5.51%)</td><td class="px-4 py-2 text-right">71 (9.54%)</td><td class="px-4 py-2 text-right">1.83</td><td class="px-4 py-2 text-right">1m 06s</td><td class="px-4 py-2 text-right">312 (4.78%)</td></tr>
+          <tr><td class="px-4 py-2">5</td><td class="px-4 py-2 font-semibold">/projects/</td><td class="px-4 py-2 text-right">95 (4.03%)</td><td class="px-4 py-2 text-right">45 (6.05%)</td><td class="px-4 py-2 text-right">2.11</td><td class="px-4 py-2 text-right">30s</td><td class="px-4 py-2 text-right">225 (3.44%)</td></tr>
+          <tr><td class="px-4 py-2">6</td><td class="px-4 py-2 font-semibold">/contact/</td><td class="px-4 py-2 text-right">90 (3.82%)</td><td class="px-4 py-2 text-right">66 (8.87%)</td><td class="px-4 py-2 text-right">1.36</td><td class="px-4 py-2 text-right">16s</td><td class="px-4 py-2 text-right">220 (3.37%)</td></tr>
+          <tr><td class="px-4 py-2">7</td><td class="px-4 py-2 font-semibold">/about/</td><td class="px-4 py-2 text-right">79 (3.35%)</td><td class="px-4 py-2 text-right">47 (6.32%)</td><td class="px-4 py-2 text-right">1.68</td><td class="px-4 py-2 text-right">59s</td><td class="px-4 py-2 text-right">226 (3.46%)</td></tr>
+          <tr><td class="px-4 py-2">8</td><td class="px-4 py-2 font-semibold">/g100/</td><td class="px-4 py-2 text-right">70 (2.97%)</td><td class="px-4 py-2 text-right">44 (5.91%)</td><td class="px-4 py-2 text-right">1.59</td><td class="px-4 py-2 text-right">33s</td><td class="px-4 py-2 text-right">330 (5.05%)</td></tr>
+          <tr><td class="px-4 py-2">9</td><td class="px-4 py-2 font-semibold">/energy-solutions/fogstar-energy-battery-solutions/</td><td class="px-4 py-2 text-right">51 (2.16%)</td><td class="px-4 py-2 text-right">41 (5.51%)</td><td class="px-4 py-2 text-right">1.24</td><td class="px-4 py-2 text-right">1m 13s</td><td class="px-4 py-2 text-right">132 (2.02%)</td></tr>
+          <tr><td class="px-4 py-2">10</td><td class="px-4 py-2 font-semibold">/subcontractor-login/</td><td class="px-4 py-2 text-right">43 (1.82%)</td><td class="px-4 py-2 text-right">3 (0.4%)</td><td class="px-4 py-2 text-right">14.33</td><td class="px-4 py-2 text-right">9m 52s</td><td class="px-4 py-2 text-right">109 (1.67%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-500 italic mt-3">Victron energy-solutions page is 3rd most-visited page — aligning with campaign performance and its rise to organic search position #3.</p>
+  </section>
+
+  <!-- Users by Traffic Source (Slide 10) -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">👥 Users by Traffic Source</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Total users</p>
+        <p class="text-xl font-bold text-gray-900">757</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">New users</p>
+        <p class="text-xl font-bold text-gray-900">718</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Returning</p>
+        <p class="text-xl font-bold text-gray-900">98</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Avg. engagement</p>
+        <p class="text-xl font-bold text-gray-900">1m 03s</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 text-center">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Sessions / user</p>
+        <p class="text-xl font-bold text-gray-900">0.69</p>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left text-xs uppercase text-gray-500">
+            <th class="px-4 py-2">Channel</th>
+            <th class="px-4 py-2 text-right">Total users</th>
+            <th class="px-4 py-2 text-right">New users</th>
+            <th class="px-4 py-2 text-right">Returning</th>
+            <th class="px-4 py-2 text-right">Avg. engagement</th>
+            <th class="px-4 py-2 text-right">Sessions/user</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">Paid Search</td><td class="px-4 py-2 text-right font-bold">306 (40.42%)</td><td class="px-4 py-2 text-right">304 (42.34%)</td><td class="px-4 py-2 text-right">9 (9.18%)</td><td class="px-4 py-2 text-right">21s</td><td class="px-4 py-2 text-right">0.48</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">Organic Search</td><td class="px-4 py-2 text-right">187 (24.7%)</td><td class="px-4 py-2 text-right">169 (23.54%)</td><td class="px-4 py-2 text-right trend-up font-semibold">53 (54.08%)</td><td class="px-4 py-2 text-right trend-up font-semibold">2m 05s</td><td class="px-4 py-2 text-right font-semibold">1.12</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">Direct</td><td class="px-4 py-2 text-right">184 (24.31%)</td><td class="px-4 py-2 text-right">169 (23.54%)</td><td class="px-4 py-2 text-right">26 (26.53%)</td><td class="px-4 py-2 text-right">1m 13s</td><td class="px-4 py-2 text-right">0.62</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">Organic Social</td><td class="px-4 py-2 text-right">42 (5.55%)</td><td class="px-4 py-2 text-right">41 (5.71%)</td><td class="px-4 py-2 text-right">2 (2.04%)</td><td class="px-4 py-2 text-right">22s</td><td class="px-4 py-2 text-right">0.49</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">Referral</td><td class="px-4 py-2 text-right">35 (4.62%)</td><td class="px-4 py-2 text-right">32 (4.46%)</td><td class="px-4 py-2 text-right">8 (8.16%)</td><td class="px-4 py-2 text-right">1m 43s</td><td class="px-4 py-2 text-right">0.97</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">AI Assistant</td><td class="px-4 py-2 text-right">2 (0.26%)</td><td class="px-4 py-2 text-right">2 (0.28%)</td><td class="px-4 py-2 text-right">0</td><td class="px-4 py-2 text-right">3s</td><td class="px-4 py-2 text-right">0.50</td></tr>
+          <tr><td class="px-4 py-2 font-semibold">Cross-network</td><td class="px-4 py-2 text-right">1 (0.13%)</td><td class="px-4 py-2 text-right">1 (0.14%)</td><td class="px-4 py-2 text-right">0</td><td class="px-4 py-2 text-right">2m 35s</td><td class="px-4 py-2 text-right">1.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-500 italic mt-3">Paid Search drives 40% of users. Organic Search has the deepest engagement (2m 05s + 1.12 sessions/user) — SEO investment paying off.</p>
+  </section>
+
+  <!-- New Homepage Design (Slide 20) -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🎨 New Homepage — Design in Progress</h3>
+    <p class="text-sm text-gray-600 mb-4">Redesign centred around a single headline promise ("Slash your energy bills by up to 70%"), a savings calculator, and vertical-specific journeys (business owner / farmer / hospitality operator / estate).</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <p class="text-3xl font-extrabold text-emerald-700">97%</p>
+        <p class="text-sm font-semibold text-gray-800">Reduction in Monthly Costs</p>
+        <p class="text-xs text-gray-500">Portsmouth Home</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <p class="text-3xl font-extrabold text-emerald-700">£6,165</p>
+        <p class="text-sm font-semibold text-gray-800">Annual Savings</p>
+        <p class="text-xs text-gray-500">Victorian Gatehouse</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <p class="text-3xl font-extrabold text-emerald-700">70%</p>
+        <p class="text-sm font-semibold text-gray-800">Lower Home Energy Bills</p>
+        <p class="text-xs text-gray-500">Salisbury Home</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Key sections</p>
+        <ul class="text-sm text-gray-700 space-y-1">
+          <li>• Hero: "Slash your energy bills by up to 70%"</li>
+          <li>• Interactive savings calculator ("How much could you save?")</li>
+          <li>• "I am a…" journey selector (Business / Farmer / Hospitality / Estate)</li>
+          <li>• "How battery storage works" 4-step explainer (Buy low → Store → Your property → Generate more)</li>
+          <li>• Customer reviews carousel</li>
+          <li>• Contact / quote form</li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Technology partners featured</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Victron Energy</span>
+          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Fronius</span>
+          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Falcon Energy</span>
+          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Sigenergy</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-3 italic">Positioning: bespoke systems built from best-in-class components, with long-term support &amp; guarantees.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- July Strategy / Priority Ad Groups -->
+  <section id="next-steps" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 July Strategy — Priority Ad Groups</h3>
+    <p class="text-sm text-gray-600 mb-4">Focus initial budget on the highest-intent searches:</p>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 1</p>
+        <p class="font-bold mt-1">Microgrid Systems</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 2</p>
+        <p class="font-bold mt-1">Energy Savings</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 3</p>
+        <p class="font-bold mt-1">Victron Installers</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 4</p>
+        <p class="font-bold mt-1">Home Energy Storage</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
+        <p class="text-xs uppercase opacity-80">Ad Group 5</p>
+        <p class="font-bold mt-1">Off-Grid Energy Solutions</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Recommended budget</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£15 / day</p>
+        <p class="text-xs text-gray-600 mt-1">per ad group</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Avg top-of-page CPC</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£2.50</p>
+        <p class="text-xs text-gray-600 mt-1">~6–7 clicks/day</p>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-gray-500 font-semibold">Additional monthly investment</p>
+        <p class="text-2xl font-bold text-gray-900 mt-1">£45 / day</p>
+        <p class="text-xs text-gray-600 mt-1">for all priority campaigns</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Month 2 Google Ads Expansion Plan -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="text-md font-bold text-gray-800">📈 Google Ads Expansion Plan — Month 2</h3>
+        <p class="text-xs text-gray-500 mt-1">Follow-on strategy once priority ad groups are performing</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Campaign Growth</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Expand keyword coverage</li>
+          <li>Launch additional ad groups</li>
+          <li>Refine targeting from conversion data</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Solar Campaign Strategy</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Consolidate farm-solar terms into a broader <span class="font-semibold">Solar Energy</span> campaign</li>
+          <li>Limited search volume around &quot;farm solar energy&quot;</li>
+          <li>Farming audience better reached via Meta</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Ongoing Optimisation</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Keyword expansion</li>
+          <li>Ad copy testing</li>
+          <li>Conversion tracking improvements</li>
+          <li>Reallocate budget to top campaigns</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meta Ads Strategy -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">📱 Meta Ads Strategy</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="border border-blue-100 bg-blue-50 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs uppercase text-blue-700 font-bold">Campaign 1 · Farming Sector</p>
+          <span class="text-xs bg-white text-blue-700 font-bold px-2 py-0.5 rounded">£10 / day</span>
+        </div>
+        <ul class="mt-3 text-sm text-gray-700 space-y-1">
+          <li>Regional targeting</li>
+          <li>Farmers &amp; agricultural businesses</li>
+          <li>Energy resilience, cost savings &amp; independence</li>
+        </ul>
+      </div>
+      <div class="border border-purple-100 bg-purple-50 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+          <p class="text-xs uppercase text-purple-700 font-bold">Campaign 2 · Cost Savings</p>
+          <span class="text-xs bg-white text-purple-700 font-bold px-2 py-0.5 rounded">£10 / day</span>
+        </div>
+        <ul class="mt-3 text-sm text-gray-700 space-y-1">
+          <li>Homeowners, estates &amp; businesses</li>
+          <li>Reducing electricity costs</li>
+          <li>Improving energy security</li>
+        </ul>
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 mt-3 italic">Monitor lead quality and cost per lead before scaling.</p>
+  </section>
+
+  <!-- Meta Lead Generation Funnel -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 Meta Lead Generation Funnel</h3>
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-6">
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">👀</p>
+        <p class="font-bold">User sees advert</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">📝</p>
+        <p class="font-bold">Completes Meta lead form</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">⚡</p>
+        <p class="font-bold">Contact details captured</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">✉️</p>
+        <p class="font-bold">Automated email sequence</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">🌱</p>
+        <p class="font-bold">Lead nurtured with content</p>
+      </div>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
+        <p class="text-2xl mb-1">📞</p>
+        <p class="font-bold">Sales team follows up</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Why Lead Ads?</p>
+        <ul class="text-sm text-gray-700 space-y-1">
+          <li>✓ Lower friction than landing pages</li>
+          <li>✓ Higher lead conversion rates</li>
+          <li>✓ Immediate lead capture</li>
+          <li>✓ Opportunity to nurture prospects over time</li>
+          <li>✓ Proven success vs. website traffic campaigns</li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Next Requirement</p>
+        <p class="text-sm text-gray-700 mb-2">Implement an email automation workflow to:</p>
+        <ul class="text-sm text-gray-700 space-y-1">
+          <li>→ Deliver info about OffGrid Pro solutions</li>
+          <li>→ Highlight cost savings &amp; energy security</li>
+          <li>→ Nurture leads to consultation / quotation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Summer AC Campaign -->
+  <section class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-xl p-6 border border-orange-100">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="text-2xl">☀️</span>
+      <div>
+        <h3 class="text-md font-bold text-gray-800">Summer Campaign Opportunity — &quot;Stay Cool Without the High Energy Bills&quot;</h3>
+        <p class="text-xs text-gray-500 mt-1">Seasonal concept: battery storage offsets air-conditioning costs</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <p class="text-xs uppercase text-orange-700 font-bold mb-2">What we'd need from OffGrid Pro</p>
+        <ul class="text-sm text-gray-700 space-y-1">
+          <li>• Confirmation you'd like to run a promotional offer</li>
+          <li>• Choice of incentive:</li>
+          <li class="ml-4">– £500 off installation</li>
+          <li class="ml-4">– Free energy assessment</li>
+          <li class="ml-4">– Reduced deposit</li>
+          <li class="ml-4">– Limited-time summer discount</li>
+          <li>• Supporting data from a previous AC-related project</li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-orange-700 font-bold mb-2">What Tweak would deliver</p>
+        <ul class="text-sm text-gray-700 space-y-1">
+          <li><span class="font-semibold">Website</span></li>
+          <li class="ml-3">– Dedicated homepage section &amp; landing page</li>
+          <li class="ml-3">– Strong money-saving + limited-time CTA</li>
+          <li><span class="font-semibold">Social media</span></li>
+          <li class="ml-3">– &quot;How much does AC cost to run?&quot; short video</li>
+          <li class="ml-3">– &quot;Battery storage reduces summer bills&quot; short video</li>
+          <li class="ml-3">– Static promo post</li>
+          <li><span class="font-semibold">Email</span></li>
+          <li class="ml-3">– Promo email to existing list</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calculator Research & Postcode Targeting -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🧮 Savings Calculator — Research &amp; Discovery</h3>
+    <p class="text-sm text-gray-600 mb-4">Interactive tool concept: users enter energy details → get personalised savings estimate → lead captured before results shown.</p>
+
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-6">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">User inputs details</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">Contact info captured</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">Calculate savings</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">Personalised results</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">Email results</p>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
+        <p class="font-bold text-emerald-800">Follow up if no enquiry</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Calculator inputs (TBC)</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>• Monthly electricity bill</li>
+          <li>• Electricity tariff rate</li>
+          <li>• Postcode</li>
+          <li>• Property type (home/farm/business/hospitality)</li>
+          <li>• Contact details + GDPR consent</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Results &amp; recommendations</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>• Estimated annual savings</li>
+          <li>• Recommended battery storage solution</li>
+          <li>• Relevant case studies by user type</li>
+          <li>• Clear CTA to book a call</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">Key considerations</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>• Confirm Zoho CRM integration (Fluent Forms)</li>
+          <li>• Define postcode data granularity</li>
+          <li>• Finalise savings calculation logic</li>
+          <li>• Agree product recommendation rules</li>
+          <li>• Design branded results page &amp; email</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-6 pt-6 border-t border-gray-100">
+      <p class="text-xs uppercase text-emerald-700 font-bold mb-3">📍 Postcode Targeting Depth (example: GU12 6BQ)</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">124</p>
+          <p class="text-xs text-gray-600 mt-1">GU-level (area)</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">2,979</p>
+          <p class="text-xs text-gray-600 mt-1">GU12-level (district)</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">11,232</p>
+          <p class="text-xs text-gray-600 mt-1">GU12 6-level (sector)</p>
+        </div>
+        <div class="bg-emerald-50 rounded-lg p-3 text-center">
+          <p class="text-2xl font-bold text-emerald-700 metric-value">1.8M</p>
+          <p class="text-xs text-gray-600 mt-1">Full UK postcodes</p>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-3 italic">Zoho CRM integration via Fluent Forms Pro appears enabled but needs verification — is data currently flowing?</p>
+    </div>
+  </section>
+
+  <!-- July Projects Summary -->
+  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-md font-bold text-gray-800 mb-4">🗓️ July Projects</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">1 · Calculator</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Confirm CRM integration (Zoho + Fluent Forms)</li>
+          <li>Finalise calculator logic &amp; savings maths</li>
+          <li>Define postcode dataset requirements</li>
+          <li>Wireframe + user journey</li>
+          <li>Begin build in Fluent Forms</li>
+          <li>Design automated results email</li>
+        </ul>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">2 · Website Redesign</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Homepage</li>
+          <li>Contact page</li>
+          <li>Landing page creation</li>
+          <li>Farm &amp; home page updates</li>
+        </ul>
+      </div>
+      <div class="border border-gray-100 rounded-lg p-4">
+        <p class="text-xs uppercase text-emerald-700 font-bold">3 · PPC &amp; Meta Ads</p>
+        <ul class="mt-2 text-sm text-gray-700 space-y-1">
+          <li>Client to review keywords</li>
+          <li>Client to approve budget &amp; ads</li>
+          <li>Tweak to set up ads</li>
+          <li>Meta Farming Sector campaign (£10/day)</li>
+          <li>Meta Cost Savings campaign (£10/day)</li>
+          <li>Summer AC seasonal campaign concept</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs text-gray-400 py-6">
+    <p>Live dashboard prototype · Data derived from Tweak Marketing's June 2026 OffGrid Pro report</p>
+    <p class="mt-1">Once approved, will auto-refresh monthly from Google Ads, Search Console, LinkedIn, Meta &amp; SEMrush APIs</p>
+    <p class="mt-1 text-gray-300">© Tweak Marketing UK · Client Success Platform</p>
+  </footer>
+
+</main>
+
+<script>
+  // LinkedIn 3-Month Chart
+  const liCtx = document.getElementById('linkedinChart').getContext('2d');
+  new Chart(liCtx, {
+    type: 'line',
+    data: {
+      labels: ['April', 'May', 'June'],
+      datasets: [
+        {
+          label: 'Followers',
+          data: [194, 208, 233],
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5, 150, 105, 0.08)',
+          tension: 0.4,
+          fill: true,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Impressions',
+          data: [564, 1563, 1496],
+          borderColor: '#14b8a6',
+          backgroundColor: 'rgba(20, 184, 166, 0.08)',
+          tension: 0.4,
+          fill: true,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
+      scales: {
+        y: { type: 'linear', position: 'left', beginAtZero: false, title: { display: true, text: 'Followers' } },
+        y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Impressions' } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
