@@ -101,6 +101,29 @@
 
 <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
+  <!-- Live Data Banner -->
+  <section id="live-data" class="bg-white rounded-xl border-2 border-emerald-100 shadow-sm overflow-hidden">
+    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-3 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center gap-3">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span class="text-xs uppercase tracking-widest font-bold text-emerald-800">Live Data · Google Ads</span>
+        <span class="text-xs text-emerald-700 hidden md:inline">Pulled directly from Google Ads API via Maton</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-gray-500" id="lastUpdated">Loading…</span>
+        <button onclick="loadLiveData(true)" class="text-xs bg-white border border-emerald-200 text-emerald-700 font-semibold px-3 py-1 rounded-full hover:bg-emerald-50">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="p-6">
+      <div id="liveDataContent">
+        <div class="text-sm text-gray-500">Loading live Google Ads data…</div>
+      </div>
+    </div>
+  </section>
+
   <!-- Executive Summary Cards -->
   <section id="overview">
     <div class="flex items-center justify-between mb-4">
