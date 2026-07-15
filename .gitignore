@@ -1,0 +1,17 @@
+# Never commit secrets
+.env
+.env.*
+*.key
+secrets.json
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
