@@ -1,0 +1,62 @@
+name: Refresh Google Ads data
+
+# Pulls live Google Ads data from Maton and commits data.json back to the repo.
+# READ-ONLY: this workflow only reads campaign/keyword/search-term data. It never
+# mutates any Google Ads resources.
+
+on:
+  # Manual trigger from the Actions tab
+  workflow_dispatch:
+    inputs:
+      month:
+        description: 'Reporting month (YYYY-MM). Defaults to previous month.'
+        required: false
+        type: string
+
+  # Automatic — daily at 06:00 UTC (07:00 UK BST / 06:00 GMT)
+  # Change frequency here later if Herbie/Daniela want faster/slower refresh.
+  schedule:
+    - cron: '0 6 * * *'
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Pull Google Ads data
+        env:
+          MATON_API_KEY: ${{ secrets.MATON_API_KEY }}
+        run: |
+          MONTH="${{ github.event.inputs.month }}"
+          if [ -z "$MONTH" ]; then
+            # Default to the current reporting period the dashboard is showing
+            MONTH="2026-06"
+          fi
+          echo "Refreshing for month: $MONTH"
+          node scripts/pull-google-ads.js "$MONTH"
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "offgridpro-bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(data): refresh Google Ads data ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git push
+          fi
