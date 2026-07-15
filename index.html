@@ -6,130 +6,243 @@
 <title>OffGrid Pro — Performance Reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
-  .gradient-bg { background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%); }
-  .report-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-  .report-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
-  .mock-badge {
-    background: rgba(255,255,255,0.15);
+  /* Match OffGrid Pro's website palette + typography */
+  :root {
+    --ogp-text: #444;
+    --ogp-muted: #666;
+    --ogp-light: #f7f8f4;
+    --ogp-accent-1: #a3c94a; /* green */
+    --ogp-accent-2: #4bc7bf; /* teal */
+    --ogp-accent-3: #5aa5d8; /* blue */
+    --ogp-dark: #1a1a1a;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--ogp-text);
+    background: #ffffff;
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--ogp-dark); }
+  .heading-bold { font-weight: 700; }
+
+  /* Signature gradient bar (matches the accent under the OffGrid Pro logo) */
+  .ogp-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--ogp-accent-1) 0%, var(--ogp-accent-2) 50%, var(--ogp-accent-3) 100%);
+    border-radius: 2px;
+  }
+
+  /* Soft brand gradient background */
+  .ogp-soft-bg {
+    background: linear-gradient(135deg, rgba(193, 229, 246, 0.35) 0%, rgba(220, 237, 189, 0.35) 100%);
+  }
+
+  /* Dark hero with photo overlay */
+  .ogp-hero {
+    background:
+      linear-gradient(rgba(0,0,0,0.65) 0%, rgba(10,10,10,0.55) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+
+  .report-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid #e5e7eb;
+  }
+  .report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--ogp-accent-2);
+  }
+
+  .btn-primary {
+    background: var(--ogp-dark);
+    color: #fff;
+    padding: 0.65rem 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 0.2s ease;
+  }
+  .btn-primary:hover { background: #333; }
+
+  .prototype-badge {
+    background: rgba(255,255,255,0.12);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.25);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+
+  .stat-pill {
+    background: #f8faf5;
+    border: 1px solid #e5e7eb;
   }
 </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
 
-<!-- Header -->
-<header class="gradient-bg text-white shadow-xl">
-  <div class="max-w-6xl mx-auto px-6 py-10">
-    <div class="flex justify-between items-start flex-wrap gap-4">
-      <div>
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center font-bold text-2xl">⚡</div>
-          <div>
-            <p class="text-xs uppercase tracking-widest text-white text-opacity-70">Tweak Marketing · Client Reports</p>
-            <h1 class="text-3xl font-extrabold">OffGrid Pro</h1>
-          </div>
+<!-- Top Bar -->
+<header class="ogp-hero text-white relative overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-white text-xl font-bold tracking-tight">OFFGRID</span>
+          <span class="text-white text-xl font-bold tracking-tight">PRO</span>
         </div>
-        <p class="text-white text-opacity-90 max-w-2xl">Monthly performance reports covering Google Ads, SEO, social media, and web analytics for OffGrid Pro Ltd.</p>
+        <div class="ogp-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Optimised Energy Management</p>
       </div>
-      <span class="mock-badge text-white text-xs px-3 py-1 rounded-full font-semibold">DASHBOARD PROTOTYPE</span>
     </div>
+    <span class="prototype-badge text-white text-[11px] px-3 py-1.5 rounded-sm uppercase">Dashboard Prototype</span>
+  </div>
+
+  <!-- Hero -->
+  <div class="max-w-6xl mx-auto px-6 py-20 relative">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Tweak Marketing · Client Reporting</p>
+    <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight max-w-3xl">
+      Performance reports for <span class="heading-bold">OffGrid Pro</span>
+    </h1>
+    <div class="ogp-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Monthly deep-dives into Google Ads performance, technical SEO, ranking keywords, social media, and web analytics.
+    </p>
   </div>
 </header>
 
-<main class="max-w-6xl mx-auto px-6 py-10 space-y-10">
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-16">
 
-  <!-- Client Summary -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+  <!-- Client Info Strip -->
+  <section class="ogp-soft-bg rounded-none p-8 border-l-4" style="border-left-color: var(--ogp-accent-2);">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
       <div>
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Client</p>
-        <p class="font-semibold text-gray-900 mt-1">OffGrid Pro Ltd.</p>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Client</p>
+        <p class="font-medium text-gray-900 mt-1.5">OffGrid Pro Ltd.</p>
       </div>
       <div>
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Sector</p>
-        <p class="font-semibold text-gray-900 mt-1">Battery Storage &amp; Microgrids</p>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Sector</p>
+        <p class="font-medium text-gray-900 mt-1.5">Battery Storage &amp; Microgrids</p>
       </div>
       <div>
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Location</p>
-        <p class="font-semibold text-gray-900 mt-1">Southampton, UK</p>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Location</p>
+        <p class="font-medium text-gray-900 mt-1.5">Southampton, UK</p>
       </div>
       <div>
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Account Manager</p>
-        <p class="font-semibold text-gray-900 mt-1">Louise · Tweak</p>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Account Manager</p>
+        <p class="font-medium text-gray-900 mt-1.5">Louise · Tweak</p>
       </div>
     </div>
   </section>
 
-  <!-- Reports List -->
+  <!-- Reports Section -->
   <section>
-    <div class="flex items-center justify-between mb-5">
-      <h2 class="text-lg font-bold text-gray-800">📄 Monthly Reports</h2>
-      <span class="text-xs text-gray-500">Latest first</span>
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Monthly Reports</p>
+      <h2 class="text-3xl font-medium text-gray-900">Choose a report to view</h2>
+      <div class="ogp-accent-bar w-24 mt-4"></div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <!-- June 2026 Report -->
-      <a href="./june-2026/" class="report-card block bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div class="flex items-start justify-between mb-4">
+      <a href="./june-2026/" class="report-card block bg-white p-8 group">
+        <div class="flex items-start justify-between mb-6">
           <div>
-            <p class="text-xs uppercase tracking-wide text-emerald-700 font-bold">Latest</p>
-            <h3 class="text-xl font-bold text-gray-900 mt-1">June 2026</h3>
+            <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Latest</p>
+            <h3 class="text-2xl font-medium text-gray-900 mt-2">June 2026</h3>
             <p class="text-sm text-gray-500 mt-1">1 – 30 June 2026</p>
           </div>
-          <div class="text-3xl">📊</div>
         </div>
-        <div class="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-          <div>
-            <p class="text-xs text-gray-500">Conversions</p>
-            <p class="font-bold text-gray-900">3</p>
+
+        <div class="ogp-accent-bar w-full mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-gray-900 text-xl mt-1">3</p>
           </div>
-          <div>
-            <p class="text-xs text-gray-500">Victron</p>
-            <p class="font-bold text-emerald-600">+453%</p>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Victron</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);">+453%</p>
           </div>
-          <div>
-            <p class="text-xs text-gray-500">Home Energy</p>
-            <p class="font-bold text-emerald-600">+113%</p>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Home Energy</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);">+113%</p>
           </div>
         </div>
-        <p class="text-sm text-emerald-700 font-semibold mt-4">Open report →</p>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">Google Ads · SEO · Social · Analytics · Strategy</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">Open →</span>
+        </div>
       </a>
 
-      <!-- May 2026 Placeholder -->
-      <div class="report-card block bg-white rounded-xl p-6 shadow-sm border border-gray-100 opacity-60 cursor-not-allowed">
-        <div class="flex items-start justify-between mb-4">
+      <!-- July 2026 Placeholder -->
+      <div class="report-card block bg-white p-8 opacity-70">
+        <div class="flex items-start justify-between mb-6">
           <div>
-            <p class="text-xs uppercase tracking-wide text-gray-400 font-bold">Coming next month</p>
-            <h3 class="text-xl font-bold text-gray-600 mt-1">July 2026</h3>
+            <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">Coming next month</p>
+            <h3 class="text-2xl font-medium text-gray-500 mt-2">July 2026</h3>
             <p class="text-sm text-gray-500 mt-1">Reporting period ends 31 July</p>
           </div>
-          <div class="text-3xl grayscale">🗓️</div>
         </div>
-        <p class="text-sm text-gray-500 mt-4 italic">Will be published in early August.</p>
+
+        <div class="h-1 w-full bg-gray-200 mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3 opacity-50">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
+          </div>
+          <div class="stat-pill p-3 opacity-50">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Google Ads</p>
+            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
+          </div>
+          <div class="stat-pill p-3 opacity-50">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">SEO</p>
+            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
+          </div>
+        </div>
+
+        <p class="text-sm text-gray-500 italic">Will be published in early August.</p>
       </div>
 
     </div>
   </section>
 
-  <!-- About / Info -->
-  <section class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl p-6 border border-emerald-100">
-    <h3 class="text-md font-bold text-gray-800 mb-2">About these reports</h3>
-    <p class="text-sm text-gray-700 leading-relaxed">Each monthly report covers Google Ads performance, technical SEO, ranking keywords, social media (LinkedIn, Facebook, Instagram), web analytics, and the strategy for the following month. Reports are updated at the start of each month.</p>
-    <p class="text-sm text-gray-600 mt-3 italic">Prototype: some sections currently update manually. Automation for daily and monthly refreshes is in progress.</p>
+  <!-- About block -->
+  <section class="ogp-soft-bg p-10 border-l-4" style="border-left-color: var(--ogp-accent-1);">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">What's inside</p>
+        <h3 class="text-lg font-medium text-gray-900">Full-funnel monthly reporting</h3>
+        <div class="ogp-accent-bar w-16 mt-3"></div>
+      </div>
+      <div class="md:col-span-2 text-gray-600 leading-relaxed">
+        <p>Each report covers Google Ads campaign performance, technical SEO health, ranking keyword movement, LinkedIn / Facebook / Instagram growth, top-performing pages, and the strategy planned for the following month.</p>
+        <p class="mt-4 text-sm text-gray-500 italic">Prototype: some sections currently update manually. Automation for daily and monthly refreshes is in progress — Google Ads, Google Analytics and Meta APIs are being wired in.</p>
+      </div>
+    </div>
   </section>
 
 </main>
 
 <!-- Footer -->
-<footer class="max-w-6xl mx-auto px-6 py-8 mt-8 border-t border-gray-200">
-  <div class="flex justify-between items-center flex-wrap gap-4">
-    <p class="text-xs text-gray-500">© 2026 Tweak Marketing · OffGrid Pro reporting dashboard</p>
+<footer class="border-t border-gray-200 mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-8 flex justify-between items-center flex-wrap gap-4">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-gray-900 text-sm font-bold tracking-tight">OFFGRID</span>
+          <span class="text-gray-900 text-sm font-bold tracking-tight">PRO</span>
+        </div>
+        <div class="ogp-accent-bar w-full mt-0.5"></div>
+      </div>
+      <p class="text-xs text-gray-500">Reporting dashboard by Tweak Marketing</p>
+    </div>
     <p class="text-xs text-gray-400">Prototype v2 · July 2026</p>
   </div>
 </footer>
