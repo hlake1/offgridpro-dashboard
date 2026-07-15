@@ -108,7 +108,7 @@
     </h1>
     <div class="ogp-accent-bar w-32 mt-6"></div>
     <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
-      Monthly deep-dives into Google Ads performance, technical SEO, ranking keywords, social media, and web analytics.
+      Live Google Ads metrics and monthly deep-dive reports covering campaigns, SEO, ranking keywords, social media, and web analytics.
     </p>
   </div>
 </header>
@@ -137,21 +137,61 @@
     </div>
   </section>
 
-  <!-- Reports Section -->
+  <!-- Two entry points: Live Metrics + Monthly Report -->
   <section>
     <div class="mb-8">
-      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Monthly Reports</p>
-      <h2 class="text-3xl font-medium text-gray-900">Choose a report to view</h2>
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Choose your view</p>
+      <h2 class="text-3xl font-medium text-gray-900">Live metrics or monthly deep-dive</h2>
       <div class="ogp-accent-bar w-24 mt-4"></div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <!-- Live Metrics -->
+      <a href="./live/" class="report-card block bg-white p-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--ogp-accent-1), var(--ogp-accent-2), var(--ogp-accent-3));"></div>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--ogp-accent-2);">Live · Real-time</p>
+            </div>
+            <h3 class="text-2xl font-medium text-gray-900">Live metrics</h3>
+            <p class="text-sm text-gray-500 mt-1">Auto-refreshed daily</p>
+          </div>
+        </div>
+
+        <div class="ogp-accent-bar w-full mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live="clicks">—</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);" data-live="conversions">—</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live="cost">—</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">Google Ads · Keywords · Search terms</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">View live →</span>
+        </div>
+      </a>
+
       <!-- June 2026 Report -->
       <a href="./june-2026/" class="report-card block bg-white p-8 group">
         <div class="flex items-start justify-between mb-6">
           <div>
-            <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Latest</p>
+            <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Latest monthly report</p>
             <h3 class="text-2xl font-medium text-gray-900 mt-2">June 2026</h3>
             <p class="text-sm text-gray-500 mt-1">1 – 30 June 2026</p>
           </div>
@@ -176,54 +216,55 @@
 
         <div class="flex items-center justify-between">
           <p class="text-sm text-gray-600">Google Ads · SEO · Social · Analytics · Strategy</p>
-          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">Open →</span>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">Open report →</span>
         </div>
       </a>
 
-      <!-- July 2026 Placeholder -->
-      <div class="report-card block bg-white p-8 opacity-70">
-        <div class="flex items-start justify-between mb-6">
+    </div>
+
+    <!-- July placeholder (small) -->
+    <div class="mt-6 report-card block bg-white p-5 opacity-70">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-4">
+          <div class="text-2xl">🗓️</div>
           <div>
-            <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">Coming next month</p>
-            <h3 class="text-2xl font-medium text-gray-500 mt-2">July 2026</h3>
-            <p class="text-sm text-gray-500 mt-1">Reporting period ends 31 July</p>
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Coming next month</p>
+            <p class="font-medium text-gray-600">July 2026 report</p>
           </div>
         </div>
-
-        <div class="h-1 w-full bg-gray-200 mb-6"></div>
-
-        <div class="grid grid-cols-3 gap-4 mb-6">
-          <div class="stat-pill p-3 opacity-50">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
-            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
-          </div>
-          <div class="stat-pill p-3 opacity-50">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Google Ads</p>
-            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
-          </div>
-          <div class="stat-pill p-3 opacity-50">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">SEO</p>
-            <p class="font-bold text-gray-400 text-xl mt-1">—</p>
-          </div>
-        </div>
-
-        <p class="text-sm text-gray-500 italic">Will be published in early August.</p>
+        <p class="text-xs text-gray-500 italic">Will be published in early August.</p>
       </div>
-
     </div>
   </section>
+
+  <script>
+    // Populate the Live Metrics preview card on the homepage with current numbers.
+    (async () => {
+      try {
+        const res = await fetch('./june-2026/data.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 });
+        const numFmt = new Intl.NumberFormat('en-GB');
+        document.querySelectorAll('[data-live="clicks"]').forEach(el => el.textContent = numFmt.format(data.totals.clicks));
+        document.querySelectorAll('[data-live="conversions"]').forEach(el => el.textContent = data.totals.conversions);
+        document.querySelectorAll('[data-live="cost"]').forEach(el => el.textContent = gbp.format(data.totals.cost));
+      } catch (e) { /* silent — placeholders stay */ }
+    })();
+  </script>
 
   <!-- About block -->
   <section class="ogp-soft-bg p-10 border-l-4" style="border-left-color: var(--ogp-accent-1);">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div>
-        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">What's inside</p>
-        <h3 class="text-lg font-medium text-gray-900">Full-funnel monthly reporting</h3>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Two views, one dashboard</p>
+        <h3 class="text-lg font-medium text-gray-900">Live metrics + monthly reports</h3>
         <div class="ogp-accent-bar w-16 mt-3"></div>
       </div>
       <div class="md:col-span-2 text-gray-600 leading-relaxed">
-        <p>Each report covers Google Ads campaign performance, technical SEO health, ranking keyword movement, LinkedIn / Facebook / Instagram growth, top-performing pages, and the strategy planned for the following month.</p>
-        <p class="mt-4 text-sm text-gray-500 italic">Prototype: some sections currently update manually. Automation for daily and monthly refreshes is in progress — Google Ads, Google Analytics and Meta APIs are being wired in.</p>
+        <p><strong class="text-gray-900">Live metrics</strong> — real-time Google Ads campaign performance, keywords, and search terms. Pulled directly from the Google Ads API via Maton, auto-refreshed daily.</p>
+        <p class="mt-3"><strong class="text-gray-900">Monthly reports</strong> — full-funnel deep-dives covering Google Ads, technical SEO, ranking keywords, LinkedIn / Facebook / Instagram, top-performing pages, and the strategy for the following month.</p>
+        <p class="mt-4 text-sm text-gray-500 italic">Prototype: Google Ads is fully live. Google Analytics and Meta APIs are being connected next.</p>
       </div>
     </div>
   </section>
