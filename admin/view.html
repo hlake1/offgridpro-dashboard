@@ -123,6 +123,14 @@
     <p class="text-sm text-gray-700"><strong class="text-gray-900">Draft</strong> — this report has not yet been published. Only the admin can see it.</p>
   </div>
 
+  <!-- Data-not-available banner (shown when the selected month has no data.json yet) -->
+  <div id="data-banner" style="display:none; border-left: 4px solid #d97706; background: #fffbeb;" class="p-4">
+    <p class="text-sm text-gray-800">
+      <strong class="text-gray-900">Live API data not yet integrated for this month.</strong>
+      The narrative sections below reflect your answers as usual. Numeric sections (Google Ads, Analytics, Search Console) will populate automatically once the integrations are wired up. This is a prototype limitation, not a bug.
+    </p>
+  </div>
+
   <!-- Overview / metrics -->
   <section id="metrics-section" class="card p-8">
     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
@@ -289,6 +297,12 @@
     // Draft banner (admin only, when draft)
     const banner = document.getElementById('draft-banner');
     if (isAdmin && report.status === 'draft') banner.style.display = 'block';
+
+    // Data-availability banner (shown to everyone when live data is missing)
+    const dataBanner = document.getElementById('data-banner');
+    if (s.dataStatus && s.dataStatus.available === false) {
+      dataBanner.style.display = 'block';
+    }
 
     // Metrics
     const m = s.metrics;

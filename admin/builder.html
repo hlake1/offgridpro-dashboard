@@ -201,14 +201,27 @@
     showFlash._t = setTimeout(() => flash.classList.remove('on'), 1400);
   }
 
-  async function fetchAdsData() {
-    // Prototype: use the June 2026 data file as the live snapshot.
-    // In production this would fetch the month's actual data.
-    try {
-      const res = await fetch('../june-2026/data.json', { cache: 'no-store' });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch { return null; }
+  // Map "YYYY-MM" → the data folder we should look for.
+  // Add new months here as data files land in the repo.
+  const MONTH_DATA_FOLDERS = {
+    '2026-06': 'june-2026',
+  };
+
+  async function fetchAdsData(month) {
+    // Try the month the admin actually selected first.
+    const folder = MONTH_DATA_FOLDERS[month];
+    if (folder) {
+      try {
+        const res = await fetch(`../${folder}/data.json`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          return { data, source: folder, matched: true };
+        }
+      } catch {}
+    }
+    // No live data for that month — return a clear "unavailable" marker
+    // so the draft can flag it instead of silently using the wrong month.
+    return { data: null, source: null, matched: false };
   }
 
   function buildReport(status) {
@@ -231,8 +244,11 @@
   document.getElementById('save-draft').addEventListener('click', async () => {
     const draft = buildReport('draft');
     if (!draft) return;
-    const ads = await fetchAdsData();
-    draft.summary = window.OGPReports.generateSummary(draft.answers, ads);
+    const ads = await fetchAdsData(draft.month);
+    draft.summary = window.OGPReports.generateSummary(draft.answers, ads.data);
+    draft.summary.dataStatus = ads.matched
+      ? { available: true, source: ads.source }
+      : { available: false, source: null, month: draft.month };
     window.OGPReports.upsert(draft);
     showFlash('Draft saved');
   });
@@ -240,8 +256,11 @@
   document.getElementById('generate').addEventListener('click', async () => {
     const draft = buildReport('draft');
     if (!draft) return;
-    const ads = await fetchAdsData();
-    draft.summary = window.OGPReports.generateSummary(draft.answers, ads);
+    const ads = await fetchAdsData(draft.month);
+    draft.summary = window.OGPReports.generateSummary(draft.answers, ads.data);
+    draft.summary.dataStatus = ads.matched
+      ? { available: true, source: ads.source }
+      : { available: false, source: null, month: draft.month };
     window.OGPReports.upsert(draft);
     location.href = `./view.html?id=${encodeURIComponent(draft.id)}`;
   });
