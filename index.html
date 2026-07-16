@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="./assets/auth.js"></script>
+<script src="./assets/reports-store.js"></script>
+<script>
+  // Gate the page before anything renders. This paints a lock overlay
+  // synchronously and prevents flash of protected content.
+  window.OGPAuth.ensureAuth();
+</script>
 <style>
   /* Match OffGrid Pro's website palette + typography */
   :root {
@@ -80,6 +87,30 @@
     background: #f8faf5;
     border: 1px solid #e5e7eb;
   }
+
+  /* Admin-only elements are hidden by default. Auth script toggles the
+     `ogp-admin` class on <html> when the admin role is active. */
+  .admin-only { display: none; }
+  html.ogp-admin .admin-only { display: block; }
+  html.ogp-admin .admin-only.flex-row { display: flex; }
+
+  .admin-panel {
+    border: 1px dashed #c9d3a8;
+    background: linear-gradient(180deg, #fbfdf5 0%, #f5f9ec 100%);
+  }
+  .admin-badge {
+    background: #1a1a1a; color:#fff; font-size:10px; letter-spacing:0.15em;
+    text-transform:uppercase; padding: 3px 8px; border-radius: 2px;
+    font-weight:600;
+  }
+  .report-status-draft {
+    background:#fef3c7; color:#92400e; font-size:10px; letter-spacing:0.1em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; font-weight:600;
+  }
+  .report-status-published {
+    background:#dcfce7; color:#166534; font-size:10px; letter-spacing:0.1em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; font-weight:600;
+  }
 </style>
 </head>
 <body>
@@ -97,7 +128,10 @@
         <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Optimised Energy Management</p>
       </div>
     </div>
-    <span class="prototype-badge text-white text-[11px] px-3 py-1.5 rounded-sm uppercase">Dashboard Prototype</span>
+    <div class="flex items-center gap-3">
+      <span id="role-indicator" class="prototype-badge text-white text-[11px] px-3 py-1.5 rounded-sm uppercase">Dashboard</span>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
+    </div>
   </div>
 
   <!-- Hero -->
@@ -222,8 +256,11 @@
 
     </div>
 
+    <!-- Additional published reports (rendered from OGPReports store) -->
+    <div id="published-reports-list" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
     <!-- July placeholder (small) -->
-    <div class="mt-6 report-card block bg-white p-5 opacity-70">
+    <div id="next-month-placeholder" class="mt-6 report-card block bg-white p-5 opacity-70">
       <div class="flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-4">
           <div class="text-2xl">🗓️</div>
@@ -233,6 +270,36 @@
           </div>
         </div>
         <p class="text-xs text-gray-500 italic">Will be published in early August.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== -->
+  <!-- ADMIN ONLY: Monthly Report Builder Panel                        -->
+  <!-- =============================================================== -->
+  <section class="admin-only">
+    <div class="admin-panel p-8">
+      <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="admin-badge">Admin · Tweak</span>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">Report builder</p>
+          </div>
+          <h2 class="text-3xl font-medium text-gray-900">Monthly Report</h2>
+          <div class="ogp-accent-bar w-24 mt-4"></div>
+          <p class="text-gray-600 mt-4 max-w-2xl">Build the next monthly report by answering a short set of questions. We’ll auto-assemble a draft from your answers plus the latest Google Ads data, then you can approve to publish.</p>
+        </div>
+        <a href="./admin/builder.html" class="btn-primary rounded-sm no-underline whitespace-nowrap">
+          + New monthly report
+        </a>
+      </div>
+
+      <div id="admin-drafts-wrap">
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Drafts &amp; recent</p>
+        <div id="admin-drafts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- populated by JS -->
+        </div>
+        <p id="admin-drafts-empty" class="text-sm text-gray-500 italic mt-2" style="display:none;">No drafts yet. Click “New monthly report” to start one.</p>
       </div>
     </div>
   </section>
@@ -251,6 +318,81 @@
         document.querySelectorAll('[data-live="cost"]').forEach(el => el.textContent = gbp.format(data.totals.cost));
       } catch (e) { /* silent — placeholders stay */ }
     })();
+
+    // ---- Auth-aware rendering ------------------------------------------------
+    function applyRole(role) {
+      const isAdmin = role === 'admin';
+      document.documentElement.classList.toggle('ogp-admin', isAdmin);
+      const badge = document.getElementById('role-indicator');
+      if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
+      renderPublished();
+      if (isAdmin) renderAdminDrafts();
+    }
+
+    function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function renderPublished() {
+      const wrap = document.getElementById('published-reports-list');
+      if (!wrap || !window.OGPReports) return;
+      const items = window.OGPReports.listPublished();
+      wrap.innerHTML = items.map(r => {
+        const label = window.OGPReports.monthLabel(r.month);
+        const headline = esc(r.summary?.headline || '');
+        return `
+          <a href="./admin/view.html?id=${encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Monthly report</p>
+                <h3 class="text-2xl font-medium text-gray-900 mt-2">${esc(label)}</h3>
+                <p class="text-sm text-gray-500 mt-1">Published</p>
+              </div>
+              <span class="report-status-published">Published</span>
+            </div>
+            <div class="ogp-accent-bar w-full mb-4"></div>
+            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3">${headline}</p>
+            <p class="text-sm text-gray-600 mt-4">Open report →</p>
+          </a>`;
+      }).join('');
+    }
+
+    function renderAdminDrafts() {
+      const list = document.getElementById('admin-drafts-list');
+      const empty = document.getElementById('admin-drafts-empty');
+      if (!list || !window.OGPReports) return;
+      const items = window.OGPReports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      if (items.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      list.innerHTML = items.map(r => {
+        const label = window.OGPReports.monthLabel(r.month);
+        const statusClass = r.status === 'published' ? 'report-status-published' : 'report-status-draft';
+        const notes = (r.revisionNotes && r.revisionNotes.length) ? `${r.revisionNotes.length} revision note${r.revisionNotes.length>1?'s':''}` : '';
+        return `
+          <div class="bg-white p-5 border border-gray-200 rounded-sm flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="${statusClass}">${r.status}</span>
+                ${notes ? `<span class="text-[10px] uppercase tracking-widest text-amber-700 font-semibold">${notes}</span>` : ''}
+              </div>
+              <p class="font-medium text-gray-900">${esc(label)}</p>
+              <p class="text-xs text-gray-500 mt-1">Updated ${new Date(r.updatedAt).toLocaleString('en-GB')}</p>
+            </div>
+            <div class="flex flex-col gap-1 text-sm shrink-0">
+              <a class="text-emerald-700 hover:underline font-semibold" href="./admin/view.html?id=${encodeURIComponent(r.id)}">Review →</a>
+              <a class="text-gray-500 hover:underline" href="./admin/builder.html?id=${encodeURIComponent(r.id)}">Edit</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    document.addEventListener('ogp:auth', (e) => applyRole(e.detail.role));
+    // In case auth was already valid on load, apply immediately
+    if (window.OGPAuth && window.OGPAuth.isAuthed()) applyRole(window.OGPAuth.getRole());
+
+    document.getElementById('logout-btn')?.addEventListener('click', () => window.OGPAuth.logout());
   </script>
 
   <!-- About block -->

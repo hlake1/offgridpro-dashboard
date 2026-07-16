@@ -9,10 +9,20 @@ Live performance reporting for **OffGrid Pro Ltd.** — built by Tweak Marketing
 ## Structure
 
 ```
-/                          Homepage — lists all monthly reports
+/                          Homepage — lists all monthly reports (password-gated)
 /june-2026/                June 2026 report
   ├── index.html           Static dashboard shell
   └── data.json            Live Google Ads data (auto-refreshed)
+
+/live/                     Live Google Ads metrics view
+
+/admin/                    Admin-only Monthly Report tools
+  ├── builder.html         Questionnaire → generates draft
+  └── view.html            View draft / approve / suggest edits
+
+/assets/
+  ├── auth.js              Client-side password gate + role management
+  └── reports-store.js     Report data store (localStorage) + summariser
 
 /scripts/
   └── pull-google-ads.js   Fetches live data from Maton, writes data.json
@@ -20,6 +30,19 @@ Live performance reporting for **OffGrid Pro Ltd.** — built by Tweak Marketing
 /.github/workflows/
   └── refresh-data.yml     Daily cron that runs the pull + commits data
 ```
+
+## Access
+
+The dashboard is password-gated (prototype: client-side only, sessionStorage).
+
+| Code       | Role   | Sees                                                     |
+|------------|--------|----------------------------------------------------------|
+| `OffGrid`  | Client | Published monthly reports + live Google Ads metrics       |
+| `Tweak`    | Admin  | All the above + Monthly Report builder + draft controls   |
+
+The admin panel on the homepage lets Louise (Tweak) create new monthly reports by answering 9 leading questions. The builder auto-generates a draft from the answers plus the latest Google Ads data. Draft reports are only visible to admin; **APPROVE & Publish** makes them visible to the client view. **Suggest edits** attaches a revision note and sends the report back to draft.
+
+Report state is stored in `localStorage` (prototype). Future work: move to a backend + real auth.
 
 ## Data sources
 

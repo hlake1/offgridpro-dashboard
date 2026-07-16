@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OffGrid Pro — Monthly Report Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/reports-store.js"></script>
+<script>
+  // Admin-only page. Kick back to root if not admin.
+  window.OGPAuth.ensureAuth();
+  document.addEventListener('ogp:auth', (e) => {
+    if (e.detail.role !== 'admin') location.replace('../');
+  });
+  // If already authed but not admin, redirect immediately
+  if (window.OGPAuth.isAuthed() && !window.OGPAuth.isAdmin()) location.replace('../');
+</script>
+<style>
+  :root {
+    --ogp-text: #444;
+    --ogp-muted: #666;
+    --ogp-light: #f7f8f4;
+    --ogp-accent-1: #a3c94a;
+    --ogp-accent-2: #4bc7bf;
+    --ogp-accent-3: #5aa5d8;
+    --ogp-dark: #1a1a1a;
+  }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--ogp-text);
+    background: #f7f8f4;
+  }
+  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--ogp-dark); }
+  .ogp-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--ogp-accent-1) 0%, var(--ogp-accent-2) 50%, var(--ogp-accent-3) 100%);
+    border-radius: 2px;
+  }
+  .ogp-hero {
+    background:
+      linear-gradient(rgba(0,0,0,0.65) 0%, rgba(10,10,10,0.55) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  .card { background:#fff; border:1px solid #e5e7eb; }
+  .qbox label { display:block; font-weight:600; color:#1a1a1a; margin-bottom: 0.25rem; }
+  .qbox .hint { color:#6b7280; font-size:0.85rem; margin-bottom: 0.65rem; }
+  .qbox textarea, .qbox input[type="text"], .qbox input[type="month"] {
+    width:100%; padding: 0.7rem 0.9rem; font-size:0.95rem;
+    border:1px solid #e5e7eb; border-radius:4px; background:#f8faf5;
+    font-family: inherit; outline:none; transition:border 0.15s ease, background 0.15s ease;
+    resize: vertical;
+  }
+  .qbox textarea:focus, .qbox input:focus { border-color:#4bc7bf; background:#fff; }
+  .qnum {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:999px;
+    background:#1a1a1a; color:#fff; font-size:0.8rem; font-weight:600;
+    margin-right:0.6rem;
+  }
+  .btn { padding: 0.65rem 1.4rem; font-weight:500; letter-spacing:0.02em; border-radius:2px; cursor:pointer; transition: background 0.15s ease; }
+  .btn-primary { background:#1a1a1a; color:#fff; border:0; }
+  .btn-primary:hover { background:#333; }
+  .btn-ghost { background:transparent; color:#1a1a1a; border:1px solid #e5e7eb; }
+  .btn-ghost:hover { background:#f3f4f6; }
+  .admin-badge {
+    background:#1a1a1a; color:#fff; font-size:10px; letter-spacing:0.15em;
+    text-transform:uppercase; padding: 3px 8px; border-radius: 2px; font-weight:600;
+  }
+  .save-flash {
+    background:#dcfce7; color:#166534; padding: 6px 12px; border-radius:2px;
+    font-size:0.8rem; font-weight:600;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  .save-flash.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header class="ogp-hero text-white">
+  <div class="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-4">
+      <a href="../" class="text-white/70 hover:text-white text-xs uppercase tracking-widest">← Dashboard</a>
+      <span class="text-white/30">·</span>
+      <span class="admin-badge">Admin · Tweak</span>
+    </div>
+    <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
+  </div>
+  <div class="max-w-4xl mx-auto px-6 py-14">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly report builder</p>
+    <h1 class="text-4xl font-medium text-white">Build the next report</h1>
+    <div class="ogp-accent-bar w-24 mt-5"></div>
+    <p class="text-white/80 mt-5 max-w-2xl">Answer the questions below. We’ll pull in the latest Google Ads metrics and auto-assemble a draft you can review, tweak and publish.</p>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-6 py-12 space-y-6">
+
+  <!-- Meta -->
+  <section class="card p-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="qbox">
+        <label for="month">Report month</label>
+        <p class="hint">Which month is this report covering?</p>
+        <input id="month" type="month" required />
+      </div>
+      <div class="qbox">
+        <label for="author">Prepared by</label>
+        <p class="hint">Optional — shown in the report footer.</p>
+        <input id="author" type="text" placeholder="e.g. Louise · Tweak Marketing" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Questions rendered dynamically -->
+  <form id="q-form" class="space-y-6" autocomplete="off">
+    <!-- populated by JS -->
+  </form>
+
+  <!-- Actions -->
+  <section class="card p-6 flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <button id="save-draft" type="button" class="btn btn-ghost">Save draft</button>
+      <span id="save-flash" class="save-flash">Saved</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="../" class="text-sm text-gray-600 hover:text-gray-900">Cancel</a>
+      <button id="generate" type="button" class="btn btn-primary">Generate draft report →</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  const qs = new URLSearchParams(location.search);
+  const editingId = qs.get('id');
+
+  const form = document.getElementById('q-form');
+  const monthEl = document.getElementById('month');
+  const authorEl = document.getElementById('author');
+  const flash = document.getElementById('save-flash');
+
+  // Default month = last completed month, in UTC
+  function defaultMonth() {
+    const now = new Date();
+    // Use previous month
+    const y = now.getUTCFullYear();
+    const m = now.getUTCMonth(); // 0-based; previous month is m-1 but JS handles neg
+    const d = new Date(Date.UTC(y, m - 1, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+  }
+
+  function renderQuestions(values) {
+    values = values || {};
+    form.innerHTML = window.OGPReports.QUESTIONS.map((q, i) => {
+      const v = values[q.id] || '';
+      return `
+        <section class="card p-6 qbox">
+          <label for="${q.id}"><span class="qnum">${i+1}</span>${q.label}</label>
+          <p class="hint" style="margin-left: 2.15rem;">${q.hint}</p>
+          <textarea id="${q.id}" name="${q.id}" rows="${i === 6 ? 5 : 3}" placeholder="Your answer…">${v.replace(/</g,'&lt;')}</textarea>
+        </section>
+      `;
+    }).join('');
+  }
+
+  function readAnswers() {
+    const answers = {};
+    window.OGPReports.QUESTIONS.forEach(q => {
+      const el = document.getElementById(q.id);
+      if (el) answers[q.id] = el.value.trim();
+    });
+    return answers;
+  }
+
+  function loadExisting() {
+    if (!editingId) {
+      monthEl.value = defaultMonth();
+      renderQuestions({});
+      return;
+    }
+    const r = window.OGPReports.get(editingId);
+    if (!r) {
+      monthEl.value = defaultMonth();
+      renderQuestions({});
+      return;
+    }
+    monthEl.value = r.month || defaultMonth();
+    authorEl.value = r.author || '';
+    renderQuestions(r.answers || {});
+  }
+
+  function showFlash(msg) {
+    flash.textContent = msg || 'Saved';
+    flash.classList.add('on');
+    clearTimeout(showFlash._t);
+    showFlash._t = setTimeout(() => flash.classList.remove('on'), 1400);
+  }
+
+  async function fetchAdsData() {
+    // Prototype: use the June 2026 data file as the live snapshot.
+    // In production this would fetch the month's actual data.
+    try {
+      const res = await fetch('../june-2026/data.json', { cache: 'no-store' });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch { return null; }
+  }
+
+  function buildReport(status) {
+    const month = monthEl.value;
+    if (!month) { alert('Please choose a report month.'); monthEl.focus(); return null; }
+    const answers = readAnswers();
+    const id = month; // "YYYY-MM" acts as a stable id
+    const existing = window.OGPReports.get(id);
+    return {
+      id,
+      month,
+      title: window.OGPReports.monthLabel(month),
+      author: authorEl.value.trim(),
+      answers,
+      status: status || (existing ? existing.status : 'draft'),
+      revisionNotes: existing?.revisionNotes || [],
+    };
+  }
+
+  document.getElementById('save-draft').addEventListener('click', async () => {
+    const draft = buildReport('draft');
+    if (!draft) return;
+    const ads = await fetchAdsData();
+    draft.summary = window.OGPReports.generateSummary(draft.answers, ads);
+    window.OGPReports.upsert(draft);
+    showFlash('Draft saved');
+  });
+
+  document.getElementById('generate').addEventListener('click', async () => {
+    const draft = buildReport('draft');
+    if (!draft) return;
+    const ads = await fetchAdsData();
+    draft.summary = window.OGPReports.generateSummary(draft.answers, ads);
+    window.OGPReports.upsert(draft);
+    location.href = `./view.html?id=${encodeURIComponent(draft.id)}`;
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', () => window.OGPAuth.logout('../'));
+
+  loadExisting();
+})();
+</script>
+</body>
+</html>
