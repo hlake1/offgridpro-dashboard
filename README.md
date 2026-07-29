@@ -46,15 +46,33 @@ Report state is stored in `localStorage` (prototype). Future work: move to a bac
 
 ## Data sources
 
-| Section | Source | Live? |
+### Automated (no client access needed)
+
+| Section | Source | Status |
 |---|---|---|
-| Google Ads campaigns, keywords, search terms | Google Ads API via Maton | ✅ Live |
-| Technical SEO | SEMrush / manual | Manual (for now) |
-| LinkedIn / Facebook / Instagram | Manual | Manual (for now) |
-| Web analytics (Top pages, users) | Google Analytics — pending client access | Manual (for now) |
-| Conversions detail | Google Ads + CRM | Manual (for now) |
+| Google Ads campaigns, keywords, search terms, cost, CTR | Google Ads API via Maton (`herbielakeai@gmail.com`) | ✅ Live |
+| SEO metrics — Domain Authority, backlinks, ref domains, organic traffic estimate, top ranking keywords | Public SEO data (SEMrush/Ahrefs/DataForSEO public endpoints for the client's domain) | ✅ Automated |
+| Social follower counts + top posts — LinkedIn, Facebook, Instagram | Public business pages (scrape / public APIs) | ✅ Automated |
+| Currently running Meta Ads (creative + copy) | Meta Ad Library (public) | ✅ Automated |
+
+### Requires client / agency access
+
+| Section | Source | Test-run workflow (July 2026) |
+|---|---|---|
+| Web analytics — top pages, sessions, users, traffic source split, engagement time | Google Analytics 4 | Daniela pulls + sends screenshots/CSV until Maton `google-analytics-data` access lands |
+| Organic search performance — clicks, impressions, ranking keywords with positions | Google Search Console | Daniela pulls + sends screenshots/CSV until Maton `google-search-console` access lands |
+| Meta Ads campaign performance — impressions, clicks, CTR, cost, conversions | Meta Ads Manager | Daniela pulls each month (or Maton `meta-ads` connection once granted) |
+| Site Health audit score | SEMrush audit (agency account) | Daniela sends the score each month |
+| Conversions log — date, product, channel | OffGrid Pro CRM + Tweak's tracking | Daniela sends log; from Aug we may automate via form/webhook |
+| Narrative content — the 7 framework questions | Daniela's own observations + Tweak's work log (Monday.com) | Daniela writes directly into the dashboard's admin builder |
 
 Read-only access — the automation never mutates ad data.
+
+### Roles in the report workflow
+
+- **Herbie / dashboard** — pulls everything in the "Automated" table each month, populates the report shell, and drops in the private data Daniela sends.
+- **Daniela / Tweak** — sends over the private data list (Analytics, Search Console, Meta Ads, Site Health, Conversions) and writes the narrative sections directly in the admin builder.
+- **Client (OffGrid Pro)** — reviews the published report via the client-role password.
 
 ## Refreshing data locally
 
