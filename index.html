@@ -214,7 +214,7 @@
       if (!client) { err.textContent = 'Client not configured.'; return; }
       // Pre-authorise the OffGrid Pro auth gate so it doesn't re-prompt
       try {
-        sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'client', ts: Date.now() }));
+        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'client', ts: Date.now() }));
       } catch {}
       window.location.href = client.path;
     } else if (code.type === 'team') {
@@ -223,7 +223,7 @@
     } else if (code.type === 'admin') {
       // Admin: go to team overview (shows all clients) and pre-auth admin on dashboards
       try {
-        sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
       } catch {}
       window.location.href = './team/';
     }

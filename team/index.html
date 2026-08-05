@@ -326,7 +326,7 @@
     grid.querySelectorAll('a[data-client-id]').forEach(a => {
       a.addEventListener('click', () => {
         try {
-          sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+          sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
         } catch {}
       });
     });
@@ -335,7 +335,7 @@
   document.getElementById('logout-btn').addEventListener('click', () => {
     try {
       sessionStorage.removeItem('tw_session');
-      sessionStorage.removeItem('ogp_da…auth');
+      sessionStorage.removeItem('ogp_dashboard_auth');
     } catch {}
     window.location.replace('../');
   });
