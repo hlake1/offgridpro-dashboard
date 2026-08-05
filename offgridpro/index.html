@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OffGrid Pro — Performance Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="./assets/auth.js"></script>
+<script src="./assets/reports-store.js"></script>
+<script>
+  // Gate the page before anything renders. This paints a lock overlay
+  // synchronously and prevents flash of protected content.
+  window.OGPAuth.ensureAuth();
+</script>
+<style>
+  /* Match OffGrid Pro's website palette + typography */
+  :root {
+    --ogp-text: #444;
+    --ogp-muted: #666;
+    --ogp-light: #f7f8f4;
+    --ogp-accent-1: #a3c94a; /* green */
+    --ogp-accent-2: #4bc7bf; /* teal */
+    --ogp-accent-3: #5aa5d8; /* blue */
+    --ogp-dark: #1a1a1a;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--ogp-text);
+    background: #ffffff;
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--ogp-dark); }
+  .heading-bold { font-weight: 700; }
+
+  /* Signature gradient bar (matches the accent under the OffGrid Pro logo) */
+  .ogp-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--ogp-accent-1) 0%, var(--ogp-accent-2) 50%, var(--ogp-accent-3) 100%);
+    border-radius: 2px;
+  }
+
+  /* Soft brand gradient background */
+  .ogp-soft-bg {
+    background: linear-gradient(135deg, rgba(193, 229, 246, 0.35) 0%, rgba(220, 237, 189, 0.35) 100%);
+  }
+
+  /* Dark hero with photo overlay */
+  .ogp-hero {
+    background:
+      linear-gradient(rgba(0,0,0,0.65) 0%, rgba(10,10,10,0.55) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+
+  .report-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid #e5e7eb;
+  }
+  .report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--ogp-accent-2);
+  }
+
+  .btn-primary {
+    background: var(--ogp-dark);
+    color: #fff;
+    padding: 0.65rem 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: background 0.2s ease;
+  }
+  .btn-primary:hover { background: #333; }
+
+  .prototype-badge {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.25);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+
+  .stat-pill {
+    background: #f8faf5;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Admin-only elements are hidden by default. Auth script toggles the
+     `ogp-admin` class on <html> when the admin role is active. */
+  .admin-only { display: none; }
+  html.ogp-admin .admin-only { display: block; }
+  html.ogp-admin .admin-only.flex-row { display: flex; }
+
+  .admin-panel {
+    border: 1px dashed #c9d3a8;
+    background: linear-gradient(180deg, #fbfdf5 0%, #f5f9ec 100%);
+  }
+  .admin-badge {
+    background: #1a1a1a; color:#fff; font-size:10px; letter-spacing:0.15em;
+    text-transform:uppercase; padding: 3px 8px; border-radius: 2px;
+    font-weight:600;
+  }
+  .report-status-draft {
+    background:#fef3c7; color:#92400e; font-size:10px; letter-spacing:0.1em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; font-weight:600;
+  }
+  .report-status-published {
+    background:#dcfce7; color:#166534; font-size:10px; letter-spacing:0.1em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; font-weight:600;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="ogp-hero text-white relative overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-white text-xl font-bold tracking-tight">OFFGRID</span>
+          <span class="text-white text-xl font-bold tracking-tight">PRO</span>
+        </div>
+        <div class="ogp-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Optimised Energy Management</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="role-indicator" class="prototype-badge text-white text-[11px] px-3 py-1.5 rounded-sm uppercase">Dashboard</span>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="max-w-6xl mx-auto px-6 py-20 relative">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Tweak Marketing · Client Reporting</p>
+    <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight max-w-3xl">
+      Performance reports for <span class="heading-bold">OffGrid Pro</span>
+    </h1>
+    <div class="ogp-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Live Google Ads metrics and monthly deep-dive reports covering campaigns, SEO, ranking keywords, social media, and web analytics.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-16">
+
+  <!-- Client Info Strip -->
+  <section class="ogp-soft-bg rounded-none p-8 border-l-4" style="border-left-color: var(--ogp-accent-2);">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Client</p>
+        <p class="font-medium text-gray-900 mt-1.5">OffGrid Pro Ltd.</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Sector</p>
+        <p class="font-medium text-gray-900 mt-1.5">Battery Storage &amp; Microgrids</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Location</p>
+        <p class="font-medium text-gray-900 mt-1.5">Southampton, UK</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Account Manager</p>
+        <p class="font-medium text-gray-900 mt-1.5">Louise · Tweak</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Two entry points: Live Metrics + Monthly Report -->
+  <section>
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Choose your view</p>
+      <h2 class="text-3xl font-medium text-gray-900">Live metrics or monthly deep-dive</h2>
+      <div class="ogp-accent-bar w-24 mt-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Live Metrics -->
+      <a href="./live/" class="report-card block bg-white p-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--ogp-accent-1), var(--ogp-accent-2), var(--ogp-accent-3));"></div>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--ogp-accent-2);">Live · Real-time</p>
+            </div>
+            <h3 class="text-2xl font-medium text-gray-900">Live metrics</h3>
+            <p class="text-sm text-gray-500 mt-1">Auto-refreshed daily</p>
+          </div>
+        </div>
+
+        <div class="ogp-accent-bar w-full mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live="clicks">—</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);" data-live="conversions">—</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live="cost">—</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">Google Ads · Keywords · Search terms</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">View live →</span>
+        </div>
+      </a>
+
+      <!-- June 2026 Report -->
+      <a href="./june-2026/" class="report-card block bg-white p-8 group">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Latest monthly report</p>
+            <h3 class="text-2xl font-medium text-gray-900 mt-2">June 2026</h3>
+            <p class="text-sm text-gray-500 mt-1">1 – 30 June 2026</p>
+          </div>
+        </div>
+
+        <div class="ogp-accent-bar w-full mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-gray-900 text-xl mt-1">3</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Victron</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);">+453%</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Home Energy</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--ogp-accent-1);">+113%</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">Google Ads · SEO · Social · Analytics · Strategy</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--ogp-dark);">Open report →</span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Additional published reports (rendered from OGPReports store) -->
+    <div id="published-reports-list" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+    <!-- July placeholder (small) -->
+    <div id="next-month-placeholder" class="mt-6 report-card block bg-white p-5 opacity-70">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-4">
+          <div class="text-2xl">🗓️</div>
+          <div>
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Coming next month</p>
+            <p class="font-medium text-gray-600">July 2026 report</p>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 italic">Will be published in early August.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== -->
+  <!-- ADMIN ONLY: Monthly Report Builder Panel                        -->
+  <!-- =============================================================== -->
+  <section class="admin-only">
+    <div class="admin-panel p-8">
+      <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="admin-badge">Admin · Tweak</span>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">Report builder</p>
+          </div>
+          <h2 class="text-3xl font-medium text-gray-900">Monthly Report</h2>
+          <div class="ogp-accent-bar w-24 mt-4"></div>
+          <p class="text-gray-600 mt-4 max-w-2xl">Build the next monthly report by answering a short set of questions. We’ll auto-assemble a draft from your answers plus the latest Google Ads data, then you can approve to publish.</p>
+        </div>
+        <a href="./admin/builder.html" class="btn-primary rounded-sm no-underline whitespace-nowrap">
+          + New monthly report
+        </a>
+      </div>
+
+      <div id="admin-drafts-wrap">
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Drafts &amp; recent</p>
+        <div id="admin-drafts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- populated by JS -->
+        </div>
+        <p id="admin-drafts-empty" class="text-sm text-gray-500 italic mt-2" style="display:none;">No drafts yet. Click “New monthly report” to start one.</p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Populate the Live Metrics preview card on the homepage with current numbers.
+    (async () => {
+      try {
+        const res = await fetch('./june-2026/data.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 });
+        const numFmt = new Intl.NumberFormat('en-GB');
+        document.querySelectorAll('[data-live="clicks"]').forEach(el => el.textContent = numFmt.format(data.totals.clicks));
+        document.querySelectorAll('[data-live="conversions"]').forEach(el => el.textContent = data.totals.conversions);
+        document.querySelectorAll('[data-live="cost"]').forEach(el => el.textContent = gbp.format(data.totals.cost));
+      } catch (e) { /* silent — placeholders stay */ }
+    })();
+
+    // ---- Auth-aware rendering ------------------------------------------------
+    function applyRole(role) {
+      const isAdmin = role === 'admin';
+      document.documentElement.classList.toggle('ogp-admin', isAdmin);
+      const badge = document.getElementById('role-indicator');
+      if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
+      renderPublished();
+      if (isAdmin) renderAdminDrafts();
+    }
+
+    function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function renderPublished() {
+      const wrap = document.getElementById('published-reports-list');
+      if (!wrap || !window.OGPReports) return;
+      const items = window.OGPReports.listPublished();
+      wrap.innerHTML = items.map(r => {
+        const label = window.OGPReports.monthLabel(r.month);
+        const headline = esc(r.summary?.headline || '');
+        return `
+          <a href="./admin/view.html?id=${encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Monthly report</p>
+                <h3 class="text-2xl font-medium text-gray-900 mt-2">${esc(label)}</h3>
+                <p class="text-sm text-gray-500 mt-1">Published</p>
+              </div>
+              <span class="report-status-published">Published</span>
+            </div>
+            <div class="ogp-accent-bar w-full mb-4"></div>
+            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3">${headline}</p>
+            <p class="text-sm text-gray-600 mt-4">Open report →</p>
+          </a>`;
+      }).join('');
+    }
+
+    function renderAdminDrafts() {
+      const list = document.getElementById('admin-drafts-list');
+      const empty = document.getElementById('admin-drafts-empty');
+      if (!list || !window.OGPReports) return;
+      const items = window.OGPReports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      if (items.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      list.innerHTML = items.map(r => {
+        const label = window.OGPReports.monthLabel(r.month);
+        const statusClass = r.status === 'published' ? 'report-status-published' : 'report-status-draft';
+        const notes = (r.revisionNotes && r.revisionNotes.length) ? `${r.revisionNotes.length} revision note${r.revisionNotes.length>1?'s':''}` : '';
+        return `
+          <div class="bg-white p-5 border border-gray-200 rounded-sm flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="${statusClass}">${r.status}</span>
+                ${notes ? `<span class="text-[10px] uppercase tracking-widest text-amber-700 font-semibold">${notes}</span>` : ''}
+              </div>
+              <p class="font-medium text-gray-900">${esc(label)}</p>
+              <p class="text-xs text-gray-500 mt-1">Updated ${new Date(r.updatedAt).toLocaleString('en-GB')}</p>
+            </div>
+            <div class="flex flex-col gap-1 text-sm shrink-0">
+              <a class="text-emerald-700 hover:underline font-semibold" href="./admin/view.html?id=${encodeURIComponent(r.id)}">Review →</a>
+              <a class="text-gray-500 hover:underline" href="./admin/builder.html?id=${encodeURIComponent(r.id)}">Edit</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    document.addEventListener('ogp:auth', (e) => applyRole(e.detail.role));
+    // In case auth was already valid on load, apply immediately
+    if (window.OGPAuth && window.OGPAuth.isAuthed()) applyRole(window.OGPAuth.getRole());
+
+    document.getElementById('logout-btn')?.addEventListener('click', () => window.OGPAuth.logout('../'));
+  </script>
+
+  <!-- About block -->
+  <section class="ogp-soft-bg p-10 border-l-4" style="border-left-color: var(--ogp-accent-1);">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Two views, one dashboard</p>
+        <h3 class="text-lg font-medium text-gray-900">Live metrics + monthly reports</h3>
+        <div class="ogp-accent-bar w-16 mt-3"></div>
+      </div>
+      <div class="md:col-span-2 text-gray-600 leading-relaxed">
+        <p><strong class="text-gray-900">Live metrics</strong> — real-time Google Ads campaign performance, keywords, and search terms. Pulled directly from the Google Ads API via Maton, auto-refreshed daily.</p>
+        <p class="mt-3"><strong class="text-gray-900">Monthly reports</strong> — full-funnel deep-dives covering Google Ads, technical SEO, ranking keywords, LinkedIn / Facebook / Instagram, top-performing pages, and the strategy for the following month.</p>
+        <p class="mt-4 text-sm text-gray-500 italic">Prototype: Google Ads is fully live. Google Analytics and Meta APIs are being connected next.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-gray-200 mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-8 flex justify-between items-center flex-wrap gap-4">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-gray-900 text-sm font-bold tracking-tight">OFFGRID</span>
+          <span class="text-gray-900 text-sm font-bold tracking-tight">PRO</span>
+        </div>
+        <div class="ogp-accent-bar w-full mt-0.5"></div>
+      </div>
+      <p class="text-xs text-gray-500">Reporting dashboard by Tweak Marketing</p>
+    </div>
+    <p class="text-xs text-gray-400">Prototype v2 · July 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
