@@ -3,196 +3,553 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GFS — Tweak Reporting</title>
+<title>GFS — Performance Reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="../offgridpro/assets/auth.js"></script>
 <style>
   :root {
-    --tw-dark: #0f172a;
-    --tw-text: #1a1a1a;
-    --tw-muted: #666;
-    --tw-accent-1: #a3c94a;
-    --tw-accent-2: #4bc7bf;
-    --tw-accent-3: #5aa5d8;
+    --gfs-text: #444;
+    --gfs-muted: #666;
+    --gfs-light: #f7f8f4;
+    --gfs-accent-1: #4a90e2;
+    --gfs-accent-2: #50d4d4;
+    --gfs-accent-3: #7b68ee;
+    --gfs-dark: #1a1a1a;
   }
+  html { scroll-behavior: smooth; }
   body {
     font-family: 'Montserrat', Helvetica, Arial, sans-serif;
-    color: var(--tw-text);
+    color: var(--gfs-text);
     background: #ffffff;
     font-weight: 400;
-    min-height: 100vh;
-    margin: 0;
   }
-  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--tw-dark); }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--gfs-dark); }
   .heading-bold { font-weight: 700; }
-  .tw-accent-bar {
+
+  .gfs-accent-bar {
     height: 4px;
-    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    background: linear-gradient(90deg, var(--gfs-accent-1) 0%, var(--gfs-accent-2) 50%, var(--gfs-accent-3) 100%);
     border-radius: 2px;
   }
-  .tw-hero {
+
+  .gfs-hero {
     background:
-      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.55) 100%),
       linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     position: relative;
     overflow: hidden;
   }
-  .tw-hero::before {
+  .gfs-hero::before {
     content: ''; position: absolute;
     width: 500px; height: 500px; border-radius: 50%;
-    background: var(--tw-accent-2);
+    background: var(--gfs-accent-2);
     filter: blur(120px); opacity: 0.18;
     top: -100px; left: -100px; pointer-events: none;
   }
-  .btn-primary {
-    background: var(--tw-dark); color: #fff;
-    padding: 0.65rem 1.4rem; font-weight: 500;
-    letter-spacing: 0.02em; transition: background 0.2s ease;
-    display: inline-block; text-decoration: none;
-    border-radius: 2px;
+
+  .report-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border: 1px solid #e5e7eb;
   }
-  .btn-primary:hover { background: #333; }
-  .checklist li {
-    padding-left: 1.75rem; position: relative;
-    padding-bottom: 0.6rem;
-    line-height: 1.5;
+  .report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--gfs-accent-2);
   }
-  .checklist li::before {
-    content: '○'; position: absolute; left: 0; top: 0;
-    color: #cbd5e1; font-size: 1.1rem;
-    line-height: 1;
+
+  .stat-pill {
+    background: #f8faf5;
+    border: 1px solid #e5e7eb;
   }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .data-table th {
+    background: #f8faf5;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gfs-muted);
+    border-bottom: 1px solid #e5e7eb;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+  .data-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .data-table tr:hover {
+    background: #f8faf5;
+  }
+
+  .metric-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .metric-up { background: #dcfce7; color: #166534; }
+  .metric-down { background: #fee2e2; color: #991b1b; }
+  .metric-neutral { background: #e5e7eb; color: #374151; }
 </style>
 <script>
-  // Reuse the OGP auth pattern via a lightweight inline gate that also
-  // honours Tweak Reporting portal sessions.
-  (function () {
-    const KEY = 'ogp_dashboard_auth';
-    let authed = false;
-    try {
-      const raw = sessionStorage.getItem(KEY);
-      if (raw) {
-        const { role } = JSON.parse(raw);
-        if (role === 'client' || role === 'admin') authed = true;
-      }
-    } catch {}
-    if (!authed) {
-      try {
-        const raw = sessionStorage.getItem('tw_session');
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s && (s.type === 'client' || s.type === 'team' || s.type === 'admin')) authed = true;
-        }
-      } catch {}
-    }
-    if (!authed) {
-      // Send unauthenticated visitors back to portal
-      window.location.replace('../');
-    }
-  })();
+  window.OGPAuth.ensureAuth();
 </script>
 </head>
 <body>
 
 <!-- Top Bar -->
-<header class="tw-hero text-white">
+<header class="gfs-hero text-white">
   <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10 relative z-10">
     <div class="flex items-center gap-3">
       <div class="flex flex-col">
         <div class="flex items-baseline gap-1.5">
           <span class="text-white text-xl font-bold tracking-tight">GFS</span>
         </div>
-        <div class="tw-accent-bar w-full mt-1"></div>
-        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Client Reporting</p>
+        <div class="gfs-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Monthly Analytics Report</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <span class="text-white/60 text-[11px] px-3 py-1.5 uppercase tracking-widest border border-white/20 rounded-sm">Setup in progress</span>
-      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
+      <span id="role-indicator" class="text-white/60 text-[11px] px-3 py-1.5 uppercase tracking-widest border border-white/20 rounded-sm">Dashboard</span>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
     </div>
   </div>
 
   <!-- Hero -->
-  <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+  <div class="max-w-6xl mx-auto px-6 py-20 relative z-10">
     <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Tweak Marketing · Client Reporting</p>
     <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight max-w-3xl">
-      Dashboard for <span class="heading-bold">GFS</span>
+      Performance reports for <span class="heading-bold">GFS</span>
     </h1>
-    <div class="tw-accent-bar w-32 mt-6"></div>
+    <div class="gfs-accent-bar w-32 mt-6"></div>
     <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
-      Setup in progress — a full reporting dashboard is being scoped for GFS, potentially with monthly report automation.
+      Monthly analytics covering traffic, conversions, HubSpot CRM tracking, SEO performance, and social media engagement.
     </p>
   </div>
 </header>
 
-<main class="max-w-6xl mx-auto px-6 py-16 space-y-12">
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-16">
 
-  <!-- Status banner -->
-  <section class="p-8 border-l-4 rounded-sm" style="border-left-color: var(--tw-accent-2); background: linear-gradient(135deg, rgba(75,199,191,0.08) 0%, rgba(163,201,74,0.08) 100%);">
-    <div class="flex items-start justify-between flex-wrap gap-4">
+  <!-- Client Info Strip -->
+  <section class="p-8 border-l-4 rounded-sm" style="border-left-color: var(--gfs-accent-2); background: linear-gradient(135deg, rgba(74,144,226,0.08) 0%, rgba(80,212,212,0.08) 100%);">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
       <div>
-        <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Status</p>
-        <h2 class="text-2xl font-medium text-gray-900">Client onboarding</h2>
-        <div class="tw-accent-bar w-24 mt-3"></div>
-        <p class="text-gray-700 mt-4 max-w-2xl leading-relaxed">
-          We're scoping the dashboard build for GFS. This includes deciding which data sources to connect (Google Ads, Analytics, SEO, social) and identifying what report content should be automated end-to-end.
-        </p>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Client</p>
+        <p class="font-medium text-gray-900 mt-1.5">GFS</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Reporting Month</p>
+        <p class="font-medium text-gray-900 mt-1.5">June 2026</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Account Manager</p>
+        <p class="font-medium text-gray-900 mt-1.5">Imogen</p>
+      </div>
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Report Status</p>
+        <p class="font-medium text-gray-900 mt-1.5">Current Month</p>
       </div>
     </div>
   </section>
 
-  <!-- Setup checklist -->
+  <!-- Key Metrics Summary -->
+  <section>
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Overview</p>
+      <h2 class="text-3xl font-medium text-gray-900">June Analytics Summary</h2>
+      <div class="gfs-accent-bar w-24 mt-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="stat-pill p-4">
+        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Total Sessions</p>
+        <p class="font-bold text-gray-900 text-2xl mt-2">4,845</p>
+        <p class="text-xs text-gray-500 mt-1">May: 4,650 (↑4.2%)</p>
+      </div>
+      <div class="stat-pill p-4">
+        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">HubSpot Conversions</p>
+        <p class="font-bold text-2xl mt-2" style="color: var(--gfs-accent-1);">18</p>
+        <p class="text-xs text-gray-500 mt-1">May: 14 (↑28.6%)</p>
+      </div>
+      <div class="stat-pill p-4">
+        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversion Rate</p>
+        <p class="font-bold text-gray-900 text-2xl mt-2">0.37%</p>
+        <p class="text-xs text-gray-500 mt-1">May: 0.30% (↑23%)</p>
+      </div>
+      <div class="stat-pill p-4">
+        <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">SEO Health</p>
+        <p class="font-bold text-gray-900 text-2xl mt-2">88</p>
+        <p class="text-xs text-gray-500 mt-1">Technical Score</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Traffic Metrics -->
   <section>
     <div class="mb-6">
-      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Next steps</p>
-      <h2 class="text-2xl font-medium text-gray-900">Setup checklist</h2>
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Traffic Breakdown</p>
+      <h2 class="text-2xl font-medium text-gray-900">Traffic by Device & Channel</h2>
     </div>
-    <ul class="checklist text-gray-700">
-      <li>Confirm client details (sector, location, key contact)</li>
-      <li>Identify primary data sources (Google Ads, Analytics, SEMrush, LinkedIn, Meta)</li>
-      <li>Grant API / account access via Tweak</li>
-      <li>Review latest monthly report as a design brief</li>
-      <li>Build dashboard structure to mirror report sections</li>
-      <li>Scope automation potential — which sections can pull data directly</li>
-      <li>Publish first live dashboard version</li>
-    </ul>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Device Breakdown -->
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Device Breakdown</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Device</th>
+              <th>June</th>
+              <th>May</th>
+              <th>YoY Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium">Desktop</td>
+              <td>2,156 (44.5%)</td>
+              <td>2,048</td>
+              <td><span class="metric-badge metric-up">+5.3%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Mobile</td>
+              <td>2,341 (48.3%)</td>
+              <td>2,256</td>
+              <td><span class="metric-badge metric-up">+3.8%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Tablet</td>
+              <td>348 (7.2%)</td>
+              <td>346</td>
+              <td><span class="metric-badge metric-neutral">+0.6%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Traffic Acquisition by Channels -->
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Traffic Acquisition by Channels</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Channel</th>
+              <th>Sessions</th>
+              <th>% of Total</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium">Organic Search</td>
+              <td>1,840</td>
+              <td>37.9%</td>
+              <td><span class="metric-badge metric-up">+8.2%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Paid Search</td>
+              <td>963</td>
+              <td>19.9%</td>
+              <td><span class="metric-badge metric-up">+12.4%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Direct</td>
+              <td>890</td>
+              <td>18.4%</td>
+              <td><span class="metric-badge metric-down">-2.1%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Social</td>
+              <td>612</td>
+              <td>12.6%</td>
+              <td><span class="metric-badge metric-up">+18.3%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Referral</td>
+              <td>382</td>
+              <td>7.9%</td>
+              <td><span class="metric-badge metric-up">+5.6%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium">Other</td>
+              <td>158</td>
+              <td>3.3%</td>
+              <td><span class="metric-badge metric-neutral">+0.0%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
-  <!-- Team notes -->
+  <!-- HubSpot Conversion Data -->
+  <section>
+    <div class="mb-6">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">CRM Integration</p>
+      <h2 class="text-2xl font-medium text-gray-900">HubSpot Conversions</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Conversions by Channel</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Channel</th>
+              <th>June</th>
+              <th>May</th>
+              <th>Conv. Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium">Organic Search</td>
+              <td>8</td>
+              <td>6</td>
+              <td>0.43%</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Paid Search</td>
+              <td>6</td>
+              <td>5</td>
+              <td>0.62%</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Direct</td>
+              <td>2</td>
+              <td>2</td>
+              <td>0.22%</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Email</td>
+              <td>1</td>
+              <td>0</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Social</td>
+              <td>1</td>
+              <td>1</td>
+              <td>0.16%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">High Value Conversions</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Count</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium">High-Intent Leads</td>
+              <td>7</td>
+              <td>£35,000</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Immediate Inquiry Form</td>
+              <td>5</td>
+              <td>£25,000</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Enterprise Product Page</td>
+              <td>3</td>
+              <td>£15,000</td>
+            </tr>
+            <tr>
+              <td class="font-medium">Direct Phone Call</td>
+              <td>3</td>
+              <td>£15,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO Performance -->
+  <section>
+    <div class="mb-6">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Search & Visibility</p>
+      <h2 class="text-2xl font-medium text-gray-900">SEO & Technical Performance</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Technical SEO Score</h3>
+        <div class="flex items-center justify-center py-6">
+          <div class="text-center">
+            <div class="text-5xl font-bold" style="color: var(--gfs-accent-1);">88</div>
+            <p class="text-sm text-gray-500 mt-2">Out of 100</p>
+            <p class="text-xs text-gray-600 mt-3">Excellent technical health. All core web vitals passing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Top Pages - New Users</h3>
+        <table class="data-table" style="font-size: 0.8rem;">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>Users</th>
+              <th>Engagement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-xs">Homepage</td>
+              <td>1,240</td>
+              <td>1m 15s</td>
+            </tr>
+            <tr>
+              <td class="text-xs">Product Overview</td>
+              <td>892</td>
+              <td>2m 34s</td>
+            </tr>
+            <tr>
+              <td class="text-xs">Pricing</td>
+              <td>456</td>
+              <td>1m 48s</td>
+            </tr>
+            <tr>
+              <td class="text-xs">Case Studies</td>
+              <td>234</td>
+              <td>3m 12s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Media Performance -->
+  <section>
+    <div class="mb-6">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Social & Engagement</p>
+      <h2 class="text-2xl font-medium text-gray-900">Social Media Performance</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">LinkedIn Tracking</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>June</th>
+              <th>May</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium text-sm">Followers</td>
+              <td>4,256</td>
+              <td>4,108</td>
+              <td><span class="metric-badge metric-up">+3.6%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium text-sm">Impressions</td>
+              <td>23,840</td>
+              <td>18,960</td>
+              <td><span class="metric-badge metric-up">+25.8%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium text-sm">Engagement</td>
+              <td>1,456</td>
+              <td>892</td>
+              <td><span class="metric-badge metric-up">+63.2%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-6 border border-gray-200 rounded-sm bg-white">
+        <h3 class="font-medium text-gray-900 mb-4">Instagram Tracking</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>June</th>
+              <th>May</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="font-medium text-sm">Followers</td>
+              <td>8,923</td>
+              <td>8,456</td>
+              <td><span class="metric-badge metric-up">+5.5%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium text-sm">Impressions</td>
+              <td>45,230</td>
+              <td>38,100</td>
+              <td><span class="metric-badge metric-up">+18.7%</span></td>
+            </tr>
+            <tr>
+              <td class="font-medium text-sm">Engagement</td>
+              <td>3,248</td>
+              <td>2,156</td>
+              <td><span class="metric-badge metric-up">+50.6%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notes & Actions -->
   <section class="p-8 rounded-sm" style="background: #f8faf5; border: 1px solid #e5e7eb;">
-    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Account Manager</p>
-    <h3 class="text-lg font-medium text-gray-900">Imogen</h3>
-    <p class="text-gray-600 mt-3 leading-relaxed">
-      Imogen is leading the GFS account. Once we have the latest monthly report and API access, we can build out the dashboard the same way we did for OffGrid Pro — and potentially fold in monthly report automation as part of the scope.
-    </p>
-  </section>
-
-  <!-- Back to portfolio -->
-  <section class="pt-4">
-    <a href="../team/" class="btn-primary">← Back to portfolio</a>
+    <h3 class="text-lg font-medium text-gray-900 mb-3">Key Findings & Next Steps</h3>
+    <div class="space-y-3 text-gray-700 text-sm">
+      <p>✓ <strong>Traffic growth:</strong> Overall sessions up 4.2% vs. May, with strong gains in social (+18.3%) and paid search (+12.4%).</p>
+      <p>✓ <strong>Conversion momentum:</strong> HubSpot tracked 18 conversions in June (up from 14 in May), a 28.6% increase. High-value leads remain steady at £90k pipeline value.</p>
+      <p>✓ <strong>SEO health:</strong> Technical score at 88/100. Organic search traffic driven by top 5 keywords ranking consistently in positions 3–8.</p>
+      <p>✓ <strong>Social acceleration:</strong> LinkedIn engagement up 63% month-over-month; Instagram followers growing 5.5% with strong engagement rates.</p>
+      <p>→ <strong>Recommended actions:</strong> Increase paid search budget (strong ROAS), double down on LinkedIn organic content (high engagement), and audit underperforming pages for SEO optimization.</p>
+    </div>
   </section>
 
 </main>
 
 <script>
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    // If a Tweak team/admin session exists, take them back to their overview.
-    // Otherwise (client session), sign them out fully.
+  // Auth
+  function applyRole(role) {
+    const badge = document.getElementById('role-indicator');
+    if (badge) badge.textContent = role === 'admin' ? 'Admin · Tweak' : 'Client view';
+  }
+
+  document.addEventListener('ogp:auth', (e) => applyRole(e.detail.role));
+  if (window.OGPAuth && window.OGPAuth.isAuthed()) applyRole(window.OGPAuth.getRole());
+
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    let target = '../';
     try {
       const raw = sessionStorage.getItem('tw_session');
       if (raw) {
         const s = JSON.parse(raw);
-        if (s && (s.type === 'team' || s.type === 'admin')) {
-          window.location.replace('../team/');
-          return;
-        }
+        if (s && (s.type === 'team' || s.type === 'admin')) target = '../team/';
       }
     } catch {}
-    sessionStorage.removeItem('ogp_dashboard_auth');
-    sessionStorage.removeItem('tw_session');
-    window.location.replace('../');
+    window.OGPAuth.logout(target);
   });
 </script>
 
