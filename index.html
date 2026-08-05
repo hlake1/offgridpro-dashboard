@@ -32,8 +32,6 @@
     position: relative;
     overflow: hidden;
   }
-
-  /* Decorative gradient orbs */
   body::before, body::after {
     content: '';
     position: absolute;
@@ -52,7 +50,6 @@
     background: var(--tw-accent-1);
     bottom: -150px; right: -150px;
   }
-
   .card {
     width: 100%;
     max-width: 440px;
@@ -64,121 +61,60 @@
     position: relative;
     z-index: 1;
   }
-
-  .brand-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-  }
-  .brand {
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    font-size: 1.35rem;
-  }
+  .brand-row { display: flex; align-items: baseline; gap: 0.4rem; }
+  .brand { font-weight: 800; letter-spacing: -0.01em; font-size: 1.35rem; }
   .accent-bar {
-    height: 4px;
-    margin-top: 8px;
+    height: 4px; margin-top: 8px;
     background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
     border-radius: 2px;
   }
-
   h2 {
     margin: 1.5rem 0 0.5rem;
-    font-weight: 500;
-    font-size: 1.65rem;
-    color: var(--tw-text);
-    letter-spacing: -0.01em;
+    font-weight: 500; font-size: 1.65rem;
+    color: var(--tw-text); letter-spacing: -0.01em;
   }
-  p.sub {
-    color: var(--tw-muted);
-    font-size: 0.925rem;
-    line-height: 1.55;
-    margin: 0;
-  }
-
+  p.sub { color: var(--tw-muted); font-size: 0.925rem; line-height: 1.55; margin: 0; }
   label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--tw-muted);
-    margin: 1.75rem 0 0.5rem;
-    font-weight: 600;
+    display: block; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.15em; color: var(--tw-muted);
+    margin: 1.75rem 0 0.5rem; font-weight: 600;
   }
-
   input[type="password"], input[type="text"] {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    font-size: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 4px;
-    background: #f8faf5;
-    font-family: inherit;
-    outline: none;
+    width: 100%; padding: 0.85rem 1rem; font-size: 1rem;
+    border: 1px solid #e5e7eb; border-radius: 4px; background: #f8faf5;
+    font-family: inherit; outline: none;
     transition: border 0.15s ease, background 0.15s ease;
   }
   input[type="password"]:focus, input[type="text"]:focus {
-    border-color: var(--tw-accent-2);
-    background: #fff;
+    border-color: var(--tw-accent-2); background: #fff;
   }
-
   .row {
-    margin-top: 1.15rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    margin-top: 1.15rem; display: flex; align-items: center;
+    justify-content: space-between; gap: 0.75rem;
   }
-  .err {
-    color: #dc2626;
-    font-size: 0.85rem;
-    min-height: 1.2em;
-    flex: 1;
-  }
-
+  .err { color: #dc2626; font-size: 0.85rem; min-height: 1.2em; flex: 1; }
   button {
-    background: var(--tw-dark);
-    color: #fff;
-    border: 0;
-    cursor: pointer;
-    padding: 0.75rem 1.6rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    font-family: inherit;
-    border-radius: 2px;
+    background: var(--tw-dark); color: #fff; border: 0; cursor: pointer;
+    padding: 0.75rem 1.6rem; font-weight: 500; letter-spacing: 0.02em;
+    font-family: inherit; border-radius: 2px;
     transition: background 0.15s ease, transform 0.1s ease;
     font-size: 0.95rem;
   }
   button:hover { background: #333; }
   button:active { transform: translateY(1px); }
-
   .foot {
-    margin-top: 1.75rem;
-    font-size: 0.72rem;
-    color: #9ca3af;
-    text-align: center;
-    letter-spacing: 0.05em;
+    margin-top: 1.75rem; font-size: 0.72rem; color: #9ca3af;
+    text-align: center; letter-spacing: 0.05em;
   }
-
   .tagline {
-    text-align: center;
-    color: rgba(255,255,255,0.75);
-    font-size: 0.78rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
+    text-align: center; color: rgba(255,255,255,0.75);
+    font-size: 0.78rem; letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative; z-index: 1;
   }
-
   .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 440px;
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; max-width: 440px;
   }
-
   @media (max-width: 480px) {
     .card { padding: 2rem 1.5rem 1.75rem; }
     h2 { font-size: 1.4rem; }
@@ -195,8 +131,8 @@
       <span class="brand" style="font-weight:400;">REPORTING</span>
     </div>
     <div class="accent-bar" style="max-width: 180px;"></div>
-    <h2>Client access</h2>
-    <p class="sub">Enter your access code to view your performance reports.</p>
+    <h2>Sign in</h2>
+    <p class="sub">Enter your access code to view your reports.</p>
     <label for="pw">Access code</label>
     <input id="pw" type="password" autofocus autocomplete="off" spellcheck="false" />
     <div class="row">
@@ -209,21 +145,41 @@
 
 <script>
   /*
-   * Tweak Reporting — Client Access
+   * Tweak Reporting — Access Router
    *
-   * Each client has an access code that routes them to their dashboard.
-   * Add new clients by adding an entry to CLIENTS below.
+   * Three code types:
+   *  - client: goes straight to that client's dashboard
+   *  - team:   goes to /team/ overview with their assigned clients
+   *  - admin:  goes to /team/ overview showing ALL clients
    *
-   * NOTE: This is a friction gate for a prototype, not real security.
-   * Any real access control must be enforced server-side.
+   * NOTE: Client-side friction gate only — not real security.
    */
+
+  // Client dashboards — one entry per client that has a dashboard folder.
   const CLIENTS = {
-    // client code → dashboard path
-    'OffGrid':  { path: './offgridpro/',  name: 'OffGrid Pro' },
-    // Tweak admin code — also lands on OffGrid Pro for now (unlocks admin panel there).
-    'Tweak':    { path: './offgridpro/',  name: 'Tweak Admin' },
+    'offgridpro': {
+      path: './offgridpro/',
+      name: 'OffGrid Pro',
+      sector: 'Battery Storage & Microgrids',
+      location: 'Southampton, UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      status: 'Active',
+    },
     // Add more clients here as they come online:
-    // 'ClientName': { path: './clientfolder/', name: 'Full Client Name' },
+    // 'clientslug': { path: './clientfolder/', name: 'Client Name', sector: '...', location: '...', accountManager: '...', latestReport: '...', status: 'Active' },
+  };
+
+  // Access codes — client, team, or admin.
+  const CODES = {
+    // Client codes: land on that client's dashboard
+    'OffGrid':  { type: 'client', clientId: 'offgridpro' },
+
+    // Tweak team member codes: land on team overview with their assigned clients
+    'Daniella': { type: 'team', name: 'Daniella', role: 'Account Manager', clients: ['offgridpro'] },
+
+    // Tweak admin code: sees all clients + admin panel inside dashboards
+    'Tweak':    { type: 'admin', name: 'Tweak Admin' },
   };
 
   const form = document.getElementById('access-form');
@@ -233,21 +189,44 @@
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const val = input.value.trim();
-    const client = CLIENTS[val];
-    if (!client) {
+    const code = CODES[val];
+    if (!code) {
       err.textContent = 'Incorrect code. Try again.';
       input.select();
       return;
     }
-    // Pre-authorise the target dashboard so it doesn't re-prompt.
-    // The OffGrid Pro dashboard uses sessionStorage key `ogp_da…auth` with
-    // role `client` or `admin`. Set it here so users go straight in.
-    try {
-      const role = (val === 'Tweak') ? 'admin' : 'client';
-      sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role, ts: Date.now() }));
-    } catch { /* ignore */ }
     err.textContent = '';
-    window.location.href = client.path;
+
+    // Persist which code was used so downstream pages can render context.
+    try {
+      sessionStorage.setItem('tw_session', JSON.stringify({
+        code: val,
+        type: code.type,
+        name: code.name || null,
+        role: code.role || null,
+        clients: code.clients || null,
+        ts: Date.now(),
+      }));
+    } catch { /* ignore */ }
+
+    if (code.type === 'client') {
+      const client = CLIENTS[code.clientId];
+      if (!client) { err.textContent = 'Client not configured.'; return; }
+      // Pre-authorise the OffGrid Pro auth gate so it doesn't re-prompt
+      try {
+        sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'client', ts: Date.now() }));
+      } catch {}
+      window.location.href = client.path;
+    } else if (code.type === 'team') {
+      // Team member: go to team overview
+      window.location.href = './team/';
+    } else if (code.type === 'admin') {
+      // Admin: go to team overview (shows all clients) and pre-auth admin on dashboards
+      try {
+        sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+      } catch {}
+      window.location.href = './team/';
+    }
   });
 </script>
 

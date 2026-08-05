@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tweak Reporting — Team Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-light: #f7f8f4;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background: #ffffff;
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--tw-dark); }
+  .heading-bold { font-weight: 700; }
+
+  .tw-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+
+  .tw-hero {
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .tw-hero::before, .tw-hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+  .tw-hero::before {
+    width: 500px; height: 500px;
+    background: var(--tw-accent-2);
+    top: -100px; left: -100px;
+  }
+  .tw-hero::after {
+    width: 600px; height: 600px;
+    background: var(--tw-accent-1);
+    bottom: -200px; right: -150px;
+  }
+
+  .client-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .client-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--tw-accent-2);
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .status-active { background: #dcfce7; color: #166534; }
+  .status-pending { background: #fef3c7; color: #92400e; }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+
+  .stat-pill {
+    background: #f8faf5;
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+  }
+
+  .empty-state {
+    border: 2px dashed #e5e7eb;
+    background: #f8faf5;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="tw-hero text-white">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10 relative z-10">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-white text-xl font-bold tracking-tight">TWEAK</span>
+          <span class="text-white text-xl font-normal tracking-tight">REPORTING</span>
+        </div>
+        <div class="tw-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Team Portal</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-right hidden sm:block">
+        <p class="text-[10px] uppercase tracking-widest text-white/50">Signed in as</p>
+        <p id="user-name" class="text-white text-sm font-medium">—</p>
+      </div>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Welcome back</p>
+    <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight">
+      Hi <span id="hero-name" class="heading-bold">there</span>
+    </h1>
+    <div class="tw-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Your client dashboards and monthly reports, all in one place.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-12">
+
+  <!-- Portfolio summary strip -->
+  <section id="summary-strip" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Clients</p>
+      <p class="font-bold text-gray-900 text-2xl mt-1" id="stat-clients">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Active</p>
+      <p class="font-bold text-2xl mt-1" style="color: var(--tw-accent-1);" id="stat-active">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Latest report</p>
+      <p class="font-medium text-gray-900 text-base mt-1" id="stat-latest">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Role</p>
+      <p class="font-medium text-gray-900 text-base mt-1" id="stat-role">—</p>
+    </div>
+  </section>
+
+  <!-- Clients section -->
+  <section>
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Your portfolio</p>
+      <h2 class="text-3xl font-medium text-gray-900" id="section-heading">Clients</h2>
+      <div class="tw-accent-bar w-24 mt-4"></div>
+    </div>
+
+    <div id="clients-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state p-12 text-center rounded-sm" style="display:none;">
+      <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">No clients assigned</p>
+      <p class="text-gray-600">Ask your Tweak admin to add clients to your portfolio.</p>
+    </div>
+  </section>
+
+  <!-- Footer note -->
+  <section class="pt-8 border-t border-gray-200">
+    <p class="text-xs text-gray-500 leading-relaxed max-w-3xl">
+      <strong class="text-gray-700">Tweak Reporting Team Portal</strong> — This is your workspace as a Tweak team member. Click any client to open their dashboard with full admin access, build monthly reports, and review live performance data.
+    </p>
+  </section>
+
+</main>
+
+<script>
+  // ------------------------------------------------------------------
+  // Client catalog — kept in sync with root index.html.
+  // Add a client here + in root CODES map when they come online.
+  // ------------------------------------------------------------------
+  const CLIENTS = {
+    'offgridpro': {
+      path: '../offgridpro/',
+      name: 'OffGrid Pro',
+      fullName: 'OffGrid Pro Ltd.',
+      sector: 'Battery Storage & Microgrids',
+      location: 'Southampton, UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      latestReportDate: '1 – 30 June 2026',
+      status: 'Active',
+      // Headline stats to preview on the card
+      previewStats: [
+        { label: 'Conversions', value: '3' },
+        { label: 'Victron', value: '+453%', accent: true },
+        { label: 'Site Health', value: '88%' },
+      ],
+      colorBar: 'linear-gradient(180deg, #a3c94a, #4bc7bf, #5aa5d8)',
+    },
+  };
+
+  // ------------------------------------------------------------------
+  // Read session set by root login page
+  // ------------------------------------------------------------------
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+
+  function requireSession() {
+    const s = getSession();
+    if (!s || (s.type !== 'team' && s.type !== 'admin')) {
+      window.location.replace('../');
+      return null;
+    }
+    return s;
+  }
+
+  function escapeHtml(s) {
+    return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+    ));
+  }
+
+  function pickClients(session) {
+    if (session.type === 'admin') return Object.keys(CLIENTS);
+    return (session.clients || []).filter(id => CLIENTS[id]);
+  }
+
+  function render() {
+    const session = requireSession();
+    if (!session) return;
+
+    // Header
+    const displayName = session.name || (session.type === 'admin' ? 'Tweak Admin' : 'Team');
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('hero-name').textContent = displayName;
+
+    const clientIds = pickClients(session);
+    const clients = clientIds.map(id => CLIENTS[id]);
+    const activeCount = clients.filter(c => c.status === 'Active').length;
+    const latestReports = clients.map(c => c.latestReport).filter(Boolean);
+
+    // Summary strip
+    document.getElementById('stat-clients').textContent = clients.length;
+    document.getElementById('stat-active').textContent = activeCount;
+    document.getElementById('stat-latest').textContent = latestReports[0] || '—';
+    document.getElementById('stat-role').textContent = session.role || (session.type === 'admin' ? 'Admin' : 'Team member');
+
+    // Section heading
+    document.getElementById('section-heading').textContent =
+      session.type === 'admin' ? 'All clients' : 'Your clients';
+
+    // Client grid
+    const grid = document.getElementById('clients-grid');
+    const empty = document.getElementById('empty-state');
+    if (clients.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    grid.innerHTML = clientIds.map(id => {
+      const c = CLIENTS[id];
+      const statusClass = c.status === 'Active' ? 'status-active' : 'status-pending';
+      const stats = (c.previewStats || []).map(s => `
+        <div class="stat-pill">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">${escapeHtml(s.label)}</p>
+          <p class="font-bold text-xl mt-1 ${s.accent ? '' : 'text-gray-900'}" ${s.accent ? 'style="color: var(--tw-accent-1);"' : ''}>${escapeHtml(s.value)}</p>
+        </div>
+      `).join('');
+
+      return `
+        <a href="${escapeHtml(c.path)}" class="client-card block p-8 group relative overflow-hidden rounded-sm" data-client-id="${escapeHtml(id)}">
+          <div class="absolute top-0 right-0 bottom-0 w-1" style="background: ${c.colorBar || 'var(--tw-accent-2)'};"></div>
+
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--tw-accent-2);">Client dashboard</p>
+              <h3 class="text-2xl font-medium text-gray-900 mt-2">${escapeHtml(c.name)}</h3>
+              <p class="text-sm text-gray-500 mt-1">${escapeHtml(c.sector || '')}</p>
+            </div>
+            <span class="status-pill ${statusClass}">
+              <span class="status-dot"></span>${escapeHtml(c.status)}
+            </span>
+          </div>
+
+          <div class="tw-accent-bar w-full mb-5"></div>
+
+          <div class="grid grid-cols-3 gap-3 mb-5">
+            ${stats}
+          </div>
+
+          <div class="flex items-center justify-between text-sm">
+            <div>
+              <p class="text-gray-500">Latest: <span class="text-gray-800 font-medium">${escapeHtml(c.latestReport || '—')}</span></p>
+              <p class="text-gray-500 mt-0.5">Location: <span class="text-gray-800">${escapeHtml(c.location || '—')}</span></p>
+            </div>
+            <span class="font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--tw-dark);">Open →</span>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    // When clicking a client tile, pre-authorise the target dashboard as admin
+    // (team members and Tweak admin both view dashboards with admin panel unlocked).
+    grid.querySelectorAll('a[data-client-id]').forEach(a => {
+      a.addEventListener('click', () => {
+        try {
+          sessionStorage.setItem('ogp_da…auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+        } catch {}
+      });
+    });
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    try {
+      sessionStorage.removeItem('tw_session');
+      sessionStorage.removeItem('ogp_da…auth');
+    } catch {}
+    window.location.replace('../');
+  });
+
+  render();
+</script>
+
+</body>
+</html>

@@ -392,7 +392,18 @@
     // In case auth was already valid on load, apply immediately
     if (window.OGPAuth && window.OGPAuth.isAuthed()) applyRole(window.OGPAuth.getRole());
 
-    document.getElementById('logout-btn')?.addEventListener('click', () => window.OGPAuth.logout('../'));
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+      // If a Tweak team/admin session exists, go back to team overview; else back to portal.
+      let target = '../';
+      try {
+        const raw = sessionStorage.getItem('tw_session');
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s && (s.type === 'team' || s.type === 'admin')) target = '../team/';
+        }
+      } catch {}
+      window.OGPAuth.logout(target);
+    });
   </script>
 
   <!-- About block -->
