@@ -166,6 +166,15 @@
       latestReport: 'June 2026',
       status: 'Active',
     },
+    'gfs': {
+      path: './gfs/',
+      name: 'GFS',
+      sector: 'TBC',
+      location: 'TBC',
+      accountManager: 'Imogen',
+      latestReport: 'Setup in progress',
+      status: 'Pending',
+    },
     // Add more clients here as they come online:
     // 'clientslug': { path: './clientfolder/', name: 'Client Name', sector: '...', location: '...', accountManager: '...', latestReport: '...', status: 'Active' },
   };
@@ -177,7 +186,7 @@
 
     // Tweak team member codes: land on team overview with their assigned clients
     'Daniella': { type: 'team', name: 'Daniella', role: 'Account Manager', clients: ['offgridpro'] },
-    'Imogen':   { type: 'team', name: 'Imogen',   role: 'Account Manager', clients: [] },
+    'Imogen':   { type: 'team', name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
 
     // Tweak admin code: sees all clients + admin panel inside dashboards
     'Tweak':    { type: 'admin', name: 'Tweak Admin' },

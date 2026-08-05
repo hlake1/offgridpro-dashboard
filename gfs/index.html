@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFS — Tweak Reporting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background: #ffffff;
+    font-weight: 400;
+    min-height: 100vh;
+    margin: 0;
+  }
+  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--tw-dark); }
+  .heading-bold { font-weight: 700; }
+  .tw-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+  .tw-hero {
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .tw-hero::before {
+    content: ''; position: absolute;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: var(--tw-accent-2);
+    filter: blur(120px); opacity: 0.18;
+    top: -100px; left: -100px; pointer-events: none;
+  }
+  .btn-primary {
+    background: var(--tw-dark); color: #fff;
+    padding: 0.65rem 1.4rem; font-weight: 500;
+    letter-spacing: 0.02em; transition: background 0.2s ease;
+    display: inline-block; text-decoration: none;
+    border-radius: 2px;
+  }
+  .btn-primary:hover { background: #333; }
+  .checklist li {
+    padding-left: 1.75rem; position: relative;
+    padding-bottom: 0.6rem;
+    line-height: 1.5;
+  }
+  .checklist li::before {
+    content: '○'; position: absolute; left: 0; top: 0;
+    color: #cbd5e1; font-size: 1.1rem;
+    line-height: 1;
+  }
+</style>
+<script>
+  // Reuse the OGP auth pattern via a lightweight inline gate that also
+  // honours Tweak Reporting portal sessions.
+  (function () {
+    const KEY = 'ogp_dashboard_auth';
+    let authed = false;
+    try {
+      const raw = sessionStorage.getItem(KEY);
+      if (raw) {
+        const { role } = JSON.parse(raw);
+        if (role === 'client' || role === 'admin') authed = true;
+      }
+    } catch {}
+    if (!authed) {
+      try {
+        const raw = sessionStorage.getItem('tw_session');
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s && (s.type === 'client' || s.type === 'team' || s.type === 'admin')) authed = true;
+        }
+      } catch {}
+    }
+    if (!authed) {
+      // Send unauthenticated visitors back to portal
+      window.location.replace('../');
+    }
+  })();
+</script>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="tw-hero text-white">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10 relative z-10">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-white text-xl font-bold tracking-tight">GFS</span>
+        </div>
+        <div class="tw-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Client Reporting</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-white/60 text-[11px] px-3 py-1.5 uppercase tracking-widest border border-white/20 rounded-sm">Setup in progress</span>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Tweak Marketing · Client Reporting</p>
+    <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight max-w-3xl">
+      Dashboard for <span class="heading-bold">GFS</span>
+    </h1>
+    <div class="tw-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Setup in progress — a full reporting dashboard is being scoped for GFS, potentially with monthly report automation.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-12">
+
+  <!-- Status banner -->
+  <section class="p-8 border-l-4 rounded-sm" style="border-left-color: var(--tw-accent-2); background: linear-gradient(135deg, rgba(75,199,191,0.08) 0%, rgba(163,201,74,0.08) 100%);">
+    <div class="flex items-start justify-between flex-wrap gap-4">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Status</p>
+        <h2 class="text-2xl font-medium text-gray-900">Client onboarding</h2>
+        <div class="tw-accent-bar w-24 mt-3"></div>
+        <p class="text-gray-700 mt-4 max-w-2xl leading-relaxed">
+          We're scoping the dashboard build for GFS. This includes deciding which data sources to connect (Google Ads, Analytics, SEO, social) and identifying what report content should be automated end-to-end.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Setup checklist -->
+  <section>
+    <div class="mb-6">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Next steps</p>
+      <h2 class="text-2xl font-medium text-gray-900">Setup checklist</h2>
+    </div>
+    <ul class="checklist text-gray-700">
+      <li>Confirm client details (sector, location, key contact)</li>
+      <li>Identify primary data sources (Google Ads, Analytics, SEMrush, LinkedIn, Meta)</li>
+      <li>Grant API / account access via Tweak</li>
+      <li>Review latest monthly report as a design brief</li>
+      <li>Build dashboard structure to mirror report sections</li>
+      <li>Scope automation potential — which sections can pull data directly</li>
+      <li>Publish first live dashboard version</li>
+    </ul>
+  </section>
+
+  <!-- Team notes -->
+  <section class="p-8 rounded-sm" style="background: #f8faf5; border: 1px solid #e5e7eb;">
+    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Account Manager</p>
+    <h3 class="text-lg font-medium text-gray-900">Imogen</h3>
+    <p class="text-gray-600 mt-3 leading-relaxed">
+      Imogen is leading the GFS account. Once we have the latest monthly report and API access, we can build out the dashboard the same way we did for OffGrid Pro — and potentially fold in monthly report automation as part of the scope.
+    </p>
+  </section>
+
+  <!-- Back to portfolio -->
+  <section class="pt-4">
+    <a href="../team/" class="btn-primary">← Back to portfolio</a>
+  </section>
+
+</main>
+
+<script>
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    // If a Tweak team/admin session exists, take them back to their overview.
+    // Otherwise (client session), sign them out fully.
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && (s.type === 'team' || s.type === 'admin')) {
+          window.location.replace('../team/');
+          return;
+        }
+      }
+    } catch {}
+    sessionStorage.removeItem('ogp_dashboard_auth');
+    sessionStorage.removeItem('tw_session');
+    window.location.replace('../');
+  });
+</script>
+
+</body>
+</html>
