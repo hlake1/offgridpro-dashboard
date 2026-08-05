@@ -15,14 +15,29 @@
   };
 
   function getRole() {
+    // Primary: OGP dashboard auth key set by the OGP overlay or by the
+    // Tweak Reporting portal pre-auth on redirect.
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const { role, ts } = JSON.parse(raw);
-      // sessions last as long as the tab
-      if (role && (role === 'client' || role === 'admin')) return role;
-      return null;
-    } catch { return null; }
+      if (raw) {
+        const { role } = JSON.parse(raw);
+        if (role === 'client' || role === 'admin') return role;
+      }
+    } catch { /* fall through */ }
+
+    // Fallback: honour a Tweak Reporting portal session so team members
+    // and clients who signed in at the root never see a second prompt,
+    // even if the pre-auth handoff failed (e.g. browser cache issues).
+    try {
+      const rawTw = sessionStorage.getItem('tw_session');
+      if (rawTw) {
+        const s = JSON.parse(rawTw);
+        if (s && s.type === 'client') { setRole('client'); return 'client'; }
+        if (s && (s.type === 'team' || s.type === 'admin')) { setRole('admin'); return 'admin'; }
+      }
+    } catch { /* ignore */ }
+
+    return null;
   }
 
   function setRole(role) {
