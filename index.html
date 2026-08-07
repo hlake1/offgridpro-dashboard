@@ -170,11 +170,11 @@
     'gfs': {
       path: './gfs/',
       name: 'GFS',
-      sector: 'TBC',
-      location: 'TBC',
+      sector: 'Logistics · eCommerce Shipping',
+      location: 'UK',
       accountManager: 'Imogen',
-      latestReport: 'Setup in progress',
-      status: 'Pending',
+      latestReport: 'June 2026',
+      status: 'Active',
     },
     // Add more clients here as they come online:
     // 'clientslug': { path: './clientfolder/', name: 'Client Name', sector: '...', location: '...', accountManager: '...', latestReport: '...', status: 'Active' },
@@ -184,6 +184,7 @@
   const CODES = {
     // Client codes: land on that client's dashboard
     'OffGrid':  { type: 'client', clientId: 'offgridpro' },
+    'GFS':      { type: 'client', clientId: 'gfs' },
 
     // Tweak team member codes: land on team overview with their assigned clients
     'Daniela':  { type: 'team', name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
@@ -228,29 +229,32 @@
       }));
     } catch { /* ignore */ }
 
+    // Helper: pre-authorise every client dashboard so we never re-prompt.
+    // Each client has its own storage key; add here when onboarding new clients.
+    function preAuthAllClients(role) {
+      const payload = JSON.stringify({ role, ts: Date.now() });
+      try {
+        sessionStorage.setItem('ogp_dashboard_auth', payload); // OffGrid Pro
+        sessionStorage.setItem('gfs_dashboard_auth', payload); // GFS
+      } catch {}
+    }
+
     if (code.type === 'client') {
       const client = CLIENTS[code.clientId];
       if (!client) { err.textContent = 'Client not configured.'; return; }
-      // Pre-authorise the OffGrid Pro auth gate so it doesn't re-prompt
-      try {
-        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'client', ts: Date.now() }));
-      } catch {}
+      preAuthAllClients('client');
       window.location.href = client.path;
     } else if (code.type === 'team') {
       // Team member: go to team overview
       window.location.href = './team/';
     } else if (code.type === 'admin') {
       // Admin: go to team overview (shows all clients) and pre-auth admin on dashboards
-      try {
-        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
-      } catch {}
+      preAuthAllClients('admin');
       window.location.href = './team/';
     } else if (code.type === 'manager') {
       // Manager: go to manager team-browser view. Pre-auth downstream dashboards as admin
       // so they can drill into any client without being re-prompted.
-      try {
-        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
-      } catch {}
+      preAuthAllClients('admin');
       window.location.href = './manager/';
     }
   });

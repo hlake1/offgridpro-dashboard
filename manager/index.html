@@ -356,8 +356,10 @@
     //  after long idle periods still lands cleanly.)
     grid.querySelectorAll('a[data-member]').forEach(a => {
       a.addEventListener('click', () => {
+        const payload = JSON.stringify({ role: 'admin', ts: Date.now() });
         try {
-          sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+          sessionStorage.setItem('ogp_dashboard_auth', payload);
+          sessionStorage.setItem('gfs_dashboard_auth', payload);
         } catch {}
       });
     });
@@ -367,6 +369,7 @@
     try {
       sessionStorage.removeItem('tw_session');
       sessionStorage.removeItem('ogp_dashboard_auth');
+      sessionStorage.removeItem('gfs_dashboard_auth');
     } catch {}
     window.location.replace('../');
   });

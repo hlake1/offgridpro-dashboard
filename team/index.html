@@ -215,19 +215,19 @@
     'gfs': {
       path: '../gfs/',
       name: 'GFS',
-      fullName: 'GFS',
-      sector: 'TBC',
-      location: 'TBC',
+      fullName: 'Global Freight Solutions',
+      sector: 'Logistics · eCommerce Shipping',
+      location: 'UK',
       accountManager: 'Imogen',
-      latestReport: 'Setup in progress',
-      latestReportDate: 'Awaiting first report',
-      status: 'Pending',
+      latestReport: 'June 2026',
+      latestReportDate: '1 – 30 June 2026',
+      status: 'Active',
       previewStats: [
-        { label: 'Status', value: 'Setup' },
-        { label: 'Reports', value: '0' },
-        { label: 'Data', value: 'TBC' },
+        { label: 'HV Conversions', value: '29' },
+        { label: 'Contact Form', value: '15', accent: true },
+        { label: 'SEO Visibility', value: '1.6%' },
       ],
-      colorBar: 'linear-gradient(180deg, #cbd5e1, #94a3b8, #64748b)',
+      colorBar: 'linear-gradient(180deg, #004080, #0066b3, #0099cc)',
     },
   };
 
@@ -397,12 +397,14 @@
       `;
     }).join('');
 
-    // When clicking a client tile, pre-authorise the target dashboard as admin
+    // When clicking a client tile, pre-authorise every client dashboard as admin
     // (team members and Tweak admin both view dashboards with admin panel unlocked).
     grid.querySelectorAll('a[data-client-id]').forEach(a => {
       a.addEventListener('click', () => {
+        const payload = JSON.stringify({ role: 'admin', ts: Date.now() });
         try {
-          sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+          sessionStorage.setItem('ogp_dashboard_auth', payload);
+          sessionStorage.setItem('gfs_dashboard_auth', payload);
         } catch {}
       });
     });
@@ -412,6 +414,7 @@
     try {
       sessionStorage.removeItem('tw_session');
       sessionStorage.removeItem('ogp_dashboard_auth');
+      sessionStorage.removeItem('gfs_dashboard_auth');
     } catch {}
     window.location.replace('../');
   });

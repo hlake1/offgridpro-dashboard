@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFS — Report Setup Questions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../assets/auth.js"></script>
+<script>window.GFSAuth.ensureAuth();</script>
+<style>
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f7f8fa; }
+  .gradient-bg { background: linear-gradient(135deg, #0a1f3d 0%, #002855 55%, #004080 100%); }
+  .accent-bar {
+    height: 3px;
+    background: linear-gradient(90deg, #004080 0%, #0066b3 55%, #0099cc 100%);
+    border-radius: 2px;
+  }
+  .q-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .q-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+  .q-card.done { border-color: #a7f3d0; background: #f0fdf4; }
+  .q-card.done .q-num { background: #059669; color: #fff; }
+  .q-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 999px;
+    background: #eff6ff; color: #0066b3;
+    font-weight: 700; font-size: 0.875rem;
+  }
+  .q-section-badge {
+    display: inline-block;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .badge-access  { background: #dbeafe; color: #1e40af; }
+  .badge-content { background: #fef3c7; color: #92400e; }
+  .badge-people  { background: #ede9fe; color: #5b21b6; }
+  .badge-cadence { background: #fce7f3; color: #9d174d; }
+  textarea, input[type=text], input[type=email], select {
+    width: 100%; padding: 0.7rem 0.9rem; margin-top: 0.5rem;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    font-family: inherit; font-size: 0.9rem;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  textarea:focus, input:focus, select:focus {
+    outline: none; border-color: #0066b3;
+    box-shadow: 0 0 0 3px rgba(0,102,179,0.12);
+  }
+  .checkbox-group label {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb;
+    border-radius: 6px; cursor: pointer; margin-bottom: 0.4rem;
+    transition: background 0.15s ease;
+  }
+  .checkbox-group label:hover { background: #f9fafb; }
+  .checkbox-group input:checked ~ span { color: #0066b3; font-weight: 600; }
+  .btn-primary {
+    background: #0a1f3d; color: #fff;
+    padding: 0.75rem 1.5rem; border-radius: 6px;
+    font-weight: 600; letter-spacing: 0.02em;
+    transition: background 0.2s ease; border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: #0f2a4d; }
+  .btn-secondary {
+    background: #fff; color: #0a1f3d;
+    padding: 0.75rem 1.5rem; border-radius: 6px;
+    font-weight: 600; letter-spacing: 0.02em;
+    border: 1px solid #d1d5db; cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn-secondary:hover { background: #f9fafb; }
+  .progress-track { background: #e5e7eb; height: 6px; border-radius: 999px; overflow: hidden; }
+  .progress-fill  { background: linear-gradient(90deg, #0066b3, #0099cc); height: 100%; transition: width 0.4s ease; }
+</style>
+</head>
+<body>
+
+<header class="gradient-bg text-white shadow-xl">
+  <div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="flex justify-between items-start flex-wrap gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-widest text-white/70">Tweak Reporting · Onboarding</p>
+        <h1 class="text-3xl font-extrabold mt-2">GFS Report Setup</h1>
+        <p class="text-white/80 mt-2 max-w-xl text-sm leading-relaxed">
+          A short questionnaire to define what the GFS monthly report should cover, who needs access, and how automation kicks in.
+        </p>
+      </div>
+      <a href="../" class="bg-white bg-opacity-20 backdrop-blur border border-white border-opacity-30 rounded-lg px-4 py-2 text-white text-sm hover:bg-opacity-30 whitespace-nowrap">← GFS Home</a>
+    </div>
+
+    <div class="mt-6 flex items-center gap-3">
+      <div class="progress-track flex-1"><div id="progress-bar" class="progress-fill" style="width: 0%"></div></div>
+      <span id="progress-label" class="text-xs uppercase tracking-widest font-semibold whitespace-nowrap">0 / 12 answered</span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-6 py-10">
+  <form id="setup-form" class="space-y-5">
+
+    <!-- SECTION 1: ACCESS -->
+    <div class="mb-2 mt-2 flex items-center gap-3">
+      <span class="q-section-badge badge-access">Section 1 · Access</span>
+      <p class="text-sm text-gray-600">Data sources we'll pull from each month.</p>
+    </div>
+
+    <div class="q-card" data-q="google-ads">
+      <div class="flex items-start gap-4">
+        <span class="q-num">1</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Google Ads access</label>
+          <p class="text-sm text-gray-600 mt-1">Do we have a Google Ads account for GFS? If yes, please share account ID and confirm you can add <code class="bg-gray-100 px-1.5 py-0.5 rounded text-xs">herbielakeai@gmail.com</code> as a read-only user (or Tweak MCC access).</p>
+          <textarea name="google-ads" rows="2" placeholder="Google Ads customer ID (10-digit format XXX-XXX-XXXX), and any notes on access…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="analytics">
+      <div class="flex items-start gap-4">
+        <span class="q-num">2</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Google Analytics (GA4) access</label>
+          <p class="text-sm text-gray-600 mt-1">GA4 property ID, and confirmation of Viewer access for our read-only pull.</p>
+          <textarea name="analytics" rows="2" placeholder="GA4 property ID and access notes…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="search-console">
+      <div class="flex items-start gap-4">
+        <span class="q-num">3</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Google Search Console access</label>
+          <p class="text-sm text-gray-600 mt-1">Domain property in Search Console, and confirmation of Restricted or Full access for our pull.</p>
+          <textarea name="search-console" rows="2" placeholder="Property (e.g. sc-domain:globalfreightsolutions.com) and access notes…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="hubspot">
+      <div class="flex items-start gap-4">
+        <span class="q-num">4</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">HubSpot access</label>
+          <p class="text-sm text-gray-600 mt-1">HubSpot portal ID + a Private App API token (read scopes: contacts, deals, forms, analytics). Or add us as a Marketing user.</p>
+          <textarea name="hubspot" rows="2" placeholder="Portal ID, preferred integration method (API token vs seat), and notes…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="semrush">
+      <div class="flex items-start gap-4">
+        <span class="q-num">5</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">SEO tooling (Semrush / Ahrefs / SE Ranking)</label>
+          <p class="text-sm text-gray-600 mt-1">Which SEO tool is the source of truth for the GFS report? (Site health score, keyword tracking, backlinks.) We can integrate Semrush and Ahrefs APIs.</p>
+          <select name="semrush">
+            <option value="">Choose one…</option>
+            <option>Semrush</option>
+            <option>Ahrefs</option>
+            <option>SE Ranking</option>
+            <option>Screaming Frog</option>
+            <option>Other (specify below)</option>
+          </select>
+          <textarea name="semrush-notes" rows="2" class="mt-3" placeholder="Account/project name, and confirmation you can add API access or a shared login…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="social">
+      <div class="flex items-start gap-4">
+        <span class="q-num">6</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Social media access</label>
+          <p class="text-sm text-gray-600 mt-1">Which social channels are in scope? Do we pull directly (LinkedIn API, Meta Graph) or from a scheduler (Sprout, Buffer, Hootsuite)?</p>
+          <div class="checkbox-group mt-3">
+            <label><input type="checkbox" name="social" value="LinkedIn"> <span>LinkedIn (company page)</span></label>
+            <label><input type="checkbox" name="social" value="Instagram"> <span>Instagram</span></label>
+            <label><input type="checkbox" name="social" value="Facebook"> <span>Facebook</span></label>
+            <label><input type="checkbox" name="social" value="X/Twitter"> <span>X / Twitter</span></label>
+            <label><input type="checkbox" name="social" value="TikTok"> <span>TikTok</span></label>
+            <label><input type="checkbox" name="social" value="YouTube"> <span>YouTube</span></label>
+          </div>
+          <textarea name="social-notes" rows="2" class="mt-3" placeholder="Preferred integration method (direct API vs scheduler) and access notes…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: CONTENT -->
+    <div class="mb-2 mt-8 flex items-center gap-3">
+      <span class="q-section-badge badge-content">Section 2 · Report content</span>
+      <p class="text-sm text-gray-600">What to report on and how to prioritise.</p>
+    </div>
+
+    <div class="q-card" data-q="priorities">
+      <div class="flex items-start gap-4">
+        <span class="q-num">7</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Priority KPIs</label>
+          <p class="text-sm text-gray-600 mt-1">Which metrics is Sam/Isobel/leadership most focused on each month? (Pick 3-5 for the executive summary.)</p>
+          <div class="checkbox-group mt-3">
+            <label><input type="checkbox" name="priorities" value="High-value conversions"> <span>High-value conversions</span></label>
+            <label><input type="checkbox" name="priorities" value="Main contact form submissions"> <span>Main contact form submissions</span></label>
+            <label><input type="checkbox" name="priorities" value="Website users / sessions"> <span>Website users &amp; sessions</span></label>
+            <label><input type="checkbox" name="priorities" value="Organic search visibility"> <span>Organic search visibility</span></label>
+            <label><input type="checkbox" name="priorities" value="SEO ranking keywords"> <span>SEO ranking keywords</span></label>
+            <label><input type="checkbox" name="priorities" value="LinkedIn follower growth"> <span>LinkedIn follower growth</span></label>
+            <label><input type="checkbox" name="priorities" value="LinkedIn impressions"> <span>LinkedIn impressions</span></label>
+            <label><input type="checkbox" name="priorities" value="Cost per acquisition (CPA)"> <span>Cost per acquisition (CPA)</span></label>
+            <label><input type="checkbox" name="priorities" value="Return on ad spend (ROAS)"> <span>Return on ad spend (ROAS)</span></label>
+            <label><input type="checkbox" name="priorities" value="AI presence (mentions in AI search)"> <span>AI presence (mentions in AI search)</span></label>
+          </div>
+          <textarea name="priorities-notes" rows="2" class="mt-3" placeholder="Anything else? Business goals we should tie the metrics back to?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="goals">
+      <div class="flex items-start gap-4">
+        <span class="q-num">8</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Business goals for the next 3 – 6 months</label>
+          <p class="text-sm text-gray-600 mt-1">What is GFS trying to achieve this half-year? (New customer acquisition, retention, international expansion, product launch, etc.) The report will call out progress against these.</p>
+          <textarea name="goals" rows="3" placeholder="e.g. Grow international enquiry form submissions by 30% by year-end; drive top-of-funnel awareness for the new IOSS product; recover LinkedIn impressions to Q1 levels…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="benchmarks">
+      <div class="flex items-start gap-4">
+        <span class="q-num">9</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Benchmarks &amp; comparisons</label>
+          <p class="text-sm text-gray-600 mt-1">Should each metric compare to just the previous month, or also year-on-year, or against a set target? Any specific competitor benchmarks?</p>
+          <div class="checkbox-group mt-3">
+            <label><input type="checkbox" name="benchmarks" value="Previous month" checked> <span>Previous month (default)</span></label>
+            <label><input type="checkbox" name="benchmarks" value="Year-on-year" checked> <span>Year-on-year comparison</span></label>
+            <label><input type="checkbox" name="benchmarks" value="Quarterly targets"> <span>Progress against quarterly targets</span></label>
+            <label><input type="checkbox" name="benchmarks" value="Industry benchmarks"> <span>Industry benchmarks (logistics/eCom)</span></label>
+            <label><input type="checkbox" name="benchmarks" value="Competitors"> <span>Named competitor tracking</span></label>
+          </div>
+          <textarea name="benchmarks-notes" rows="2" class="mt-3" placeholder="Any specific competitors or targets to track?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: PEOPLE & ACCESS -->
+    <div class="mb-2 mt-8 flex items-center gap-3">
+      <span class="q-section-badge badge-people">Section 3 · People &amp; access</span>
+      <p class="text-sm text-gray-600">Who logs in and what they see.</p>
+    </div>
+
+    <div class="q-card" data-q="stakeholders">
+      <div class="flex items-start gap-4">
+        <span class="q-num">10</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Stakeholders at GFS</label>
+          <p class="text-sm text-gray-600 mt-1">Who at GFS should have a personal access code to the dashboard? List name, role, and email. We can issue individual codes and track who logs in.</p>
+          <textarea name="stakeholders" rows="4" placeholder="Isobel — Marketing Manager — isobel@…
+Sam — MD/CEO — sam@…
+etc."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-card" data-q="approvals">
+      <div class="flex items-start gap-4">
+        <span class="q-num">11</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Approval workflow</label>
+          <p class="text-sm text-gray-600 mt-1">Should each monthly report be reviewed &amp; approved by someone at GFS before it's published to the dashboard? Or auto-publish and notify?</p>
+          <select name="approvals">
+            <option value="">Choose one…</option>
+            <option>GFS reviews &amp; approves each month before publish</option>
+            <option>Tweak reviews internally, then auto-publishes with GFS notified</option>
+            <option>Auto-publish, no review — GFS reads when convenient</option>
+            <option>Other (describe below)</option>
+          </select>
+          <textarea name="approvals-notes" rows="2" class="mt-3" placeholder="Any specific approver or SLA?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: CADENCE -->
+    <div class="mb-2 mt-8 flex items-center gap-3">
+      <span class="q-section-badge badge-cadence">Section 4 · Cadence</span>
+      <p class="text-sm text-gray-600">How often, when, and how it's delivered.</p>
+    </div>
+
+    <div class="q-card" data-q="cadence">
+      <div class="flex items-start gap-4">
+        <span class="q-num">12</span>
+        <div class="flex-1">
+          <label class="font-bold text-gray-900 block">Report cadence &amp; live metrics</label>
+          <p class="text-sm text-gray-600 mt-1">Do you want a monthly report only, or also live metrics (like OffGrid Pro's setup) refreshed daily? Any preferred publish date (e.g. 1st working day of the month)?</p>
+          <div class="checkbox-group mt-3">
+            <label><input type="checkbox" name="cadence" value="Monthly deep-dive" checked> <span>Monthly deep-dive report (like this June '26 one)</span></label>
+            <label><input type="checkbox" name="cadence" value="Live daily metrics"> <span>Live daily-refresh metrics dashboard</span></label>
+            <label><input type="checkbox" name="cadence" value="Weekly snapshot"> <span>Weekly snapshot email</span></label>
+            <label><input type="checkbox" name="cadence" value="Ad-hoc"> <span>Ad-hoc reporting on request</span></label>
+          </div>
+          <textarea name="cadence-notes" rows="2" class="mt-3" placeholder="Preferred publish date? Delivery method (dashboard link + email, Slack, etc.)?"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-10 pt-6 border-t border-gray-200 flex flex-wrap gap-3 items-center justify-between">
+      <div>
+        <p class="text-xs text-gray-500">Auto-saved locally in your browser. Click Export to send answers back to Tweak.</p>
+      </div>
+      <div class="flex gap-3">
+        <button type="button" onclick="clearAnswers()" class="btn-secondary">Reset</button>
+        <button type="button" onclick="exportAnswers()" class="btn-primary">📄 Export answers</button>
+      </div>
+    </div>
+  </form>
+</main>
+
+<footer class="border-t border-gray-100 mt-16 py-8 text-center text-xs text-gray-400 tracking-wide">
+  Tweak Marketing · Client Reporting Prototype · <a href="../" class="hover:text-gray-600">← GFS Home</a>
+</footer>
+
+<script>
+  const STORAGE_KEY = 'gfs_setup_answers';
+  const form = document.getElementById('setup-form');
+  const progressBar = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+  const totalQuestions = 12;
+
+  function serialize() {
+    const data = {};
+    const fd = new FormData(form);
+    for (const [k, v] of fd.entries()) {
+      if (data[k] !== undefined) {
+        if (!Array.isArray(data[k])) data[k] = [data[k]];
+        data[k].push(v);
+      } else {
+        data[k] = v;
+      }
+    }
+    return data;
+  }
+
+  function hydrate() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      for (const [k, v] of Object.entries(saved)) {
+        const els = form.querySelectorAll(`[name="${k}"]`);
+        els.forEach(el => {
+          if (el.type === 'checkbox') {
+            const values = Array.isArray(v) ? v : [v];
+            if (values.includes(el.value)) el.checked = true;
+          } else {
+            el.value = v;
+          }
+        });
+      }
+    } catch { /* ignore */ }
+  }
+
+  function updateProgress() {
+    const data = serialize();
+    let answered = 0;
+    document.querySelectorAll('.q-card').forEach(card => {
+      const key = card.dataset.q;
+      // Consider any input inside the card
+      const inputs = card.querySelectorAll('input, textarea, select');
+      let hasValue = false;
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (input.checked) hasValue = true;
+        } else if (input.value.trim().length > 3) {
+          hasValue = true;
+        }
+      });
+      if (hasValue) { card.classList.add('done'); answered++; }
+      else { card.classList.remove('done'); }
+    });
+    const pct = Math.round((answered / totalQuestions) * 100);
+    progressBar.style.width = pct + '%';
+    progressLabel.textContent = `${answered} / ${totalQuestions} answered`;
+  }
+
+  form.addEventListener('input', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
+    updateProgress();
+  });
+
+  function clearAnswers() {
+    if (!confirm('Clear all answers?')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    form.reset();
+    updateProgress();
+  }
+
+  function exportAnswers() {
+    const data = serialize();
+    // Format as readable markdown for pasting into email / doc
+    const lines = ['# GFS Report Setup — Answers', '', 'Filled on: ' + new Date().toISOString(), ''];
+    const sections = [
+      { title: '## Section 1 — Access', keys: ['google-ads', 'analytics', 'search-console', 'hubspot', 'semrush', 'semrush-notes', 'social', 'social-notes'] },
+      { title: '## Section 2 — Report content', keys: ['priorities', 'priorities-notes', 'goals', 'benchmarks', 'benchmarks-notes'] },
+      { title: '## Section 3 — People & access', keys: ['stakeholders', 'approvals', 'approvals-notes'] },
+      { title: '## Section 4 — Cadence', keys: ['cadence', 'cadence-notes'] },
+    ];
+    for (const sec of sections) {
+      lines.push(sec.title, '');
+      for (const k of sec.keys) {
+        const v = data[k];
+        if (v == null || (Array.isArray(v) && v.length === 0) || v === '') continue;
+        lines.push(`**${k}:** ${Array.isArray(v) ? v.join(', ') : v}`);
+        lines.push('');
+      }
+    }
+    const md = lines.join('\n');
+    // Copy + download
+    navigator.clipboard.writeText(md).then(() => {
+      alert('Answers copied to clipboard as Markdown.\n\nAlso downloading as gfs-setup-answers.md');
+    }).catch(()=>{});
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'gfs-setup-answers.md';
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  hydrate();
+  updateProgress();
+</script>
+
+</body>
+</html>
