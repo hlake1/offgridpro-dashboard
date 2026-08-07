@@ -10,9 +10,16 @@
  *   MATON_API_KEY   Maton API key for the herbielakeai@gmail.com account
  *
  * Usage:
- *   MATON_API_KEY=... node scripts/pull-google-ads.js [YYYY-MM]
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js                # last 28 days (default)
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js live            # last 28 days
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js last-28-days    # last 28 days
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js last-N-days     # rolling window of N days (2..90)
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js YYYY-MM         # a specific calendar month
+ *   MATON_API_KEY=... node scripts/pull-google-ads.js prev-month      # previous calendar month
  *
- * If no month arg is supplied, defaults to the previous calendar month.
+ * Output location:
+ *   - Rolling windows write to: offgridpro/live/data.json
+ *   - Monthly windows write to: <YYYY-MM>/data.json (with legacy folder 'june-2026' for 2026-06)
  */
 
 'use strict';
@@ -51,10 +58,69 @@ function previousMonth() {
   return `${prev.getUTCFullYear()}-${pad(prev.getUTCMonth() + 1)}`;
 }
 
-const targetMonth = process.argv[2] || previousMonth();
-const { start: dateStart, end: dateEnd } = monthRange(targetMonth);
+// ---------- Period resolver ----------
 
-console.log(`▶ Pulling Google Ads data for ${targetMonth} (${dateStart} → ${dateEnd})`);
+/**
+ * Resolve the incoming CLI argument into a normalised period descriptor.
+ *   { mode: 'rolling', days, start, end, label }
+ *   { mode: 'monthly', month, start, end, label }
+ */
+function resolvePeriod(arg) {
+  // Rolling-window shorthands
+  const rollingAliases = new Set(['live', 'last-28-days', '28-days', 'rolling']);
+  if (!arg || rollingAliases.has(arg)) {
+    return rollingWindow(28);
+  }
+  const m = /^last-(\d{1,2})-days?$/.exec(arg);
+  if (m) {
+    const n = Math.max(2, Math.min(90, Number(m[1])));
+    return rollingWindow(n);
+  }
+
+  // Monthly shorthands / explicit YYYY-MM
+  if (arg === 'prev-month') {
+    return monthlyPeriod(previousMonth());
+  }
+  if (/^\d{4}-\d{2}$/.test(arg)) {
+    return monthlyPeriod(arg);
+  }
+
+  throw new Error(`Unrecognised period argument: '${arg}'`);
+}
+
+function rollingWindow(days) {
+  // Google Ads reporting is settled to the account timezone (Europe/London for
+  // OffGrid Pro). We use UTC midnight for the boundary; drift of a few hours
+  // is acceptable for a rolling window.
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  // 'Today' is often partial, but Google Ads will still return whatever has
+  // been reported so far. Include it so the dashboard feels current.
+  const end = new Date(today);
+  const start = new Date(today);
+  start.setUTCDate(start.getUTCDate() - (days - 1));
+  return {
+    mode: 'rolling',
+    days,
+    start: formatDate(start),
+    end: formatDate(end),
+    label: `Last ${days} days`,
+  };
+}
+
+function monthlyPeriod(yyyyMm) {
+  const { start, end } = monthRange(yyyyMm);
+  return { mode: 'monthly', month: yyyyMm, start, end, label: yyyyMm };
+}
+
+function formatDate(d) {
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+}
+
+const period = resolvePeriod(process.argv[2]);
+const { start: dateStart, end: dateEnd } = period;
+
+console.log(`▶ Pulling Google Ads data for ${period.label} (${dateStart} → ${dateEnd})`);
 
 // ---------- Maton API caller ----------
 
@@ -231,7 +297,13 @@ async function main() {
     meta: {
       pulledAt: new Date().toISOString(),
       source: 'Google Ads API via Maton',
-      period: { month: targetMonth, start: dateStart, end: dateEnd },
+      period: {
+        mode: period.mode,
+        label: period.label,
+        start: dateStart,
+        end: dateEnd,
+        ...(period.mode === 'rolling' ? { days: period.days } : { month: period.month }),
+      },
       customer,
       readOnly: true,
     },
@@ -245,11 +317,16 @@ async function main() {
     topAds,
   };
 
-  const outDir = path.join(__dirname, '..', targetMonth === previousMonth() ? 'june-2026' : targetMonth);
-  // Use targetMonth directly; if the folder name convention is different, adjust here.
-  // For now hard-map June -> june-2026
-  const folderName = targetMonth === '2026-06' ? 'june-2026' : targetMonth;
-  const outPath = path.join(__dirname, '..', folderName, 'data.json');
+  // Output location depends on period mode:
+  //   rolling  → offgridpro/live/data.json (this is what the Live Metrics page reads)
+  //   monthly  → <YYYY-MM>/data.json (with legacy alias for June 2026)
+  let outPath;
+  if (period.mode === 'rolling') {
+    outPath = path.join(__dirname, '..', 'offgridpro', 'live', 'data.json');
+  } else {
+    const folderName = period.month === '2026-06' ? 'june-2026' : period.month;
+    outPath = path.join(__dirname, '..', folderName, 'data.json');
+  }
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(data, null, 2));

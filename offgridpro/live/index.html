@@ -93,7 +93,8 @@
     </h1>
     <div class="ogp-accent-bar w-32 mt-6"></div>
     <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
-      Real-time Google Ads campaign data for OffGrid Pro. Pulled directly from the Google Ads API via Maton. Auto-refreshed daily.
+      Real-time Google Ads campaign data for OffGrid Pro — last 28 days on a rolling window.
+      Pulled directly from the Google Ads API via Maton. Auto-refreshed daily.
     </p>
     <div class="mt-6 flex items-center gap-4 flex-wrap">
       <span class="text-xs text-white/60" id="lastUpdated">Loading…</span>
@@ -159,7 +160,8 @@
       <section class="ogp-soft-bg p-6 border-l-4 flex items-center justify-between flex-wrap gap-4" style="border-left-color: var(--ogp-accent-2);">
         <div>
           <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Reporting Period</p>
-          <p class="text-lg font-medium text-gray-900 mt-1">${period.start} → ${period.end}</p>
+          <p class="text-lg font-medium text-gray-900 mt-1">${period.label || `${period.start} → ${period.end}`}</p>
+          <p class="text-xs text-gray-500 mt-1">${period.start} → ${period.end}</p>
         </div>
         <div class="text-right">
           <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Customer</p>
@@ -362,9 +364,9 @@
 
   async function loadLiveData(force) {
     try {
-      // Pulls the June 2026 data.json for now. Once we're pulling the current
-      // month automatically, this will point at the current period.
-      const url = '../june-2026/data.json' + (force ? `?t=${Date.now()}` : '');
+      // Rolling last-28-days data, refreshed daily by the GitHub Actions
+      // workflow (.github/workflows/refresh-data.yml). See scripts/pull-google-ads.js.
+      const url = './data.json' + (force ? `?t=${Date.now()}` : '');
       const res = await fetch(url, { cache: force ? 'no-store' : 'default' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
