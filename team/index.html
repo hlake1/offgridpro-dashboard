@@ -244,11 +244,34 @@
 
   function requireSession() {
     const s = getSession();
-    if (!s || (s.type !== 'team' && s.type !== 'admin')) {
+    if (!s || (s.type !== 'team' && s.type !== 'admin' && s.type !== 'manager')) {
       window.location.replace('../');
       return null;
     }
     return s;
+  }
+
+  // ------------------------------------------------------------------
+  // Team roster — mirrors the CODES map in root index.html.
+  // Used when a manager views the portfolio as a specific team member.
+  // Keep the codes here identical to the root file.
+  // ------------------------------------------------------------------
+  const TEAM_ROSTER = {
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
+    'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
+    'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
+    'Daisy':    { name: 'Daisy',    role: 'Team Member',     clients: [] },
+    'Jeremy':   { name: 'Jeremy',   role: 'Team Member',     clients: [] },
+    'Bethany':  { name: 'Bethany',  role: 'Team Member',     clients: [] },
+  };
+
+  function getViewAsMember() {
+    const params = new URLSearchParams(window.location.search);
+    const asCode = params.get('as');
+    if (!asCode) return null;
+    const member = TEAM_ROSTER[asCode];
+    if (!member) return null;
+    return { code: asCode, ...member };
   }
 
   function escapeHtml(s) {
@@ -257,7 +280,11 @@
     ));
   }
 
-  function pickClients(session) {
+  function pickClients(session, viewAs) {
+    // Manager viewing as a specific team member: use that member's client list
+    if (viewAs) return (viewAs.clients || []).filter(id => CLIENTS[id]);
+    // Manager without a viewAs: show all clients (default landing behaviour)
+    if (session.type === 'manager') return Object.keys(CLIENTS);
     if (session.type === 'admin') return Object.keys(CLIENTS);
     return (session.clients || []).filter(id => CLIENTS[id]);
   }
@@ -266,12 +293,33 @@
     const session = requireSession();
     if (!session) return;
 
-    // Header
-    const displayName = session.name || (session.type === 'admin' ? 'Tweak Admin' : 'Team');
-    document.getElementById('user-name').textContent = displayName;
-    document.getElementById('hero-name').textContent = displayName;
+    const viewAs = (session.type === 'manager') ? getViewAsMember() : null;
 
-    const clientIds = pickClients(session);
+    // Header
+    const managerBrowsing = session.type === 'manager' && !viewAs;
+    const displayName = viewAs
+      ? `${session.name || 'Manager'} → ${viewAs.name}`
+      : (session.name || (session.type === 'admin' ? 'Tweak Admin' : 'Team'));
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('hero-name').textContent = viewAs ? viewAs.name : (session.name || 'there');
+
+    // Manager-viewing-as banner + back link
+    if (viewAs) {
+      const hero = document.querySelector('header .max-w-6xl.py-16');
+      if (hero && !document.getElementById('view-as-banner')) {
+        const banner = document.createElement('div');
+        banner.id = 'view-as-banner';
+        banner.className = 'mt-6 inline-flex items-center gap-3 bg-white/10 border border-white/20 px-4 py-2 rounded-sm';
+        banner.innerHTML = `
+          <span class="text-[10px] uppercase tracking-widest text-white/60 font-semibold">Viewing as</span>
+          <span class="text-white font-medium">${escapeHtml(viewAs.name)} · ${escapeHtml(viewAs.role)}</span>
+          <a href="../manager/" class="text-white/70 hover:text-white text-[11px] uppercase tracking-widest ml-2" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.75rem;">← Back to team</a>
+        `;
+        hero.appendChild(banner);
+      }
+    }
+
+    const clientIds = pickClients(session, viewAs);
     const clients = clientIds.map(id => CLIENTS[id]);
     const activeCount = clients.filter(c => c.status === 'Active').length;
     const latestReports = clients.map(c => c.latestReport).filter(Boolean);
@@ -280,17 +328,28 @@
     document.getElementById('stat-clients').textContent = clients.length;
     document.getElementById('stat-active').textContent = activeCount;
     document.getElementById('stat-latest').textContent = latestReports[0] || '—';
-    document.getElementById('stat-role').textContent = session.role || (session.type === 'admin' ? 'Admin' : 'Team member');
+    const roleDisplay = viewAs ? viewAs.role : (session.role || (session.type === 'admin' ? 'Admin' : (session.type === 'manager' ? 'Manager' : 'Team member')));
+    document.getElementById('stat-role').textContent = roleDisplay;
 
     // Section heading
     document.getElementById('section-heading').textContent =
-      session.type === 'admin' ? 'All clients' : 'Your clients';
+      viewAs ? `${viewAs.name}'s clients`
+      : session.type === 'admin' ? 'All clients'
+      : session.type === 'manager' ? 'All clients'
+      : 'Your clients';
 
     // Client grid
     const grid = document.getElementById('clients-grid');
     const empty = document.getElementById('empty-state');
     if (clients.length === 0) {
       grid.innerHTML = '';
+      // Tweak empty-state copy for manager viewing a team member with no clients
+      if (viewAs) {
+        empty.innerHTML = `
+          <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">No clients assigned</p>
+          <p class="text-gray-600">${escapeHtml(viewAs.name)} doesn't have any clients yet.</p>
+        `;
+      }
       empty.style.display = 'block';
       return;
     }

@@ -147,10 +147,11 @@
   /*
    * Tweak Reporting — Access Router
    *
-   * Three code types:
-   *  - client: goes straight to that client's dashboard
-   *  - team:   goes to /team/ overview with their assigned clients
-   *  - admin:  goes to /team/ overview showing ALL clients
+   * Four code types:
+   *  - client:  goes straight to that client's dashboard
+   *  - team:    goes to /team/ overview with their assigned clients
+   *  - admin:   goes to /team/ overview showing ALL clients
+   *  - manager: goes to /manager/ — team-member browser (pick a team member to view)
    *
    * NOTE: Client-side friction gate only — not real security.
    */
@@ -194,6 +195,10 @@
 
     // Tweak admin code: sees all clients + admin panel inside dashboards
     'Tweak':    { type: 'admin', name: 'Tweak Admin' },
+
+    // Manager codes: browse the whole team, pick a team member to view their portfolio + drafts
+    'Benedict': { type: 'manager', name: 'Benedict', role: 'Manager' },
+    'Louise':   { type: 'manager', name: 'Louise',   role: 'Manager' },
   };
 
   const form = document.getElementById('access-form');
@@ -240,6 +245,13 @@
         sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
       } catch {}
       window.location.href = './team/';
+    } else if (code.type === 'manager') {
+      // Manager: go to manager team-browser view. Pre-auth downstream dashboards as admin
+      // so they can drill into any client without being re-prompted.
+      try {
+        sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+      } catch {}
+      window.location.href = './manager/';
     }
   });
 </script>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tweak Reporting — Manager Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-light: #f7f8f4;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background: #ffffff;
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--tw-dark); }
+  .heading-bold { font-weight: 700; }
+
+  .tw-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+
+  .tw-hero {
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .tw-hero::before, .tw-hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+  .tw-hero::before {
+    width: 500px; height: 500px;
+    background: var(--tw-accent-2);
+    top: -100px; left: -100px;
+  }
+  .tw-hero::after {
+    width: 600px; height: 600px;
+    background: var(--tw-accent-1);
+    bottom: -200px; right: -150px;
+  }
+
+  .member-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .member-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--tw-accent-2);
+  }
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .stat-pill {
+    background: #f8faf5;
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .status-assigned { background: #dcfce7; color: #166534; }
+  .status-none { background: #f3f4f6; color: #6b7280; }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+
+  .drafts-card {
+    background: #f8faf5;
+    border: 1px dashed #d1d5db;
+  }
+
+  .draft-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    padding: 0.9rem 1rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="tw-hero text-white">
+  <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10 relative z-10">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col">
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-white text-xl font-bold tracking-tight">TWEAK</span>
+          <span class="text-white text-xl font-normal tracking-tight">REPORTING</span>
+        </div>
+        <div class="tw-accent-bar w-full mt-1"></div>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Manager Portal</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-right hidden sm:block">
+        <p class="text-[10px] uppercase tracking-widest text-white/50">Signed in as</p>
+        <p id="user-name" class="text-white text-sm font-medium">—</p>
+      </div>
+      <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="max-w-6xl mx-auto px-6 py-16 relative z-10">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Welcome back</p>
+    <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight">
+      Hi <span id="hero-name" class="heading-bold">there</span>
+    </h1>
+    <div class="tw-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Choose a team member to view their client portfolio, drafts, and profile.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-16 space-y-12">
+
+  <!-- Summary strip -->
+  <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Team</p>
+      <p class="font-bold text-gray-900 text-2xl mt-1" id="stat-team">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Clients</p>
+      <p class="font-bold text-2xl mt-1" style="color: var(--tw-accent-1);" id="stat-clients">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Assigned</p>
+      <p class="font-medium text-gray-900 text-base mt-1" id="stat-assigned">—</p>
+    </div>
+    <div class="stat-pill">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">Unassigned</p>
+      <p class="font-medium text-gray-900 text-base mt-1" id="stat-unassigned">—</p>
+    </div>
+  </section>
+
+  <!-- Quick action: view all clients directly -->
+  <section class="flex items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-sm px-5 py-4">
+    <div>
+      <p class="text-[11px] uppercase tracking-[0.15em] text-gray-500 font-semibold">Prefer a client-first view?</p>
+      <p class="text-sm text-gray-700 mt-0.5">Jump straight into the portfolio without picking a team member.</p>
+    </div>
+    <a href="../team/" class="text-sm font-semibold whitespace-nowrap px-4 py-2 rounded-sm border border-gray-300 hover:border-gray-500 transition-colors">
+      View all clients →
+    </a>
+  </section>
+
+  <!-- Team roster -->
+  <section>
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Tweak Marketing</p>
+      <h2 class="text-3xl font-medium text-gray-900">Team roster</h2>
+      <div class="tw-accent-bar w-24 mt-4"></div>
+      <p class="text-gray-600 text-sm mt-4">Click any team member to view their assigned clients and monthly draft reports.</p>
+    </div>
+
+    <div id="team-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- populated by JS -->
+    </div>
+  </section>
+
+  <!-- Footer note -->
+  <section class="pt-8 border-t border-gray-200">
+    <p class="text-xs text-gray-500 leading-relaxed max-w-3xl">
+      <strong class="text-gray-700">Tweak Reporting Manager Portal</strong> — Full oversight of every team member's client portfolio, monthly draft reports, and profile. Any dashboard you open from here loads with full admin access — no re-authentication required.
+    </p>
+  </section>
+
+</main>
+
+<script>
+  // ------------------------------------------------------------------
+  // Team roster — mirrors the CODES map in root index.html.
+  // Keep names + roles + client assignments in sync.
+  // ------------------------------------------------------------------
+  const TEAM_ROSTER = {
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
+    'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
+    'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
+    'Daisy':    { name: 'Daisy',    role: 'Team Member',     clients: [] },
+    'Jeremy':   { name: 'Jeremy',   role: 'Team Member',     clients: [] },
+    'Bethany':  { name: 'Bethany',  role: 'Team Member',     clients: [] },
+  };
+
+  // Client display names (for member cards)
+  const CLIENT_LABELS = {
+    'offgridpro': 'OffGrid Pro',
+    'gfs':        'GFS',
+  };
+
+  // Avatar palette — deterministic per name
+  const AVATAR_COLORS = [
+    'linear-gradient(135deg, #a3c94a, #4bc7bf)',
+    'linear-gradient(135deg, #4bc7bf, #5aa5d8)',
+    'linear-gradient(135deg, #5aa5d8, #a3c94a)',
+    'linear-gradient(135deg, #f59e0b, #4bc7bf)',
+    'linear-gradient(135deg, #8b5cf6, #4bc7bf)',
+    'linear-gradient(135deg, #ec4899, #5aa5d8)',
+  ];
+
+  function avatarFor(name) {
+    // Deterministic hash so the same person always gets the same colour
+    let hash = 0;
+    for (const c of (name || '')) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    const idx = Math.abs(hash) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[idx];
+  }
+
+  function initialsFor(name) {
+    return (name || '?').split(/\s+/).map(s => s[0] || '').join('').slice(0, 2).toUpperCase();
+  }
+
+  function escapeHtml(s) {
+    return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+    ));
+  }
+
+  // ------------------------------------------------------------------
+  // Session gate
+  // ------------------------------------------------------------------
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+
+  function requireManagerSession() {
+    const s = getSession();
+    if (!s || (s.type !== 'manager' && s.type !== 'admin')) {
+      window.location.replace('../');
+      return null;
+    }
+    return s;
+  }
+
+  function render() {
+    const session = requireManagerSession();
+    if (!session) return;
+
+    // Header
+    const displayName = session.name || 'Manager';
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('hero-name').textContent = displayName;
+
+    const members = Object.entries(TEAM_ROSTER);
+    const totalClients = new Set(members.flatMap(([, m]) => m.clients)).size;
+    const assignedCount = members.filter(([, m]) => (m.clients || []).length > 0).length;
+    const unassignedCount = members.length - assignedCount;
+
+    document.getElementById('stat-team').textContent = members.length;
+    document.getElementById('stat-clients').textContent = totalClients;
+    document.getElementById('stat-assigned').textContent = assignedCount;
+    document.getElementById('stat-unassigned').textContent = unassignedCount;
+
+    // Render team member cards
+    const grid = document.getElementById('team-grid');
+    grid.innerHTML = members.map(([code, m]) => {
+      const clientChips = (m.clients || []).length
+        ? m.clients.map(id => `<span class="text-xs bg-white border border-gray-200 px-2 py-1 rounded-sm text-gray-700">${escapeHtml(CLIENT_LABELS[id] || id)}</span>`).join('')
+        : '<span class="text-xs text-gray-400 italic">No clients assigned yet</span>';
+
+      const status = (m.clients || []).length
+        ? `<span class="status-pill status-assigned"><span class="status-dot"></span>${m.clients.length} client${m.clients.length === 1 ? '' : 's'}</span>`
+        : `<span class="status-pill status-none"><span class="status-dot"></span>Unassigned</span>`;
+
+      return `
+        <a href="../team/?as=${encodeURIComponent(code)}" class="member-card p-6 rounded-sm" data-member="${escapeHtml(code)}">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="avatar" style="background: ${avatarFor(m.name)};">
+              ${escapeHtml(initialsFor(m.name))}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-medium text-gray-900 truncate">${escapeHtml(m.name)}</h3>
+              <p class="text-xs uppercase tracking-widest text-gray-500 mt-1 font-semibold">${escapeHtml(m.role)}</p>
+            </div>
+            ${status}
+          </div>
+
+          <div class="tw-accent-bar w-16 mb-4"></div>
+
+          <div class="mb-4">
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Clients</p>
+            <div class="flex flex-wrap gap-2">
+              ${clientChips}
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+            <span class="text-xs text-gray-500">View portfolio &amp; drafts</span>
+            <span class="font-semibold text-sm group-hover:translate-x-1 transition-transform" style="color: var(--tw-dark);">Open →</span>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    // Pre-authorise downstream dashboards as admin when clicking a member.
+    // (Manager root login already sets this, but re-stamp it here so navigation
+    //  after long idle periods still lands cleanly.)
+    grid.querySelectorAll('a[data-member]').forEach(a => {
+      a.addEventListener('click', () => {
+        try {
+          sessionStorage.setItem('ogp_dashboard_auth', JSON.stringify({ role: 'admin', ts: Date.now() }));
+        } catch {}
+      });
+    });
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    try {
+      sessionStorage.removeItem('tw_session');
+      sessionStorage.removeItem('ogp_dashboard_auth');
+    } catch {}
+    window.location.replace('../');
+  });
+
+  render();
+</script>
+
+</body>
+</html>
