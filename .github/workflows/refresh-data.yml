@@ -8,10 +8,11 @@ on:
   # Manual trigger from the Actions tab
   workflow_dispatch:
     inputs:
-      month:
-        description: 'Reporting month (YYYY-MM). Defaults to previous month.'
+      period:
+        description: "Period: 'live' / 'last-28-days' / 'last-N-days' / 'prev-month' / 'YYYY-MM'. Defaults to 'live' (last 28 days)."
         required: false
         type: string
+        default: 'live'
 
   # Automatic — daily at 06:00 UTC (07:00 UK BST / 06:00 GMT)
   # Change frequency here later if Herbie/Daniela want faster/slower refresh.
@@ -37,17 +38,20 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Pull Google Ads data
+      - name: Pull Google Ads data (last 28 days rolling window)
         env:
           MATON_API_KEY: ${{ secrets.MATON_API_KEY }}
         run: |
-          MONTH="${{ github.event.inputs.month }}"
-          if [ -z "$MONTH" ]; then
-            # Default to the current reporting period the dashboard is showing
-            MONTH="2026-06"
+          # Default to the rolling last-28-days window that the Live Metrics
+          # dashboard reads from offgridpro/live/data.json. Operators can pass
+          # any other period via workflow_dispatch (e.g. '2026-07' for a
+          # specific month, or 'last-14-days' for a shorter rolling window).
+          PERIOD="${{ github.event.inputs.period }}"
+          if [ -z "$PERIOD" ]; then
+            PERIOD="live"
           fi
-          echo "Refreshing for month: $MONTH"
-          node scripts/pull-google-ads.js "$MONTH"
+          echo "Refreshing for period: $PERIOD"
+          node scripts/pull-google-ads.js "$PERIOD"
 
       - name: Commit changes if any
         run: |
