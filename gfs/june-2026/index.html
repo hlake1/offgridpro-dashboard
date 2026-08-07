@@ -43,6 +43,13 @@
   .tag-pos { color: #059669; font-weight: 600; }
   .tag-neg { color: #dc2626; font-weight: 600; }
   .tag-flat { color: #6b7280; font-weight: 500; }
+
+  /* Chart wrappers — Chart.js needs a bounded parent height because
+     maintainAspectRatio:false makes the canvas fill the parent. */
+  .chart-wrap { position: relative; width: 100%; height: 260px; }
+  @media (max-width: 640px) {
+    .chart-wrap { height: 220px; }
+  }
 </style>
 </head>
 <body class="bg-gray-50">
@@ -301,7 +308,7 @@
 
       <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <h3 class="text-lg font-bold text-gray-900 mb-4">Historical trend (14 months)</h3>
-        <canvas id="channelTrendChart" height="240"></canvas>
+        <div class="chart-wrap"><canvas id="channelTrendChart"></canvas></div>
         <p class="text-xs text-gray-500 mt-4">Organic and Direct remain the dominant channels. Organic peaked in Jan '26 (1,662) and has softened since.</p>
       </div>
     </div>
@@ -657,7 +664,7 @@
     <div class="grid lg:grid-cols-2 gap-6">
       <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <h3 class="text-lg font-bold text-gray-900 mb-4">LinkedIn — 14-month impressions</h3>
-        <canvas id="linkedInChart" height="220"></canvas>
+        <div class="chart-wrap"><canvas id="linkedInChart"></canvas></div>
         <p class="text-xs text-gray-500 mt-4">
           LinkedIn impressions dropped 51% to 3,417 in June — the lowest point in the past year.
           Reviewing content mix and top posts will be key to recovering performance.
