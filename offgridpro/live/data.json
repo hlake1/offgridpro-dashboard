@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-08-08T06:53:58.826Z",
+    "pulledAt": "2026-08-09T06:57:26.436Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-07-12",
-      "end": "2026-08-08",
+      "start": "2026-07-13",
+      "end": "2026-08-09",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 3671,
-    "clicks": 182,
+    "impressions": 3550,
+    "clicks": 174,
     "conversions": 14,
-    "cost": 416.5,
-    "ctr": 4.96,
-    "cpc": 2.29
+    "cost": 406.56,
+    "ctr": 4.9,
+    "cpc": 2.34
   },
   "campaigns": [
     {
@@ -32,24 +32,24 @@
       "name": "Home Energy",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 3143,
-      "clicks": 124,
+      "impressions": 3036,
+      "clicks": 120,
       "conversions": 10,
-      "cost": 303.44,
+      "cost": 299.02,
       "ctr": 3.95,
-      "cpc": 2.45
+      "cpc": 2.49
     },
     {
       "id": "23851985894",
       "name": "Victron",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 528,
-      "clicks": 58,
+      "impressions": 514,
+      "clicks": 54,
       "conversions": 4,
-      "cost": 113.06,
-      "ctr": 10.98,
-      "cpc": 1.95
+      "cost": 107.54,
+      "ctr": 10.51,
+      "cpc": 1.99
     },
     {
       "id": "23758381168",
@@ -93,51 +93,51 @@
       {
         "keyword": "emergency power supply for home",
         "matchType": "PHRASE",
-        "impressions": 419,
+        "impressions": 403,
         "clicks": 25,
         "conversions": 3,
         "cost": 57.6,
-        "ctr": 5.97,
+        "ctr": 6.2,
         "cpc": 2.3
       },
       {
         "keyword": "battery backup for home",
         "matchType": "PHRASE",
-        "impressions": 505,
+        "impressions": 487,
         "clicks": 22,
         "conversions": 2,
         "cost": 40.3,
-        "ctr": 4.36,
+        "ctr": 4.52,
         "cpc": 1.83
-      },
-      {
-        "keyword": "home solar and battery",
-        "matchType": "PHRASE",
-        "impressions": 456,
-        "clicks": 12,
-        "conversions": 2,
-        "cost": 55.87,
-        "ctr": 2.63,
-        "cpc": 4.66
       },
       {
         "keyword": "energy storage",
         "matchType": "PHRASE",
-        "impressions": 235,
-        "clicks": 11,
+        "impressions": 227,
+        "clicks": 10,
         "conversions": 0,
-        "cost": 8.71,
-        "ctr": 4.68,
-        "cpc": 0.79
+        "cost": 7.09,
+        "ctr": 4.41,
+        "cpc": 0.71
+      },
+      {
+        "keyword": "home solar and battery",
+        "matchType": "PHRASE",
+        "impressions": 443,
+        "clicks": 10,
+        "conversions": 2,
+        "cost": 53.78,
+        "ctr": 2.26,
+        "cpc": 5.38
       },
       {
         "keyword": "batteries for home energy storage",
         "matchType": "PHRASE",
-        "impressions": 122,
+        "impressions": 125,
         "clicks": 9,
         "conversions": 0,
         "cost": 13.67,
-        "ctr": 7.38,
+        "ctr": 7.2,
         "cpc": 1.52
       },
       {
@@ -163,11 +163,11 @@
       {
         "keyword": "home energy battery storage",
         "matchType": "PHRASE",
-        "impressions": 129,
+        "impressions": 126,
         "clicks": 1,
         "conversions": 0,
         "cost": 1.31,
-        "ctr": 0.78,
+        "ctr": 0.79,
         "cpc": 1.31
       }
     ],
@@ -178,68 +178,68 @@
         "impressions": 144,
         "clicks": 21,
         "conversions": 1,
-        "cost": 50.07,
+        "cost": 50.4,
         "ctr": 14.58,
-        "cpc": 2.38
-      },
-      {
-        "keyword": "victron installer near me",
-        "matchType": "PHRASE",
-        "impressions": 47,
-        "clicks": 13,
-        "conversions": 1,
-        "cost": 13.19,
-        "ctr": 27.66,
-        "cpc": 1.01
+        "cpc": 2.4
       },
       {
         "keyword": "victron installer",
         "matchType": "PHRASE",
-        "impressions": 67,
+        "impressions": 64,
+        "clicks": 11,
+        "conversions": 1,
+        "cost": 10.08,
+        "ctr": 17.19,
+        "cpc": 0.92
+      },
+      {
+        "keyword": "victron installer near me",
+        "matchType": "PHRASE",
+        "impressions": 45,
         "clicks": 10,
         "conversions": 1,
-        "cost": 9.49,
-        "ctr": 14.93,
-        "cpc": 0.95
+        "cost": 8.24,
+        "ctr": 22.22,
+        "cpc": 0.82
       },
       {
         "keyword": "victron battery",
         "matchType": "PHRASE",
-        "impressions": 52,
+        "impressions": 51,
         "clicks": 5,
         "conversions": 1,
         "cost": 31.84,
-        "ctr": 9.62,
+        "ctr": 9.8,
         "cpc": 6.37
       },
       {
         "keyword": "victron solar",
         "matchType": "PHRASE",
         "impressions": 112,
-        "clicks": 5,
+        "clicks": 4,
         "conversions": 0,
-        "cost": 5.41,
-        "ctr": 4.46,
-        "cpc": 1.08
+        "cost": 4.88,
+        "ctr": 3.57,
+        "cpc": 1.22
       },
       {
         "keyword": "victron energy inverter",
         "matchType": "PHRASE",
-        "impressions": 47,
-        "clicks": 3,
+        "impressions": 41,
+        "clicks": 2,
         "conversions": 0,
-        "cost": 2.23,
-        "ctr": 6.38,
-        "cpc": 0.74
+        "cost": 1.27,
+        "ctr": 4.88,
+        "cpc": 0.64
       },
       {
         "keyword": "victron energy installer",
         "matchType": "PHRASE",
-        "impressions": 39,
+        "impressions": 37,
         "clicks": 1,
         "conversions": 0,
         "cost": 0.84,
-        "ctr": 2.56,
+        "ctr": 2.7,
         "cpc": 0.84
       }
     ]
@@ -248,14 +248,14 @@
     {
       "term": "victron",
       "campaign": "Home Energy",
-      "impressions": 179,
+      "impressions": 177,
       "clicks": 9,
       "conversions": 0
     },
     {
       "term": "victron energy",
       "campaign": "Home Energy",
-      "impressions": 105,
+      "impressions": 103,
       "clicks": 8,
       "conversions": 1
     },
@@ -297,7 +297,7 @@
     {
       "term": "offgrid power solutions",
       "campaign": "Home Energy",
-      "impressions": 18,
+      "impressions": 17,
       "clicks": 2,
       "conversions": 0
     },
@@ -347,13 +347,6 @@
       "term": "victron solar installer near me",
       "campaign": "Victron",
       "impressions": 2,
-      "clicks": 2,
-      "conversions": 0
-    },
-    {
-      "term": "victron specialist near me",
-      "campaign": "Victron",
-      "impressions": 8,
       "clicks": 2,
       "conversions": 0
     },
@@ -416,7 +409,14 @@
     {
       "term": "energy",
       "campaign": "Home Energy",
-      "impressions": 12,
+      "impressions": 10,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
+      "term": "energy supply number",
+      "campaign": "Home Energy",
+      "impressions": 2,
       "clicks": 1,
       "conversions": 0
     }
@@ -449,9 +449,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 2809,
-      "clicks": 108,
-      "ctr": 3.84
+      "impressions": 2702,
+      "clicks": 104,
+      "ctr": 3.85
     },
     {
       "id": "809035951826",
@@ -480,9 +480,9 @@
         "Trusted UK Victron installers for off-grid and hybrid energy systems",
         "Reliable energy security solutions using Victron Energy technology"
       ],
-      "impressions": 528,
-      "clicks": 58,
-      "ctr": 10.98
+      "impressions": 514,
+      "clicks": 54,
+      "ctr": 10.51
     },
     {
       "id": "819096374767",
