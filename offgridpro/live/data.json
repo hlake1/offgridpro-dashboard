@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-08-22T06:40:36.060Z",
+    "pulledAt": "2026-08-23T06:41:12.554Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-07-26",
-      "end": "2026-08-22",
+      "start": "2026-07-27",
+      "end": "2026-08-23",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 3323,
-    "clicks": 192,
-    "conversions": 7,
-    "cost": 420.69,
-    "ctr": 5.78,
-    "cpc": 2.19
+    "impressions": 3269,
+    "clicks": 188,
+    "conversions": 6,
+    "cost": 420.93,
+    "ctr": 5.75,
+    "cpc": 2.24
   },
   "campaigns": [
     {
@@ -32,24 +32,24 @@
       "name": "Home Energy",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 2549,
-      "clicks": 111,
-      "conversions": 6,
-      "cost": 252.75,
-      "ctr": 4.35,
-      "cpc": 2.28
+      "impressions": 2492,
+      "clicks": 105,
+      "conversions": 5,
+      "cost": 240.35,
+      "ctr": 4.21,
+      "cpc": 2.29
     },
     {
       "id": "23851985894",
       "name": "Victron",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 774,
-      "clicks": 81,
+      "impressions": 777,
+      "clicks": 83,
       "conversions": 1,
-      "cost": 167.94,
-      "ctr": 10.47,
-      "cpc": 2.07
+      "cost": 180.58,
+      "ctr": 10.68,
+      "cpc": 2.18
     },
     {
       "id": "23758381168",
@@ -93,11 +93,11 @@
       {
         "keyword": "home battery",
         "matchType": "PHRASE",
-        "impressions": 200,
+        "impressions": 199,
         "clicks": 15,
         "conversions": 0,
         "cost": 27.05,
-        "ctr": 7.5,
+        "ctr": 7.54,
         "cpc": 1.8
       },
       {
@@ -113,51 +113,41 @@
       {
         "keyword": "home solar and battery",
         "matchType": "PHRASE",
-        "impressions": 421,
+        "impressions": 419,
         "clicks": 12,
         "conversions": 2,
         "cost": 40.08,
-        "ctr": 2.85,
+        "ctr": 2.86,
         "cpc": 3.34
       },
       {
         "keyword": "emergency power supply for home",
         "matchType": "PHRASE",
-        "impressions": 180,
+        "impressions": 176,
         "clicks": 11,
         "conversions": 2,
         "cost": 26,
-        "ctr": 6.11,
+        "ctr": 6.25,
         "cpc": 2.36
       },
       {
         "keyword": "solar battery storage",
         "matchType": "PHRASE",
-        "impressions": 104,
+        "impressions": 105,
         "clicks": 9,
         "conversions": 0,
         "cost": 26.23,
-        "ctr": 8.65,
+        "ctr": 8.57,
         "cpc": 2.91
-      },
-      {
-        "keyword": "battery backup for home",
-        "matchType": "PHRASE",
-        "impressions": 161,
-        "clicks": 8,
-        "conversions": 1,
-        "cost": 18.15,
-        "ctr": 4.97,
-        "cpc": 2.27
       },
       {
         "keyword": "energy storage",
         "matchType": "PHRASE",
-        "impressions": 300,
+        "impressions": 299,
         "clicks": 7,
         "conversions": 0,
         "cost": 9.98,
-        "ctr": 2.33,
+        "ctr": 2.34,
         "cpc": 1.43
       },
       {
@@ -171,13 +161,23 @@
         "cpc": 1.51
       },
       {
+        "keyword": "battery backup for home",
+        "matchType": "PHRASE",
+        "impressions": 144,
+        "clicks": 3,
+        "conversions": 0,
+        "cost": 6.68,
+        "ctr": 2.08,
+        "cpc": 2.23
+      },
+      {
         "keyword": "home backup battery system",
         "matchType": "PHRASE",
-        "impressions": 56,
+        "impressions": 52,
         "clicks": 3,
         "conversions": 0,
         "cost": 2.56,
-        "ctr": 5.36,
+        "ctr": 5.77,
         "cpc": 0.85
       },
       {
@@ -213,11 +213,11 @@
       {
         "keyword": "backup battery systems",
         "matchType": "PHRASE",
-        "impressions": 46,
+        "impressions": 47,
         "clicks": 1,
         "conversions": 0,
         "cost": 1.08,
-        "ctr": 2.17,
+        "ctr": 2.13,
         "cpc": 1.08
       }
     ],
@@ -225,22 +225,32 @@
       {
         "keyword": "victron energy uk",
         "matchType": "PHRASE",
-        "impressions": 202,
+        "impressions": 204,
         "clicks": 25,
         "conversions": 0,
         "cost": 62.92,
-        "ctr": 12.38,
+        "ctr": 12.25,
         "cpc": 2.52
       },
       {
         "keyword": "victron installer near me",
         "matchType": "PHRASE",
-        "impressions": 74,
+        "impressions": 72,
         "clicks": 17,
         "conversions": 0,
         "cost": 27.68,
-        "ctr": 22.97,
+        "ctr": 23.61,
         "cpc": 1.63
+      },
+      {
+        "keyword": "victron solar",
+        "matchType": "PHRASE",
+        "impressions": 186,
+        "clicks": 14,
+        "conversions": 0,
+        "cost": 31.11,
+        "ctr": 7.53,
+        "cpc": 2.22
       },
       {
         "keyword": "victron installer",
@@ -251,16 +261,6 @@
         "cost": 18.63,
         "ctr": 14.61,
         "cpc": 1.43
-      },
-      {
-        "keyword": "victron solar",
-        "matchType": "PHRASE",
-        "impressions": 182,
-        "clicks": 12,
-        "conversions": 0,
-        "cost": 18.46,
-        "ctr": 6.59,
-        "cpc": 1.54
       },
       {
         "keyword": "victron energy installer",
@@ -275,21 +275,21 @@
       {
         "keyword": "victron battery",
         "matchType": "PHRASE",
-        "impressions": 115,
+        "impressions": 116,
         "clicks": 6,
         "conversions": 1,
         "cost": 32.43,
-        "ctr": 5.22,
+        "ctr": 5.17,
         "cpc": 5.41
       },
       {
         "keyword": "victron energy inverter",
         "matchType": "PHRASE",
-        "impressions": 50,
+        "impressions": 49,
         "clicks": 1,
         "conversions": 0,
         "cost": 0.52,
-        "ctr": 2,
+        "ctr": 2.04,
         "cpc": 0.52
       }
     ]
@@ -310,20 +310,6 @@
       "conversions": 0
     },
     {
-      "term": "victron",
-      "campaign": "Home Energy",
-      "impressions": 58,
-      "clicks": 3,
-      "conversions": 0
-    },
-    {
-      "term": "victron energy",
-      "campaign": "Home Energy",
-      "impressions": 44,
-      "clicks": 3,
-      "conversions": 1
-    },
-    {
       "term": "victron engineer near me",
       "campaign": "Victron",
       "impressions": 11,
@@ -340,14 +326,14 @@
     {
       "term": "victron specialist near me",
       "campaign": "Victron",
-      "impressions": 8,
+      "impressions": 7,
       "clicks": 3,
       "conversions": 0
     },
     {
       "term": "victron uk",
       "campaign": "Victron",
-      "impressions": 30,
+      "impressions": 31,
       "clicks": 3,
       "conversions": 0
     },
@@ -355,6 +341,20 @@
       "term": "home battery storage uk",
       "campaign": "Home Energy",
       "impressions": 11,
+      "clicks": 2,
+      "conversions": 0
+    },
+    {
+      "term": "victron",
+      "campaign": "Home Energy",
+      "impressions": 45,
+      "clicks": 2,
+      "conversions": 0
+    },
+    {
+      "term": "victron energy",
+      "campaign": "Home Energy",
+      "impressions": 42,
       "clicks": 2,
       "conversions": 0
     },
@@ -459,7 +459,7 @@
     {
       "term": "energy",
       "campaign": "Home Energy",
-      "impressions": 7,
+      "impressions": 6,
       "clicks": 1,
       "conversions": 0
     },
@@ -499,9 +499,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 2099,
-      "clicks": 88,
-      "ctr": 4.19
+      "impressions": 2042,
+      "clicks": 82,
+      "ctr": 4.02
     },
     {
       "id": "809035951826",
@@ -530,9 +530,9 @@
         "Trusted UK Victron installers for off-grid and hybrid energy systems",
         "Reliable energy security solutions using Victron Energy technology"
       ],
-      "impressions": 774,
-      "clicks": 81,
-      "ctr": 10.47
+      "impressions": 777,
+      "clicks": 83,
+      "ctr": 10.68
     },
     {
       "id": "819096374767",
