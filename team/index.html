@@ -99,6 +99,35 @@
     border: 2px dashed #e5e7eb;
     background: #f8faf5;
   }
+
+  .member-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .member-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-color: var(--tw-accent-2);
+  }
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -176,6 +205,20 @@
     <div id="empty-state" class="empty-state p-12 text-center rounded-sm" style="display:none;">
       <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">No clients assigned</p>
       <p class="text-gray-600">Ask your Tweak admin to add clients to your portfolio.</p>
+    </div>
+  </section>
+
+  <!-- View others section -->
+  <section id="others-section" style="display:none;">
+    <div class="mb-8">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">The rest of the team</p>
+      <h2 class="text-3xl font-medium text-gray-900" id="others-heading">View others</h2>
+      <div class="tw-accent-bar w-24 mt-4"></div>
+      <p class="text-gray-600 text-sm mt-4">Click any team member to view their client portfolio — we work as a team, so everyone's clients are open to everyone.</p>
+    </div>
+
+    <div id="others-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- populated by JS -->
     </div>
   </section>
 
@@ -260,9 +303,7 @@
     'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
     'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
     'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
-    'Daisy':    { name: 'Daisy',    role: 'Team Member',     clients: [] },
-    'Jeremy':   { name: 'Jeremy',   role: 'Team Member',     clients: [] },
-    'Bethany':  { name: 'Bethany',  role: 'Team Member',     clients: [] },
+    'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: [] },
   };
 
   function getViewAsMember() {
@@ -280,6 +321,34 @@
     ));
   }
 
+  // ------------------------------------------------------------------
+  // Avatar helpers (mirrors manager portal) for the "View others" cards.
+  // ------------------------------------------------------------------
+  const CLIENT_LABELS = {
+    'offgridpro': 'OffGrid Pro',
+    'gfs':        'GFS',
+  };
+
+  const AVATAR_COLORS = [
+    'linear-gradient(135deg, #a3c94a, #4bc7bf)',
+    'linear-gradient(135deg, #4bc7bf, #5aa5d8)',
+    'linear-gradient(135deg, #5aa5d8, #a3c94a)',
+    'linear-gradient(135deg, #f59e0b, #4bc7bf)',
+    'linear-gradient(135deg, #8b5cf6, #4bc7bf)',
+    'linear-gradient(135deg, #ec4899, #5aa5d8)',
+  ];
+
+  function avatarFor(name) {
+    let hash = 0;
+    for (const c of (name || '')) hash = (hash * 31 + c.charCodeAt(0)) | 0;
+    const idx = Math.abs(hash) % AVATAR_COLORS.length;
+    return AVATAR_COLORS[idx];
+  }
+
+  function initialsFor(name) {
+    return (name || '?').split(/\s+/).map(s => s[0] || '').join('').slice(0, 2).toUpperCase();
+  }
+
   function pickClients(session, viewAs) {
     // Manager viewing as a specific team member: use that member's client list
     if (viewAs) return (viewAs.clients || []).filter(id => CLIENTS[id]);
@@ -293,27 +362,31 @@
     const session = requireSession();
     if (!session) return;
 
-    const viewAs = (session.type === 'manager') ? getViewAsMember() : null;
+    // Managers AND team members can browse another member's portfolio via ?as=<code>.
+    const viewAs = (session.type === 'manager' || session.type === 'team') ? getViewAsMember() : null;
 
     // Header
-    const managerBrowsing = session.type === 'manager' && !viewAs;
     const displayName = viewAs
-      ? `${session.name || 'Manager'} → ${viewAs.name}`
+      ? `${session.name || (session.type === 'manager' ? 'Manager' : 'Team')} → ${viewAs.name}`
       : (session.name || (session.type === 'admin' ? 'Tweak Admin' : 'Team'));
     document.getElementById('user-name').textContent = displayName;
     document.getElementById('hero-name').textContent = viewAs ? viewAs.name : (session.name || 'there');
 
-    // Manager-viewing-as banner + back link
+    // Viewing-as banner + back link.
+    // Managers came from the team-picker → back to /manager/.
+    // Team members browsed from their own overview → back to their own clients (/team/).
     if (viewAs) {
+      const backHref = session.type === 'manager' ? '../manager/' : './';
+      const backLabel = session.type === 'manager' ? '← Back to team' : '← Back to my clients';
       const hero = document.querySelector('header .max-w-6xl.py-16');
       if (hero && !document.getElementById('view-as-banner')) {
         const banner = document.createElement('div');
         banner.id = 'view-as-banner';
         banner.className = 'mt-6 inline-flex items-center gap-3 bg-white/10 border border-white/20 px-4 py-2 rounded-sm';
         banner.innerHTML = `
-          <span class="text-[10px] uppercase tracking-widest text-white/60 font-semibold">Viewing as</span>
+          <span class="text-[10px] uppercase tracking-widest text-white/60 font-semibold">Viewing</span>
           <span class="text-white font-medium">${escapeHtml(viewAs.name)} · ${escapeHtml(viewAs.role)}</span>
-          <a href="../manager/" class="text-white/70 hover:text-white text-[11px] uppercase tracking-widest ml-2" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.75rem;">← Back to team</a>
+          <a href="${backHref}" class="text-white/70 hover:text-white text-[11px] uppercase tracking-widest ml-2" style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 0.75rem;">${backLabel}</a>
         `;
         hero.appendChild(banner);
       }
@@ -343,7 +416,7 @@
     const empty = document.getElementById('empty-state');
     if (clients.length === 0) {
       grid.innerHTML = '';
-      // Tweak empty-state copy for manager viewing a team member with no clients
+      // Tweak empty-state copy when viewing a member (or yourself) with no clients
       if (viewAs) {
         empty.innerHTML = `
           <p class="text-[11px] uppercase tracking-widest text-gray-400 font-semibold mb-2">No clients assigned</p>
@@ -351,6 +424,8 @@
         `;
       }
       empty.style.display = 'block';
+      // NOTE: no early return — the "View others" section still renders below.
+      renderOthers(session, viewAs);
       return;
     }
     empty.style.display = 'none';
@@ -408,6 +483,82 @@
         } catch {}
       });
     });
+
+    // Render the "View others" roster below the hero'd client grid.
+    renderOthers(session, viewAs);
+  }
+
+  // ------------------------------------------------------------------
+  // "View others" — shows the rest of the Tweak team as clickable cards.
+  // A team member sees their own clients heroed above; this section lets
+  // them jump into any teammate's portfolio (?as=<code>).
+  // Admins (who already see every client) skip this section.
+  // ------------------------------------------------------------------
+  function renderOthers(session, viewAs) {
+    const othersSection = document.getElementById('others-section');
+    const othersGrid = document.getElementById('others-grid');
+    const othersHeading = document.getElementById('others-heading');
+    if (!othersSection || !othersGrid) return;
+
+    // Only Tweak team members get the "view others" roster. Admin already sees
+    // all clients, and managers have their own dedicated team-picker portal.
+    if (session.type !== 'team') {
+      othersSection.style.display = 'none';
+      return;
+    }
+
+    // Exclude the viewer themselves, and (when browsing) the member currently in view.
+    const selfCode = session.code || session.name;
+    const currentCode = viewAs ? viewAs.code : selfCode;
+
+    const others = Object.entries(TEAM_ROSTER).filter(([code]) => code !== currentCode);
+
+    if (others.length === 0) {
+      othersSection.style.display = 'none';
+      return;
+    }
+
+    othersHeading.textContent = viewAs ? 'View other team members' : 'View others';
+    othersSection.style.display = 'block';
+
+    othersGrid.innerHTML = others.map(([code, m]) => {
+      const clientChips = (m.clients || []).length
+        ? m.clients.map(id => `<span class="text-xs bg-white border border-gray-200 px-2 py-1 rounded-sm text-gray-700">${escapeHtml(CLIENT_LABELS[id] || id)}</span>`).join('')
+        : '<span class="text-xs text-gray-400 italic">No clients assigned yet</span>';
+
+      const status = (m.clients || []).length
+        ? `<span class="status-pill status-active"><span class="status-dot"></span>${m.clients.length} client${m.clients.length === 1 ? '' : 's'}</span>`
+        : `<span class="status-pill status-pending" style="background:#f3f4f6;color:#6b7280;"><span class="status-dot"></span>Unassigned</span>`;
+
+      return `
+        <a href="./?as=${encodeURIComponent(code)}" class="member-card p-6 rounded-sm group" data-member="${escapeHtml(code)}">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="avatar" style="background: ${avatarFor(m.name)};">
+              ${escapeHtml(initialsFor(m.name))}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-medium text-gray-900 truncate">${escapeHtml(m.name)}</h3>
+              <p class="text-xs uppercase tracking-widest text-gray-500 mt-1 font-semibold">${escapeHtml(m.role)}</p>
+            </div>
+            ${status}
+          </div>
+
+          <div class="tw-accent-bar w-16 mb-4"></div>
+
+          <div class="mb-4">
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-2">Clients</p>
+            <div class="flex flex-wrap gap-2">
+              ${clientChips}
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+            <span class="text-xs text-gray-500">View portfolio</span>
+            <span class="font-semibold text-sm group-hover:translate-x-1 transition-transform inline-block" style="color: var(--tw-dark);">Open →</span>
+          </div>
+        </a>
+      `;
+    }).join('');
   }
 
   document.getElementById('logout-btn').addEventListener('click', () => {
