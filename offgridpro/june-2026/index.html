@@ -3,1360 +3,863 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OffGrid Pro — June 2026 Performance Dashboard</title>
+<title>OffGrid Pro — June 2026 · Visual Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="../assets/auth.js"></script>
-<script>window.OGPAuth.ensureAuth();</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   html { scroll-behavior: smooth; }
   body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
   .gradient-bg { background: linear-gradient(135deg, #0f766e 0%, #059669 50%, #10b981 100%); }
-  .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+  .metric-value { font-variant-numeric: tabular-nums; }
   .trend-up { color: #059669; }
   .trend-down { color: #dc2626; }
-  .metric-value { font-variant-numeric: tabular-nums; }
-  .mock-badge {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.25);
+  .trend-flat { color: #6b7280; }
+
+  /* Tabs */
+  .tab-btn {
+    transition: all 0.18s ease;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
   }
-  /* Anchor scroll offset so sticky nav doesn't cover the target */
-  section[id] { scroll-margin-top: 80px; }
-  .nav-link { transition: color 0.15s ease, background 0.15s ease; }
-  .nav-link:hover { color: #059669; background: #ecfdf5; }
+  .tab-btn.active {
+    color: #059669;
+    border-bottom-color: #059669;
+    font-weight: 700;
+  }
+  .tab-btn:not(.active):hover { color: #059669; background: #ecfdf5; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Funnel */
+  .funnel-stage {
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .funnel-stage:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,0.10); }
+  .funnel-arrow { color: #cbd5e1; }
+
+  .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.08); }
+
+  .chart-wrap { position: relative; }
+
+  /* Comparison control */
+  .cmp-panel {
+    background: #f0fdf4;
+    border: 1px dashed #6ee7b7;
+  }
+  .see-more {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-weight: 600; font-size: 0.85rem; color: #059669;
+    transition: gap 0.15s ease;
+  }
+  .see-more:hover { gap: 0.6rem; }
+
+  /* Detail drawer */
+  .drawer-backdrop {
+    position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+    backdrop-filter: blur(2px); z-index: 60; display: none;
+  }
+  .drawer-backdrop.open { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .drawer {
+    position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 780px;
+    background: #f9fafb; z-index: 61; box-shadow: -20px 0 60px rgba(0,0,0,0.3);
+    transform: translateX(100%); transition: transform 0.32s cubic-bezier(.16,1,.3,1);
+    overflow-y: auto;
+  }
+  .drawer.open { transform: translateX(0); }
 </style>
 </head>
 <body class="bg-gray-50">
 
-<!-- Header -->
+<!-- ===================== HEADER ===================== -->
 <header class="gradient-bg text-white shadow-xl">
   <div class="max-w-7xl mx-auto px-6 py-8">
     <div class="flex justify-between items-start flex-wrap gap-4">
       <div>
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center font-bold text-2xl">⚡</div>
+          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center font-bold text-2xl">⚡</div>
           <div>
-            <p class="text-xs uppercase tracking-widest text-white text-opacity-70">Tweak Marketing · Client Report</p>
+            <p class="text-xs uppercase tracking-widest text-white/70">Tweak Marketing · Client Report</p>
             <h1 class="text-3xl font-extrabold">OffGrid Pro — June 2026</h1>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-6 mt-4 text-sm">
           <div>
-            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Client</p>
+            <p class="text-xs uppercase tracking-wide text-white/70">Client</p>
             <p class="font-semibold">OffGrid Pro Ltd.</p>
           </div>
-          <div class="border-l border-white border-opacity-30 pl-6">
-            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Sector</p>
-            <p class="font-semibold">Battery Storage &amp; Microgrids</p>
-          </div>
-          <div class="border-l border-white border-opacity-30 pl-6">
-            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Reporting Period</p>
+          <div class="border-l border-white/30 pl-6">
+            <p class="text-xs uppercase tracking-wide text-white/70">Reporting Period</p>
             <p class="font-semibold">1 – 30 June 2026</p>
           </div>
-          <div class="border-l border-white border-opacity-30 pl-6">
-            <p class="text-xs uppercase tracking-wide text-white text-opacity-70">Account Manager</p>
-            <p class="font-semibold">Louise · Tweak</p>
+          <div class="border-l border-white/30 pl-6">
+            <p class="text-xs uppercase tracking-wide text-white/70">Account Manager</p>
+            <p class="font-semibold">Daniela · Tweak</p>
           </div>
         </div>
       </div>
       <div class="flex flex-col items-end gap-3">
-        <span class="mock-badge text-white text-xs px-3 py-1 rounded-full font-semibold">DASHBOARD PROTOTYPE</span>
-        <div class="flex gap-2">
-          <select class="bg-white bg-opacity-20 backdrop-blur border border-white border-opacity-30 rounded-lg px-4 py-2 text-white text-sm">
-            <option>June 2026</option>
-            <option>May 2026</option>
-            <option>April 2026</option>
-          </select>
-          <button onclick="window.print()" class="bg-white text-emerald-700 font-semibold px-4 py-2 rounded-lg hover:bg-opacity-90 text-sm cursor-pointer">Export PDF</button>
-        </div>
+        <span class="bg-white/15 backdrop-blur border border-white/25 text-white text-xs px-3 py-1 rounded-full font-semibold">VISUAL FRAMEWORK · v2</span>
+        <button onclick="window.print()" class="bg-white text-emerald-700 font-semibold px-4 py-2 rounded-lg hover:bg-white/90 text-sm cursor-pointer">Export PDF</button>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Sticky Nav -->
+<!-- ===================== STICKY TABS ===================== -->
 <nav class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
   <div class="max-w-7xl mx-auto px-6">
     <div class="flex items-center justify-between h-14">
-      <div class="flex items-center gap-2">
-        <a href="../" class="text-xs text-gray-500 hover:text-emerald-700 font-semibold uppercase tracking-wide">← All Reports</a>
-        <span class="text-gray-300">·</span>
-        <span class="text-sm font-bold text-gray-800">June 2026</span>
-      </div>
-      <div class="flex items-center gap-1 text-sm font-medium text-gray-700 overflow-x-auto">
-        <a href="#live-data" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap text-emerald-700">🟢 Live</a>
-        <a href="#overview" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Overview</a>
-        <a href="#monthly-report" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Report</a>
-        <a href="#keywords" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Keywords</a>
-        <a href="#social" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Social</a>
-        <a href="#google-ads" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Google Ads</a>
-        <a href="#web-analytics" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Web Analytics</a>
-        <a href="#next-steps" class="nav-link px-3 py-2 rounded-lg whitespace-nowrap">Next Steps</a>
+      <a href="../" class="text-xs text-gray-500 hover:text-emerald-700 font-semibold uppercase tracking-wide whitespace-nowrap">← All Reports</a>
+      <div class="flex items-center gap-1 text-sm font-medium text-gray-600 overflow-x-auto" id="tabBar">
+        <button class="tab-btn active px-3 py-2 rounded-t-lg" data-tab="overview">Overview</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="awareness">Awareness</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="traffic">Traffic</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="engagement">Engagement</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="conversions">Conversions</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="social">Social</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="ads">Ads</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="seo">SEO</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="content">Content</button>
       </div>
     </div>
   </div>
 </nav>
 
-<main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-
-  <!-- Live Data Banner -->
-  <section id="live-data" class="bg-white rounded-xl border-2 border-emerald-100 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-3 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2">
-      <div class="flex items-center gap-3">
-        <span class="relative flex h-2.5 w-2.5">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-        </span>
-        <span class="text-xs uppercase tracking-widest font-bold text-emerald-800">Live Data · Google Ads</span>
-        <span class="text-xs text-emerald-700 hidden md:inline">Pulled directly from Google Ads API via Maton</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-xs text-gray-500" id="lastUpdated">Loading…</span>
-        <button onclick="loadLiveData(true)" class="text-xs bg-white border border-emerald-200 text-emerald-700 font-semibold px-3 py-1 rounded-full hover:bg-emerald-50">↻ Refresh</button>
-      </div>
-    </div>
-    <div class="p-6">
-      <div id="liveDataContent">
-        <div class="text-sm text-gray-500">Loading live Google Ads data…</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Executive Summary Cards -->
-  <section id="overview">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-bold text-gray-800">📊 Month Overview</h2>
-      <span class="text-xs text-gray-500">vs. previous month</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">3</p>
-        <p class="text-xs text-gray-500 mt-2">2 phone calls · 1 contact form</p>
-      </div>
-      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Victron Clicks</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+453%</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Big win</span></p>
-      </div>
-      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Home Energy Clicks</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">+113%</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">↑ Strong growth</span></p>
-      </div>
-      <div class="stat-card bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Site Health Score</p>
-        <p class="text-3xl font-bold text-gray-900 mt-2 metric-value">88%</p>
-        <p class="text-sm mt-2"><span class="trend-up font-semibold">Strong</span> <span class="text-gray-500">technical SEO</span></p>
-      </div>
-    </div>
-  </section>
+<main class="max-w-7xl mx-auto px-6 py-8">
 
   <!-- ============================================================
-       MONTHLY REPORT (Daniela's 7-question framework, 2026-07-28)
-       This section answers, in order:
-         1. The biggest win — What went well this month?
-         2. What needs further work or attention?
-         3. What work was completed this month?
-         4. What influenced this month's performance?
-         5. What are we focusing on next month?
-         6. Are there any actions or input needed from the client?
-         7. Challenges.
-       Detailed data / tables / campaign breakdowns remain below as
-       supporting evidence for each answer.
+       TAB: OVERVIEW  (hero marketing funnel)
        ============================================================ -->
-  <section id="monthly-report" class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-lg font-bold text-gray-800">🗂️ Monthly Report — June 2026</h2>
-      <span class="text-xs text-gray-500">Structured for Tweak's monthly review</span>
-    </div>
+  <div class="tab-panel active" data-panel="overview">
 
-    <!-- 1. THE BIGGEST WIN -->
-    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="text-xs uppercase tracking-widest font-bold text-emerald-700">The biggest win</span>
+    <!-- Highlights strip -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="card bg-white rounded-2xl p-5 shadow-sm border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
+        <p class="text-xs uppercase tracking-wide text-emerald-700 font-semibold">Conversions 🏆</p>
+        <p class="text-3xl font-extrabold text-emerald-700 mt-2 metric-value">18</p>
+        <p class="text-sm mt-1"><span class="trend-up font-bold">↑ +260%</span> <span class="text-gray-400">vs June</span></p>
       </div>
-      <h3 class="text-xl font-bold text-emerald-900 mb-2">Victron campaign optimisation delivered a 453% lift in clicks.</h3>
-      <p class="text-sm text-emerald-800">Home Energy also grew 113%. The Victron landing page climbed from position #7 to <span class="font-bold">#3</span> in organic search this month, and the campaign generated 2 phone-call conversions plus a contact form submission.</p>
-    </div>
-
-    <!-- 2. WHAT WENT WELL -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-1">✅ What went well this month?</h3>
-      <p class="text-xs text-gray-500 mb-4">The most important improvements, results or signs of progress.</p>
-      <ul class="space-y-2 text-sm text-gray-700">
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Optimised Victron campaign — clicks up 453% month-on-month</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Home Energy campaign clicks up 113%</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> 3 conversions: 2 phone calls + 1 contact form submission</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Web analytics stable, pageviews up 200</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Victron landing page organic ranking: #7 → #3</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> LinkedIn +25 followers; videos on FB / IG outperforming static posts</li>
-        <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Site Health score holding strong at 88%</li>
-      </ul>
-    </div>
-
-    <!-- 3. WHAT NEEDS FURTHER WORK OR ATTENTION -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-1">⚠️ What needs further work or attention?</h3>
-      <p class="text-xs text-gray-500 mb-4">Weaker areas, outstanding tasks or anything that has affected performance.</p>
-      <ul class="space-y-2 text-sm text-gray-700">
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> Focus ad-spend on the 5 priority ad groups — Microgrid, Energy Savings, Victron Installers, Home Energy Storage, Off-Grid Energy Solutions</li>
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> Domain Trust still low (12/100) — needs sustained backlink work to lift authority</li>
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> Meta lead-gen funnel dependent on client-side email automation — not yet in place</li>
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> New homepage design still in progress</li>
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> Contact page redesign outstanding</li>
-        <li class="flex gap-2"><span class="text-amber-600 font-bold">→</span> Savings calculator: research complete, build not yet started</li>
-      </ul>
-    </div>
-
-    <!-- 4. WHAT WORK WAS COMPLETED -->
-    <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl p-6 border border-emerald-100">
-      <div class="flex items-center gap-2 mb-1">
-        <h3 class="text-md font-bold text-gray-800">📦 What work was completed this month?</h3>
-        <span class="text-xs bg-white text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">By Tweak</span>
+      <div class="card bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Cost / Lead</p>
+        <p class="text-3xl font-extrabold text-gray-900 mt-2 metric-value">£26</p>
+        <p class="text-sm mt-1"><span class="trend-up font-bold">↓ -73%</span> <span class="text-gray-400">from £99</span></p>
       </div>
-      <p class="text-xs text-gray-600 mb-4">Campaigns, content, website updates, SEO work and other deliverables.</p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="card bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Total Spend</p>
+        <p class="text-3xl font-extrabold text-gray-900 mt-2 metric-value">£475</p>
+        <p class="text-sm mt-1"><span class="trend-flat font-bold">↓ -4%</span> <span class="text-gray-400">vs June</span></p>
+      </div>
+      <div class="card bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Cross-channel Impressions</p>
+        <p class="text-3xl font-extrabold text-gray-900 mt-2 metric-value">72.4k</p>
+        <p class="text-sm mt-1"><span class="trend-up font-bold">↑ +186%</span> <span class="text-gray-400">vs June</span></p>
+      </div>
+    </section>
+
+    <!-- HERO: Marketing Funnel -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-8">
+      <div class="flex items-start justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h4 class="font-semibold text-xs uppercase tracking-wider text-gray-500 mb-3">Campaigns &amp; ads</h4>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Victron Google Ads campaign optimised (2,176 imp / 105 clicks / 4.83% CTR)</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Home Energy campaign optimised (3,068 imp / 228 clicks / 7.43% CTR / £306 spend / £1.34 CPC)</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Keyword refinement across ad groups; top performer &quot;battery backup for home&quot; — 35 clicks @ 9.36% CTR</li>
-          </ul>
+          <h2 class="text-xl font-extrabold text-gray-900">Marketing Funnel</h2>
+          <p class="text-sm text-gray-500 mt-1">Cross-channel journey · July 2026 vs June 2026</p>
         </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 font-semibold px-3 py-1.5 rounded-full border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> July
+          </span>
+          <span class="inline-flex items-center gap-1.5 bg-gray-50 text-gray-500 font-semibold px-3 py-1.5 rounded-full border border-gray-200">
+            <span class="w-2 h-2 rounded-full bg-gray-300"></span> June (comparison)
+          </span>
+        </div>
+      </div>
+
+      <!-- Funnel stages -->
+      <div class="grid grid-cols-1 md:grid-cols-9 gap-3 items-stretch" id="funnel"></div>
+
+      <p class="text-xs text-gray-400 italic mt-5">Impressions combine Google Ads, organic social (LinkedIn, Facebook, Instagram, TikTok) and organic search. Funnel stages flex to each client's active channels.</p>
+    </section>
+
+    <!-- Two hero trend charts -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Conversions trend -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-start justify-between mb-1">
+          <div>
+            <h3 class="font-bold text-gray-900">Conversions — 4-month trend</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Leads &amp; enquiries per month</p>
+          </div>
+          <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="convTrend">＋ Compare</button>
+        </div>
+        <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="convTrend">
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <span class="text-gray-600 font-semibold">Compare July against:</span>
+            <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+              <option value="prev1">Previous month (June)</option>
+              <option value="prev3" selected>3-month average</option>
+              <option value="prev6">6-month average</option>
+            </select>
+            <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+          </div>
+        </div>
+        <div class="chart-wrap mt-3" style="height:230px"><canvas id="convTrend"></canvas></div>
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <p class="text-sm text-gray-500">July: <span class="font-bold text-emerald-700">18 conversions</span> · best month to date</p>
+          <a href="#" class="see-more" data-detail="conversions">See full report →</a>
+        </div>
+      </div>
+
+      <!-- Impressions trend -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-start justify-between mb-1">
+          <div>
+            <h3 class="font-bold text-gray-900">Cross-channel Impressions</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Total brand appearances across all channels</p>
+          </div>
+          <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="imprTrend">＋ Compare</button>
+        </div>
+        <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="imprTrend">
+          <div class="flex items-center gap-2 flex-wrap text-xs">
+            <span class="text-gray-600 font-semibold">Compare July against:</span>
+            <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+              <option value="prev1">Previous month (June)</option>
+              <option value="prev3" selected>3-month average</option>
+              <option value="prev6">6-month average</option>
+            </select>
+            <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+          </div>
+        </div>
+        <div class="chart-wrap mt-3" style="height:230px"><canvas id="imprTrend"></canvas></div>
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <p class="text-sm text-gray-500">July: <span class="font-bold text-emerald-700">72.4k impressions</span> · +186% MoM</p>
+          <a href="#" class="see-more" data-detail="awareness">See full report →</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================================================
+       TAB: AWARENESS
+       ============================================================ -->
+  <div class="tab-panel" data-panel="awareness">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <h4 class="font-semibold text-xs uppercase tracking-wider text-gray-500 mb-3">Content &amp; social</h4>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> LinkedIn content plan delivered — top post 83 clicks / 54.6% engagement</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> FB + IG posts published; videos identified as best-performing format</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Case-study content sourced for new homepage (97% cost reduction, £6,165 saved, 70% lower bills)</li>
-          </ul>
+          <h3 class="font-bold text-gray-900 text-lg">Impressions by channel</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Where the brand appeared in July 2026</p>
         </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="awareChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="awareChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Previous month (June)</option>
+            <option value="prev3">3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="awareChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Instagram &amp; Facebook drove the biggest awareness gains this month.</p>
+        <a href="#" class="see-more" data-detail="awareness">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: TRAFFIC
+       ============================================================ -->
+  <div class="tab-panel" data-panel="traffic">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <h4 class="font-semibold text-xs uppercase tracking-wider text-gray-500 mb-3">SEO &amp; site</h4>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Victron page on-page SEO push — climbed #7 to #3</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Site Health maintained at 88%; 130 keywords tracked, 81 ranking</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> New homepage design work in progress (partners: Victron, Fronius, Falcon, Sigenergy)</li>
-          </ul>
+          <h3 class="font-bold text-gray-900 text-lg">Website traffic by source</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Relative channel strength · July 2026</p>
         </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="trafficChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="trafficChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Previous month (June)</option>
+            <option value="prev3">3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="trafficChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Paid social, direct &amp; organic all outperformed paid search.</p>
+        <a href="#" class="see-more" data-detail="traffic">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: ENGAGEMENT
+       ============================================================ -->
+  <div class="tab-panel" data-panel="engagement">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <h4 class="font-semibold text-xs uppercase tracking-wider text-gray-500 mb-3">Discovery &amp; research</h4>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Savings calculator scoped (inputs, results, considerations)</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Postcode-level opportunity mapping (GU12 6BQ: 124 / 2,979 / 11,232 / 1.8M reach)</li>
-            <li class="flex gap-2"><span class="text-emerald-600 font-bold">✓</span> Summer AC campaign concept drafted (&quot;Stay Cool Without the High Energy Bills&quot;)</li>
-          </ul>
+          <h3 class="font-bold text-gray-900 text-lg">Social engagement — 4-month trend</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Total interactions across LinkedIn, Facebook &amp; Instagram</p>
+        </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="engageChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="engageChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1">Previous month (June)</option>
+            <option value="prev3" selected>3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
         </div>
       </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="engageChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Engaged interactions surged as video content ramped up.</p>
+        <a href="#" class="see-more" data-detail="engagement">See full report →</a>
+      </div>
     </div>
+  </div>
 
-    <!-- 5. WHAT INFLUENCED THIS MONTH'S PERFORMANCE -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-1">📊 What influenced this month's performance?</h3>
-      <p class="text-xs text-gray-500 mb-4">Notable increases or decreases — campaign changes, seasonality, budget, tracking issues, client activity.</p>
-      <div class="space-y-3 text-sm text-gray-700">
-        <div class="flex gap-3">
-          <span class="text-emerald-600 font-bold flex-shrink-0">↑</span>
-          <div><span class="font-semibold">Victron campaign optimisation.</span> Refined targeting and ad copy drove the +453% clicks lift — the single biggest driver of the month.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-emerald-600 font-bold flex-shrink-0">↑</span>
-          <div><span class="font-semibold">Home Energy Storage keyword expansion.</span> Adding higher-intent long-tail terms (&quot;battery backup for home&quot;) lifted CTR to 9.36% on the top keyword.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-emerald-600 font-bold flex-shrink-0">↑</span>
-          <div><span class="font-semibold">Organic ranking momentum.</span> On-page SEO work on the Victron page moved it from #7 to #3 — a step change in visibility that will keep compounding.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-gray-500 font-bold flex-shrink-0">=</span>
-          <div><span class="font-semibold">Budget held flat.</span> Growth this month came from optimisation, not spend increase — relevant context ahead of the July expansion.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-amber-600 font-bold flex-shrink-0">!</span>
-          <div><span class="font-semibold">Domain Trust still low (12/100).</span> Limits how far paid + organic can scale without a sustained backlink and PR effort.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6. WHAT ARE WE FOCUSING ON NEXT MONTH -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-1">🎯 What are we focusing on next month?</h3>
-      <p class="text-xs text-gray-500 mb-4">Main priorities and why they matter.</p>
-      <div class="space-y-3 text-sm text-gray-700">
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">1.</span>
-          <div><span class="font-semibold">Priority ad groups budget push.</span> £15/day/group across 5 groups (£45/day extra) — concentrates spend where CTR is already proven.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">2.</span>
-          <div><span class="font-semibold">Google Ads Month 2 expansion.</span> Solar consolidation + continued keyword pruning to lift conversion rate.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">3.</span>
-          <div><span class="font-semibold">Meta ads launch.</span> Farming £10/day + Cost Savings £10/day — lead-gen funnel primed for the summer window.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">4.</span>
-          <div><span class="font-semibold">Summer AC campaign go-live.</span> Ride the seasonal energy-bill anxiety with the &quot;Stay Cool Without the High Energy Bills&quot; angle.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">5.</span>
-          <div><span class="font-semibold">Savings calculator build.</span> Turns the on-site traffic we've earned into qualified leads.</div>
-        </div>
-        <div class="flex gap-3">
-          <span class="text-teal-600 font-bold flex-shrink-0">6.</span>
-          <div><span class="font-semibold">Homepage &amp; contact page redesigns.</span> Consolidates the credibility signals (case studies, tech partners) that drive higher conversion.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 7. ACTIONS NEEDED FROM CLIENT -->
-    <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
-      <h3 class="text-md font-bold text-gray-800 mb-1">🤝 Actions or input needed from the client</h3>
-      <p class="text-xs text-gray-600 mb-4">Approvals, content, videos, feedback, access or budget decisions.</p>
-      <ul class="space-y-2 text-sm text-gray-800">
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Approve additional £45/day for the 5 priority ad groups</li>
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Approve Meta ads launch (£20/day total: £10 Farming + £10 Cost Savings)</li>
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Sign off on new homepage design direction</li>
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Confirm case-study details and any additional installations we can feature</li>
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Enable email automation for Meta lead-gen funnel (client-side task)</li>
-        <li class="flex gap-2"><span class="text-amber-700 font-bold">□</span> Supply any new site or install photos / short video clips we can roll into TikTok / IG / FB for August</li>
-      </ul>
-    </div>
-
-    <!-- 8. CHALLENGES -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-1">💪 Challenges</h3>
-      <p class="text-xs text-gray-500 mb-4">Obstacles worth naming so we can plan around them.</p>
-      <ul class="space-y-2 text-sm text-gray-700">
-        <li class="flex gap-2"><span class="text-rose-500 font-bold">•</span> <span><span class="font-semibold">Low Domain Trust (12/100)</span> and Page Trust (3/100) cap how quickly organic can scale — backlink strategy needed alongside content.</span></li>
-        <li class="flex gap-2"><span class="text-rose-500 font-bold">•</span> <span><span class="font-semibold">Small backlink profile</span> (33 referring domains, 53 backlinks) vs. established competitors.</span></li>
-        <li class="flex gap-2"><span class="text-rose-500 font-bold">•</span> <span><span class="font-semibold">Lead-gen funnel gap</span> — Meta lead ads work best when paired with an automated email nurture sequence; needs to be in place before we scale ad spend.</span></li>
-        <li class="flex gap-2"><span class="text-rose-500 font-bold">•</span> <span><span class="font-semibold">Localised competition</span> — GU12 6BQ shows deep opportunity (1.8M reach) but also active competitor activity we need to differentiate against.</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Conversions Detail -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-md font-bold text-gray-800">📞 Conversions This Month</h3>
-      <span class="text-xs text-gray-500">Source: Google Ads conversion tracking</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-semibold">Tuesday 23rd June</p>
-        <p class="font-bold text-gray-900 mt-1">Contact Form Submission</p>
-        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
-      </div>
-      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-semibold">Wednesday 24th June</p>
-        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
-        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Victron</span></p>
-      </div>
-      <div class="border border-emerald-200 bg-emerald-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-semibold">Saturday 27th June</p>
-        <p class="font-bold text-gray-900 mt-1">Phone Call</p>
-        <p class="text-sm text-gray-600">Campaign: <span class="font-semibold">Home Energy</span></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- SEO + Traffic Row -->
-  <section id="keywords" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">🔍 Technical SEO</h3>
-      <div class="flex items-baseline gap-2">
-        <p class="text-4xl font-bold text-emerald-600 metric-value">88%</p>
-        <p class="text-sm text-gray-500">Site Health</p>
-      </div>
-      <div class="w-full bg-gray-100 rounded-full h-2 mt-3">
-        <div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div>
-      </div>
-      <div class="mt-4 space-y-2 text-sm">
-        <div class="flex justify-between"><span class="text-gray-600">Total keywords tracked</span><span class="font-semibold">130</span></div>
-        <div class="flex justify-between"><span class="text-gray-600">Ranking keywords</span><span class="font-semibold">81</span></div>
-        <div class="flex justify-between"><span class="text-gray-600">Organic traffic</span><span class="font-semibold">50</span></div>
-        <div class="flex justify-between"><span class="text-gray-600">UK traffic share</span><span class="font-semibold">100%</span></div>
-      </div>
-      <div class="mt-4 pt-3 border-t border-gray-100 grid grid-cols-2 gap-3">
+  <!-- ============================================================
+       TAB: CONVERSIONS
+       ============================================================ -->
+  <div class="tab-panel" data-panel="conversions">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <p class="text-xs text-gray-500">Domain Trust</p>
-          <p class="text-lg font-bold text-gray-900">12<span class="text-xs text-gray-500">/100</span></p>
+          <h3 class="font-bold text-gray-900 text-lg">Conversions by campaign</h3>
+          <p class="text-xs text-gray-500 mt-0.5">July 2026 vs June 2026</p>
         </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="convCampChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="convCampChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Previous month (June)</option>
+            <option value="prev3">3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="convCampChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Energy Storage: 12 conv · Victron: 6 conv · both up 200–300%.</p>
+        <a href="#" class="see-more" data-detail="conversions">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: SOCIAL
+       ============================================================ -->
+  <div class="tab-panel" data-panel="social">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <p class="text-xs text-gray-500">Page Trust</p>
-          <p class="text-lg font-bold text-gray-900">3<span class="text-xs text-gray-500">/100</span></p>
+          <h3 class="font-bold text-gray-900 text-lg">Follower growth by platform</h3>
+          <p class="text-xs text-gray-500 mt-0.5">4-month trend · LinkedIn, Facebook, Instagram</p>
         </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="socialChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="socialChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Highlight:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Month-on-month change</option>
+            <option value="prev3">3-month average line</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="socialChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Facebook +271 followers · Instagram +261 · TikTok launched (35).</p>
+        <a href="#" class="see-more" data-detail="social">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: ADS
+       ============================================================ -->
+  <div class="tab-panel" data-panel="ads">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <p class="text-xs text-gray-500">Referring Domains</p>
-          <p class="text-lg font-bold text-gray-900">33</p>
+          <h3 class="font-bold text-gray-900 text-lg">Google Ads — spend vs conversions</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Efficiency story · July 2026</p>
         </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="adsChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="adsChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Previous month (June)</option>
+            <option value="prev3">3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="adsChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">More conversions at slightly lower spend — CPL down 73%.</p>
+        <a href="#" class="see-more" data-detail="ads">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: SEO
+       ============================================================ -->
+  <div class="tab-panel" data-panel="seo">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
         <div>
-          <p class="text-xs text-gray-500">Backlinks</p>
-          <p class="text-lg font-bold text-gray-900">53</p>
+          <h3 class="font-bold text-gray-900 text-lg">Organic visibility &amp; site health</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Ranking keywords + site health · 4-month trend</p>
+        </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="seoChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="seoChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1">Previous month (June)</option>
+            <option value="prev3" selected>3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
         </div>
       </div>
-      <p class="text-xs text-emerald-700 mt-4 italic">✓ New keywords added around "off grid"</p>
-    </div>
-
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">📈 Victron Page Ranking</h3>
-      <div class="flex items-baseline gap-2">
-        <p class="text-5xl font-bold text-emerald-600 metric-value">#3</p>
-        <p class="text-sm text-gray-500">up from #7</p>
-      </div>
-      <p class="text-sm text-gray-600 mt-3">Moved 4 positions in June — now on page 1, above the fold for target keywords.</p>
-      <div class="mt-4 flex items-center gap-2 text-xs">
-        <span class="bg-gray-100 px-2 py-1 rounded">May: #7</span>
-        <span class="text-gray-400">→</span>
-        <span class="bg-emerald-100 text-emerald-700 font-semibold px-2 py-1 rounded">June: #3</span>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="seoChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">81 ranking keywords · Victron page held #3 · 88% site health.</p>
+        <a href="#" class="see-more" data-detail="seo">See full report →</a>
       </div>
     </div>
+  </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">🌐 Traffic Sources</h3>
-      <div class="space-y-3 text-sm">
+  <!-- ============================================================
+       TAB: CONTENT SHOWCASE
+       ============================================================ -->
+  <div class="tab-panel" data-panel="content">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-4 flex-wrap gap-2">
         <div>
-          <div class="flex justify-between mb-1"><span class="font-semibold">Direct / Referral</span><span class="text-gray-500">Highest</span></div>
-          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div></div>
+          <h3 class="font-bold text-gray-900 text-lg">Content showcase — July 2026</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Creative &amp; campaign work delivered this month (manual upload)</p>
         </div>
-        <div>
-          <div class="flex justify-between mb-1"><span class="font-semibold">Organic Search</span><span class="text-gray-500">2nd highest</span></div>
-          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 75%"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between mb-1"><span class="font-semibold">Paid Search</span><span class="text-gray-500">Growing</span></div>
-          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 55%"></div></div>
-        </div>
-        <div>
-          <div class="flex justify-between mb-1"><span class="font-semibold">Social</span><span class="text-gray-500">Stable</span></div>
-          <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full" style="width: 30%"></div></div>
-        </div>
+        <span class="text-xs bg-emerald-100 text-emerald-700 font-bold px-3 py-1.5 rounded-full border border-emerald-200">＋ Upload creative</span>
       </div>
-      <p class="text-xs text-gray-500 mt-3 italic">Pageviews grew by ~200 vs May</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="showcaseGrid"></div>
+      <p class="text-xs text-gray-400 italic mt-4">Placeholder gallery — the team uploads ads, social posts, email screenshots, website banners &amp; project photos here each month.</p>
     </div>
-  </section>
-
-  <!-- Ranking Keywords Table -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h3 class="text-md font-bold text-gray-800">🎯 Ranking Keywords — Position &amp; Competition</h3>
-        <p class="text-xs text-gray-500 mt-1">Where OffGrid Pro ranks in organic search this month</p>
-      </div>
-      <span class="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-1 rounded-full border border-emerald-200">130 keywords tracked</span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-4 py-2">Keyword</th>
-            <th class="px-4 py-2 text-right">Position</th>
-            <th class="px-4 py-2 text-right">Change</th>
-            <th class="px-4 py-2 text-right">Competition</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off grid pro (branded)</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.61</td></tr>
-          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off grid energy uk</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.49</td></tr>
-          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">off-grid energy solutions</td><td class="px-4 py-2 text-right font-bold text-emerald-700">#1</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.77</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">off grid solution</td><td class="px-4 py-2 text-right font-bold">#5</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.77</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">off grid electricity solutions</td><td class="px-4 py-2 text-right font-bold">#6</td><td class="px-4 py-2 text-right"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">↑ 1</span></td><td class="px-4 py-2 text-right">0.94</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">offgrid electric</td><td class="px-4 py-2 text-right font-bold">#6</td><td class="px-4 py-2 text-right"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-semibold">NEW</span></td><td class="px-4 py-2 text-right">0.99</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="text-xs text-gray-500 italic mt-3">3 keywords ranking #1 (branded + "off grid energy uk" + "off-grid energy solutions"). Non-branded keywords climbing steadily.</p>
-  </section>
-
-  <!-- LinkedIn 3-Month Trend -->
-  <section id="social" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h3 class="text-md font-bold text-gray-800">💼 LinkedIn Performance</h3>
-        <p class="text-xs text-gray-500 mt-1">3-month trend · followers up 25 in June</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <canvas id="linkedinChart" height="180"></canvas>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr class="text-left text-xs uppercase text-gray-500">
-              <th class="px-4 py-2">Metric</th>
-              <th class="px-4 py-2 text-right">April</th>
-              <th class="px-4 py-2 text-right">May</th>
-              <th class="px-4 py-2 text-right">June</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr><td class="px-4 py-2 font-semibold">Page views</td><td class="px-4 py-2 text-right">52</td><td class="px-4 py-2 text-right">69</td><td class="px-4 py-2 text-right trend-up font-semibold">80</td></tr>
-            <tr><td class="px-4 py-2 font-semibold">Visitors</td><td class="px-4 py-2 text-right">27</td><td class="px-4 py-2 text-right">29</td><td class="px-4 py-2 text-right trend-up font-semibold">36</td></tr>
-            <tr><td class="px-4 py-2 font-semibold">Impressions</td><td class="px-4 py-2 text-right">564</td><td class="px-4 py-2 text-right">1,563</td><td class="px-4 py-2 text-right font-semibold">1,496</td></tr>
-            <tr><td class="px-4 py-2 font-semibold">Reactions</td><td class="px-4 py-2 text-right">12</td><td class="px-4 py-2 text-right">46</td><td class="px-4 py-2 text-right font-semibold">44</td></tr>
-            <tr><td class="px-4 py-2 font-semibold">Comments</td><td class="px-4 py-2 text-right">1</td><td class="px-4 py-2 text-right">4</td><td class="px-4 py-2 text-right">2</td></tr>
-            <tr><td class="px-4 py-2 font-semibold">Reposts</td><td class="px-4 py-2 text-right">2</td><td class="px-4 py-2 text-right">5</td><td class="px-4 py-2 text-right">1</td></tr>
-            <tr class="bg-emerald-50"><td class="px-4 py-2 font-bold">Followers</td><td class="px-4 py-2 text-right">194</td><td class="px-4 py-2 text-right">208</td><td class="px-4 py-2 text-right trend-up font-bold">233</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Top Post -->
-    <div class="mt-6 pt-6 border-t border-gray-100">
-      <p class="text-xs uppercase text-gray-500 font-semibold mb-3">🏆 Top LinkedIn Post (by clicks)</p>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-emerald-50 rounded-lg p-3">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">83</p>
-          <p class="text-xs text-gray-600">Clicks</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">54.6%</p>
-          <p class="text-xs text-gray-600">Engagement</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">103</p>
-          <p class="text-xs text-gray-600">Members reached</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">152</p>
-          <p class="text-xs text-gray-600">Impressions</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Facebook + Instagram -->
-  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">📘 Facebook</h3>
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-3 py-2">Metric</th>
-            <th class="px-3 py-2 text-right">Apr</th>
-            <th class="px-3 py-2 text-right">May</th>
-            <th class="px-3 py-2 text-right">Jun</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">2.6k</td><td class="px-3 py-2 text-right">3.8k</td><td class="px-3 py-2 text-right trend-down">2.4k</td></tr>
-          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">29</td><td class="px-3 py-2 text-right">73</td><td class="px-3 py-2 text-right trend-down">27</td></tr>
-          <tr><td class="px-3 py-2 font-semibold">Visits</td><td class="px-3 py-2 text-right">489</td><td class="px-3 py-2 text-right">419</td><td class="px-3 py-2 text-right trend-down">174</td></tr>
-          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers</td><td class="px-3 py-2 text-right">215</td><td class="px-3 py-2 text-right">222</td><td class="px-3 py-2 text-right trend-up font-bold">231</td></tr>
-          <tr><td class="px-3 py-2 font-semibold">Link clicks</td><td class="px-3 py-2 text-right">5</td><td class="px-3 py-2 text-right">4</td><td class="px-3 py-2 text-right">1</td></tr>
-        </tbody>
-      </table>
-      <p class="text-xs text-gray-500 mt-3 italic">Videos performing best — dip due to reduced static posting.</p>
-    </div>
-
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 class="text-md font-bold text-gray-800 mb-4">📸 Instagram</h3>
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-3 py-2">Metric</th>
-            <th class="px-3 py-2 text-right">Apr</th>
-            <th class="px-3 py-2 text-right">May</th>
-            <th class="px-3 py-2 text-right">Jun</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr><td class="px-3 py-2 font-semibold">Page views</td><td class="px-3 py-2 text-right">28.4k</td><td class="px-3 py-2 text-right">22.6k</td><td class="px-3 py-2 text-right trend-down">7.8k</td></tr>
-          <tr><td class="px-3 py-2 font-semibold">Interactions</td><td class="px-3 py-2 text-right">102</td><td class="px-3 py-2 text-right">284</td><td class="px-3 py-2 text-right">197</td></tr>
-          <tr><td class="px-3 py-2 font-semibold">Reach</td><td class="px-3 py-2 text-right">9.7k</td><td class="px-3 py-2 text-right">5.3k</td><td class="px-3 py-2 text-right">3.3k</td></tr>
-          <tr class="bg-emerald-50"><td class="px-3 py-2 font-bold">Followers gained</td><td class="px-3 py-2 text-right">68</td><td class="px-3 py-2 text-right">60</td><td class="px-3 py-2 text-right trend-up font-bold">+34</td></tr>
-        </tbody>
-      </table>
-      <p class="text-xs text-gray-500 mt-3 italic">Video content driving the highest engagement rates.</p>
-    </div>
-  </section>
-
-  <!-- Google Ads - Most Shown Ads (Slide 5) -->
-  <section id="google-ads" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 Most Shown Ads</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="border border-gray-100 rounded-lg p-4 bg-gray-50">
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-1">Home Energy › Home Energy Storage</p>
-        <p class="font-bold text-blue-700 text-sm">House Energy Storage | Backup Power For Your Home | Cut Your Energy Bills</p>
-        <p class="text-xs text-green-700 mt-1">Ad · offgridpro.co.uk/home-energy/storage</p>
-        <p class="text-xs text-gray-600 mt-2">Never lose power again. Our home backup battery systems provide 24/7 energy security. Instant emergency power supply for large homes. Protection from UK power cuts and outages.</p>
-        <div class="mt-3 text-xs text-blue-600 space-x-3">
-          <span>Cut Your Electricity Bill</span> <span>Save £6000 on Electricity</span> <span>Free Energy Consultation</span>
-        </div>
-        <div class="mt-4 pt-3 border-t border-gray-200 grid grid-cols-3 text-center">
-          <div><p class="text-xs text-gray-500">Impressions</p><p class="font-bold text-gray-900">3,068</p></div>
-          <div><p class="text-xs text-gray-500">Clicks</p><p class="font-bold text-gray-900">228</p></div>
-          <div><p class="text-xs text-gray-500">CTR</p><p class="font-bold text-emerald-600">7.43%</p></div>
-        </div>
-      </div>
-      <div class="border border-gray-100 rounded-lg p-4 bg-gray-50">
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-1">Victron › Victron</p>
-        <p class="font-bold text-blue-700 text-sm">Victron Energy Installer | Certified Victron Experts | Victron Installer UK</p>
-        <p class="text-xs text-green-700 mt-1">Ad · offgridpro.co.uk/victron/energy-solution</p>
-        <p class="text-xs text-gray-600 mt-2">Bespoke Victron solar, battery and inverter systems installed UK-wide. Protect against outages with Victron backup power solutions.</p>
-        <div class="mt-3 text-xs text-blue-600 space-x-3">
-          <span>Smart Energy Solutions</span> <span>Farm Energy Solutions</span> <span>Energy Security Solutions</span>
-        </div>
-        <div class="mt-4 pt-3 border-t border-gray-200 grid grid-cols-3 text-center">
-          <div><p class="text-xs text-gray-500">Impressions</p><p class="font-bold text-gray-900">2,176</p></div>
-          <div><p class="text-xs text-gray-500">Clicks</p><p class="font-bold text-gray-900">105</p></div>
-          <div><p class="text-xs text-gray-500">CTR</p><p class="font-bold text-emerald-600">4.83%</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Google Ads - Home Energy (Slide 6) -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🔋 Google Ads — Home Energy Campaign</h3>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-      <div class="bg-blue-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Clicks</p>
-        <p class="text-2xl font-bold mt-1">228</p>
-      </div>
-      <div class="bg-red-500 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Impressions</p>
-        <p class="text-2xl font-bold mt-1">3.07K</p>
-      </div>
-      <div class="bg-yellow-500 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Avg. CPC</p>
-        <p class="text-2xl font-bold mt-1">£1.34</p>
-      </div>
-      <div class="bg-emerald-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Cost</p>
-        <p class="text-2xl font-bold mt-1">£306</p>
-      </div>
-      <div class="bg-blue-500 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">CTR</p>
-        <p class="text-2xl font-bold mt-1">7.43%</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <p class="text-xs uppercase text-gray-500 font-semibold mb-3">Top searches &amp; words</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar battery</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">home battery storage</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">home battery storage uk</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">power factor saver</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">cheapest electric ni</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar battery storage</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">battery backup for home power outage uk</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">cheapest electricity ni keypad</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">battery storage for home</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">solar batteries</span>
-          <span class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-800 rounded-full text-xs">electricity saving box</span>
-        </div>
-      </div>
-      <div>
-        <p class="text-xs uppercase text-gray-500 font-semibold mb-3">Keyword performance</p>
-        <table class="w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr class="text-left text-xs uppercase text-gray-500">
-              <th class="px-3 py-2">Keyword</th>
-              <th class="px-3 py-2 text-right">Cost</th>
-              <th class="px-3 py-2 text-right">Clicks</th>
-              <th class="px-3 py-2 text-right">CTR</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr><td class="px-3 py-2 font-semibold">"home battery"</td><td class="px-3 py-2 text-right">£35.00</td><td class="px-3 py-2 text-right">9</td><td class="px-3 py-2 text-right trend-up font-semibold">7.76%</td></tr>
-            <tr><td class="px-3 py-2 font-semibold">"best energy deals"</td><td class="px-3 py-2 text-right">£32.80</td><td class="px-3 py-2 text-right">8</td><td class="px-3 py-2 text-right">3.11%</td></tr>
-            <tr class="bg-emerald-50"><td class="px-3 py-2 font-semibold">"battery backup for home"</td><td class="px-3 py-2 text-right">£31.65</td><td class="px-3 py-2 text-right font-bold">35</td><td class="px-3 py-2 text-right trend-up font-bold">9.36%</td></tr>
-            <tr><td class="px-3 py-2 font-semibold">"home solar and battery"</td><td class="px-3 py-2 text-right">£28.21</td><td class="px-3 py-2 text-right">11</td><td class="px-3 py-2 text-right trend-up font-semibold">7.05%</td></tr>
-            <tr><td class="px-3 py-2 font-semibold">"home energy battery storage"</td><td class="px-3 py-2 text-right">£26.80</td><td class="px-3 py-2 text-right">19</td><td class="px-3 py-2 text-right trend-up font-semibold">6.40%</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <p class="text-xs text-gray-500 italic mt-3">"battery backup for home" is the standout — 35 clicks at a 9.36% CTR.</p>
-  </section>
-
-  <!-- Top Pages (Slide 9) -->
-  <section id="web-analytics" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">📄 Top Pages — Google Analytics</h3>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Views</p>
-        <p class="text-xl font-bold text-gray-900">2,358</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Active users</p>
-        <p class="text-xl font-bold text-gray-900">744</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Views / user</p>
-        <p class="text-xl font-bold text-gray-900">3.17</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Avg. engagement</p>
-        <p class="text-xl font-bold text-gray-900">1m 03s</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Event count</p>
-        <p class="text-xl font-bold text-gray-900">6,533</p>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-4 py-2">#</th>
-            <th class="px-4 py-2">Page</th>
-            <th class="px-4 py-2 text-right">Views</th>
-            <th class="px-4 py-2 text-right">Active users</th>
-            <th class="px-4 py-2 text-right">Views/user</th>
-            <th class="px-4 py-2 text-right">Avg. engagement</th>
-            <th class="px-4 py-2 text-right">Events</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr class="bg-emerald-50"><td class="px-4 py-2">1</td><td class="px-4 py-2 font-semibold">/</td><td class="px-4 py-2 text-right">960 <span class="text-xs text-gray-500">(40.71%)</span></td><td class="px-4 py-2 text-right">302 (40.59%)</td><td class="px-4 py-2 text-right">3.18</td><td class="px-4 py-2 text-right">33s</td><td class="px-4 py-2 text-right">2,541 (38.89%)</td></tr>
-          <tr><td class="px-4 py-2">2</td><td class="px-4 py-2 font-semibold">/large-homes-estate-properties-energy-solutions/</td><td class="px-4 py-2 text-right">250 (10.6%)</td><td class="px-4 py-2 text-right">211 (28.36%)</td><td class="px-4 py-2 text-right">1.18</td><td class="px-4 py-2 text-right">17s</td><td class="px-4 py-2 text-right">829 (12.69%)</td></tr>
-          <tr><td class="px-4 py-2">3</td><td class="px-4 py-2 font-semibold">/energy-solutions/victron-energy-solutions/</td><td class="px-4 py-2 text-right">166 (7.04%)</td><td class="px-4 py-2 text-right">133 (17.88%)</td><td class="px-4 py-2 text-right">1.25</td><td class="px-4 py-2 text-right">30s</td><td class="px-4 py-2 text-right">540 (8.27%)</td></tr>
-          <tr><td class="px-4 py-2">4</td><td class="px-4 py-2 font-semibold">/energy-solutions/</td><td class="px-4 py-2 text-right">130 (5.51%)</td><td class="px-4 py-2 text-right">71 (9.54%)</td><td class="px-4 py-2 text-right">1.83</td><td class="px-4 py-2 text-right">1m 06s</td><td class="px-4 py-2 text-right">312 (4.78%)</td></tr>
-          <tr><td class="px-4 py-2">5</td><td class="px-4 py-2 font-semibold">/projects/</td><td class="px-4 py-2 text-right">95 (4.03%)</td><td class="px-4 py-2 text-right">45 (6.05%)</td><td class="px-4 py-2 text-right">2.11</td><td class="px-4 py-2 text-right">30s</td><td class="px-4 py-2 text-right">225 (3.44%)</td></tr>
-          <tr><td class="px-4 py-2">6</td><td class="px-4 py-2 font-semibold">/contact/</td><td class="px-4 py-2 text-right">90 (3.82%)</td><td class="px-4 py-2 text-right">66 (8.87%)</td><td class="px-4 py-2 text-right">1.36</td><td class="px-4 py-2 text-right">16s</td><td class="px-4 py-2 text-right">220 (3.37%)</td></tr>
-          <tr><td class="px-4 py-2">7</td><td class="px-4 py-2 font-semibold">/about/</td><td class="px-4 py-2 text-right">79 (3.35%)</td><td class="px-4 py-2 text-right">47 (6.32%)</td><td class="px-4 py-2 text-right">1.68</td><td class="px-4 py-2 text-right">59s</td><td class="px-4 py-2 text-right">226 (3.46%)</td></tr>
-          <tr><td class="px-4 py-2">8</td><td class="px-4 py-2 font-semibold">/g100/</td><td class="px-4 py-2 text-right">70 (2.97%)</td><td class="px-4 py-2 text-right">44 (5.91%)</td><td class="px-4 py-2 text-right">1.59</td><td class="px-4 py-2 text-right">33s</td><td class="px-4 py-2 text-right">330 (5.05%)</td></tr>
-          <tr><td class="px-4 py-2">9</td><td class="px-4 py-2 font-semibold">/energy-solutions/fogstar-energy-battery-solutions/</td><td class="px-4 py-2 text-right">51 (2.16%)</td><td class="px-4 py-2 text-right">41 (5.51%)</td><td class="px-4 py-2 text-right">1.24</td><td class="px-4 py-2 text-right">1m 13s</td><td class="px-4 py-2 text-right">132 (2.02%)</td></tr>
-          <tr><td class="px-4 py-2">10</td><td class="px-4 py-2 font-semibold">/subcontractor-login/</td><td class="px-4 py-2 text-right">43 (1.82%)</td><td class="px-4 py-2 text-right">3 (0.4%)</td><td class="px-4 py-2 text-right">14.33</td><td class="px-4 py-2 text-right">9m 52s</td><td class="px-4 py-2 text-right">109 (1.67%)</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="text-xs text-gray-500 italic mt-3">Victron energy-solutions page is 3rd most-visited page — aligning with campaign performance and its rise to organic search position #3.</p>
-  </section>
-
-  <!-- Users by Traffic Source (Slide 10) -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">👥 Users by Traffic Source</h3>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Total users</p>
-        <p class="text-xl font-bold text-gray-900">757</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">New users</p>
-        <p class="text-xl font-bold text-gray-900">718</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Returning</p>
-        <p class="text-xl font-bold text-gray-900">98</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Avg. engagement</p>
-        <p class="text-xl font-bold text-gray-900">1m 03s</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-3 text-center">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Sessions / user</p>
-        <p class="text-xl font-bold text-gray-900">0.69</p>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-left text-xs uppercase text-gray-500">
-            <th class="px-4 py-2">Channel</th>
-            <th class="px-4 py-2 text-right">Total users</th>
-            <th class="px-4 py-2 text-right">New users</th>
-            <th class="px-4 py-2 text-right">Returning</th>
-            <th class="px-4 py-2 text-right">Avg. engagement</th>
-            <th class="px-4 py-2 text-right">Sessions/user</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <tr class="bg-emerald-50"><td class="px-4 py-2 font-semibold">Paid Search</td><td class="px-4 py-2 text-right font-bold">306 (40.42%)</td><td class="px-4 py-2 text-right">304 (42.34%)</td><td class="px-4 py-2 text-right">9 (9.18%)</td><td class="px-4 py-2 text-right">21s</td><td class="px-4 py-2 text-right">0.48</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">Organic Search</td><td class="px-4 py-2 text-right">187 (24.7%)</td><td class="px-4 py-2 text-right">169 (23.54%)</td><td class="px-4 py-2 text-right trend-up font-semibold">53 (54.08%)</td><td class="px-4 py-2 text-right trend-up font-semibold">2m 05s</td><td class="px-4 py-2 text-right font-semibold">1.12</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">Direct</td><td class="px-4 py-2 text-right">184 (24.31%)</td><td class="px-4 py-2 text-right">169 (23.54%)</td><td class="px-4 py-2 text-right">26 (26.53%)</td><td class="px-4 py-2 text-right">1m 13s</td><td class="px-4 py-2 text-right">0.62</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">Organic Social</td><td class="px-4 py-2 text-right">42 (5.55%)</td><td class="px-4 py-2 text-right">41 (5.71%)</td><td class="px-4 py-2 text-right">2 (2.04%)</td><td class="px-4 py-2 text-right">22s</td><td class="px-4 py-2 text-right">0.49</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">Referral</td><td class="px-4 py-2 text-right">35 (4.62%)</td><td class="px-4 py-2 text-right">32 (4.46%)</td><td class="px-4 py-2 text-right">8 (8.16%)</td><td class="px-4 py-2 text-right">1m 43s</td><td class="px-4 py-2 text-right">0.97</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">AI Assistant</td><td class="px-4 py-2 text-right">2 (0.26%)</td><td class="px-4 py-2 text-right">2 (0.28%)</td><td class="px-4 py-2 text-right">0</td><td class="px-4 py-2 text-right">3s</td><td class="px-4 py-2 text-right">0.50</td></tr>
-          <tr><td class="px-4 py-2 font-semibold">Cross-network</td><td class="px-4 py-2 text-right">1 (0.13%)</td><td class="px-4 py-2 text-right">1 (0.14%)</td><td class="px-4 py-2 text-right">0</td><td class="px-4 py-2 text-right">2m 35s</td><td class="px-4 py-2 text-right">1.00</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="text-xs text-gray-500 italic mt-3">Paid Search drives 40% of users. Organic Search has the deepest engagement (2m 05s + 1.12 sessions/user) — SEO investment paying off.</p>
-  </section>
-
-  <!-- New Homepage Design (Slide 20) -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🎨 New Homepage — Design in Progress</h3>
-    <p class="text-sm text-gray-600 mb-4">Redesign centred around a single headline promise ("Slash your energy bills by up to 70%"), a savings calculator, and vertical-specific journeys (business owner / farmer / hospitality operator / estate).</p>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-        <p class="text-3xl font-extrabold text-emerald-700">97%</p>
-        <p class="text-sm font-semibold text-gray-800">Reduction in Monthly Costs</p>
-        <p class="text-xs text-gray-500">Portsmouth Home</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-        <p class="text-3xl font-extrabold text-emerald-700">£6,165</p>
-        <p class="text-sm font-semibold text-gray-800">Annual Savings</p>
-        <p class="text-xs text-gray-500">Victorian Gatehouse</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-        <p class="text-3xl font-extrabold text-emerald-700">70%</p>
-        <p class="text-sm font-semibold text-gray-800">Lower Home Energy Bills</p>
-        <p class="text-xs text-gray-500">Salisbury Home</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Key sections</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>• Hero: "Slash your energy bills by up to 70%"</li>
-          <li>• Interactive savings calculator ("How much could you save?")</li>
-          <li>• "I am a…" journey selector (Business / Farmer / Hospitality / Estate)</li>
-          <li>• "How battery storage works" 4-step explainer (Buy low → Store → Your property → Generate more)</li>
-          <li>• Customer reviews carousel</li>
-          <li>• Contact / quote form</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Technology partners featured</p>
-        <div class="flex flex-wrap gap-2">
-          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Victron Energy</span>
-          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Fronius</span>
-          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Falcon Energy</span>
-          <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">Sigenergy</span>
-        </div>
-        <p class="text-xs text-gray-500 mt-3 italic">Positioning: bespoke systems built from best-in-class components, with long-term support &amp; guarantees.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- July Strategy / Priority Ad Groups -->
-  <section id="next-steps" class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 July Strategy — Priority Ad Groups</h3>
-    <p class="text-sm text-gray-600 mb-4">Focus initial budget on the highest-intent searches:</p>
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Ad Group 1</p>
-        <p class="font-bold mt-1">Microgrid Systems</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Ad Group 2</p>
-        <p class="font-bold mt-1">Energy Savings</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Ad Group 3</p>
-        <p class="font-bold mt-1">Victron Installers</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Ad Group 4</p>
-        <p class="font-bold mt-1">Home Energy Storage</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-4">
-        <p class="text-xs uppercase opacity-80">Ad Group 5</p>
-        <p class="font-bold mt-1">Off-Grid Energy Solutions</p>
-      </div>
-    </div>
-
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-100">
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Recommended budget</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1">£15 / day</p>
-        <p class="text-xs text-gray-600 mt-1">per ad group</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Avg top-of-page CPC</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1">£2.50</p>
-        <p class="text-xs text-gray-600 mt-1">~6–7 clicks/day</p>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-gray-500 font-semibold">Additional monthly investment</p>
-        <p class="text-2xl font-bold text-gray-900 mt-1">£45 / day</p>
-        <p class="text-xs text-gray-600 mt-1">for all priority campaigns</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Month 2 Google Ads Expansion Plan -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <h3 class="text-md font-bold text-gray-800">📈 Google Ads Expansion Plan — Month 2</h3>
-        <p class="text-xs text-gray-500 mt-1">Follow-on strategy once priority ad groups are performing</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Campaign Growth</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Expand keyword coverage</li>
-          <li>Launch additional ad groups</li>
-          <li>Refine targeting from conversion data</li>
-        </ul>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Solar Campaign Strategy</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Consolidate farm-solar terms into a broader <span class="font-semibold">Solar Energy</span> campaign</li>
-          <li>Limited search volume around &quot;farm solar energy&quot;</li>
-          <li>Farming audience better reached via Meta</li>
-        </ul>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Ongoing Optimisation</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Keyword expansion</li>
-          <li>Ad copy testing</li>
-          <li>Conversion tracking improvements</li>
-          <li>Reallocate budget to top campaigns</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Meta Ads Strategy -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">📱 Meta Ads Strategy</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="border border-blue-100 bg-blue-50 rounded-lg p-4">
-        <div class="flex items-center justify-between">
-          <p class="text-xs uppercase text-blue-700 font-bold">Campaign 1 · Farming Sector</p>
-          <span class="text-xs bg-white text-blue-700 font-bold px-2 py-0.5 rounded">£10 / day</span>
-        </div>
-        <ul class="mt-3 text-sm text-gray-700 space-y-1">
-          <li>Regional targeting</li>
-          <li>Farmers &amp; agricultural businesses</li>
-          <li>Energy resilience, cost savings &amp; independence</li>
-        </ul>
-      </div>
-      <div class="border border-purple-100 bg-purple-50 rounded-lg p-4">
-        <div class="flex items-center justify-between">
-          <p class="text-xs uppercase text-purple-700 font-bold">Campaign 2 · Cost Savings</p>
-          <span class="text-xs bg-white text-purple-700 font-bold px-2 py-0.5 rounded">£10 / day</span>
-        </div>
-        <ul class="mt-3 text-sm text-gray-700 space-y-1">
-          <li>Homeowners, estates &amp; businesses</li>
-          <li>Reducing electricity costs</li>
-          <li>Improving energy security</li>
-        </ul>
-      </div>
-    </div>
-    <p class="text-xs text-gray-500 mt-3 italic">Monitor lead quality and cost per lead before scaling.</p>
-  </section>
-
-  <!-- Meta Lead Generation Funnel -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🎯 Meta Lead Generation Funnel</h3>
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-6">
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">👀</p>
-        <p class="font-bold">User sees advert</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">📝</p>
-        <p class="font-bold">Completes Meta lead form</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">⚡</p>
-        <p class="font-bold">Contact details captured</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">✉️</p>
-        <p class="font-bold">Automated email sequence</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">🌱</p>
-        <p class="font-bold">Lead nurtured with content</p>
-      </div>
-      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-lg p-3 text-center text-xs">
-        <p class="text-2xl mb-1">📞</p>
-        <p class="font-bold">Sales team follows up</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Why Lead Ads?</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>✓ Lower friction than landing pages</li>
-          <li>✓ Higher lead conversion rates</li>
-          <li>✓ Immediate lead capture</li>
-          <li>✓ Opportunity to nurture prospects over time</li>
-          <li>✓ Proven success vs. website traffic campaigns</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-xs uppercase text-emerald-700 font-bold mb-2">Next Requirement</p>
-        <p class="text-sm text-gray-700 mb-2">Implement an email automation workflow to:</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>→ Deliver info about OffGrid Pro solutions</li>
-          <li>→ Highlight cost savings &amp; energy security</li>
-          <li>→ Nurture leads to consultation / quotation</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Summer AC Campaign -->
-  <section class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-xl p-6 border border-orange-100">
-    <div class="flex items-center gap-2 mb-4">
-      <span class="text-2xl">☀️</span>
-      <div>
-        <h3 class="text-md font-bold text-gray-800">Summer Campaign Opportunity — &quot;Stay Cool Without the High Energy Bills&quot;</h3>
-        <p class="text-xs text-gray-500 mt-1">Seasonal concept: battery storage offsets air-conditioning costs</p>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <p class="text-xs uppercase text-orange-700 font-bold mb-2">What we'd need from OffGrid Pro</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>• Confirmation you'd like to run a promotional offer</li>
-          <li>• Choice of incentive:</li>
-          <li class="ml-4">– £500 off installation</li>
-          <li class="ml-4">– Free energy assessment</li>
-          <li class="ml-4">– Reduced deposit</li>
-          <li class="ml-4">– Limited-time summer discount</li>
-          <li>• Supporting data from a previous AC-related project</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-xs uppercase text-orange-700 font-bold mb-2">What Tweak would deliver</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li><span class="font-semibold">Website</span></li>
-          <li class="ml-3">– Dedicated homepage section &amp; landing page</li>
-          <li class="ml-3">– Strong money-saving + limited-time CTA</li>
-          <li><span class="font-semibold">Social media</span></li>
-          <li class="ml-3">– &quot;How much does AC cost to run?&quot; short video</li>
-          <li class="ml-3">– &quot;Battery storage reduces summer bills&quot; short video</li>
-          <li class="ml-3">– Static promo post</li>
-          <li><span class="font-semibold">Email</span></li>
-          <li class="ml-3">– Promo email to existing list</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Calculator Research & Postcode Targeting -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🧮 Savings Calculator — Research &amp; Discovery</h3>
-    <p class="text-sm text-gray-600 mb-4">Interactive tool concept: users enter energy details → get personalised savings estimate → lead captured before results shown.</p>
-
-    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mb-6">
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">User inputs details</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">Contact info captured</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">Calculate savings</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">Personalised results</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">Email results</p>
-      </div>
-      <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center text-xs">
-        <p class="font-bold text-emerald-800">Follow up if no enquiry</p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Calculator inputs (TBC)</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>• Monthly electricity bill</li>
-          <li>• Electricity tariff rate</li>
-          <li>• Postcode</li>
-          <li>• Property type (home/farm/business/hospitality)</li>
-          <li>• Contact details + GDPR consent</li>
-        </ul>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Results &amp; recommendations</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>• Estimated annual savings</li>
-          <li>• Recommended battery storage solution</li>
-          <li>• Relevant case studies by user type</li>
-          <li>• Clear CTA to book a call</li>
-        </ul>
-      </div>
-      <div class="bg-gray-50 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">Key considerations</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>• Confirm Zoho CRM integration (Fluent Forms)</li>
-          <li>• Define postcode data granularity</li>
-          <li>• Finalise savings calculation logic</li>
-          <li>• Agree product recommendation rules</li>
-          <li>• Design branded results page &amp; email</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="mt-6 pt-6 border-t border-gray-100">
-      <p class="text-xs uppercase text-emerald-700 font-bold mb-3">📍 Postcode Targeting Depth (example: GU12 6BQ)</p>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="bg-emerald-50 rounded-lg p-3 text-center">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">124</p>
-          <p class="text-xs text-gray-600 mt-1">GU-level (area)</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3 text-center">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">2,979</p>
-          <p class="text-xs text-gray-600 mt-1">GU12-level (district)</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3 text-center">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">11,232</p>
-          <p class="text-xs text-gray-600 mt-1">GU12 6-level (sector)</p>
-        </div>
-        <div class="bg-emerald-50 rounded-lg p-3 text-center">
-          <p class="text-2xl font-bold text-emerald-700 metric-value">1.8M</p>
-          <p class="text-xs text-gray-600 mt-1">Full UK postcodes</p>
-        </div>
-      </div>
-      <p class="text-xs text-gray-500 mt-3 italic">Zoho CRM integration via Fluent Forms Pro appears enabled but needs verification — is data currently flowing?</p>
-    </div>
-  </section>
-
-  <!-- July Projects Summary -->
-  <section class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-    <h3 class="text-md font-bold text-gray-800 mb-4">🗓️ July Projects</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="border border-gray-100 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">1 · Calculator</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Confirm CRM integration (Zoho + Fluent Forms)</li>
-          <li>Finalise calculator logic &amp; savings maths</li>
-          <li>Define postcode dataset requirements</li>
-          <li>Wireframe + user journey</li>
-          <li>Begin build in Fluent Forms</li>
-          <li>Design automated results email</li>
-        </ul>
-      </div>
-      <div class="border border-gray-100 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">2 · Website Redesign</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Homepage</li>
-          <li>Contact page</li>
-          <li>Landing page creation</li>
-          <li>Farm &amp; home page updates</li>
-        </ul>
-      </div>
-      <div class="border border-gray-100 rounded-lg p-4">
-        <p class="text-xs uppercase text-emerald-700 font-bold">3 · PPC &amp; Meta Ads</p>
-        <ul class="mt-2 text-sm text-gray-700 space-y-1">
-          <li>Client to review keywords</li>
-          <li>Client to approve budget &amp; ads</li>
-          <li>Tweak to set up ads</li>
-          <li>Meta Farming Sector campaign (£10/day)</li>
-          <li>Meta Cost Savings campaign (£10/day)</li>
-          <li>Summer AC seasonal campaign concept</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="text-center text-xs text-gray-400 py-6">
-    <p>Live dashboard prototype · Data derived from Tweak Marketing's June 2026 OffGrid Pro report</p>
-    <p class="mt-1">Once approved, will auto-refresh monthly from Google Ads, Search Console, LinkedIn, Meta &amp; SEMrush APIs</p>
-    <p class="mt-1 text-gray-300">© Tweak Marketing UK · Client Success Platform</p>
-  </footer>
+  </div>
 
 </main>
 
+<!-- ===================== DETAIL DRAWER ===================== -->
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="drawer" id="drawer">
+  <div class="gradient-bg text-white px-6 py-5 flex items-center justify-between sticky top-0 z-10">
+    <div>
+      <p class="text-xs uppercase tracking-widest text-white/70">Full report</p>
+      <h3 class="text-xl font-extrabold" id="drawerTitle">Detail</h3>
+    </div>
+    <button id="drawerClose" class="text-white/80 hover:text-white text-2xl leading-none">×</button>
+  </div>
+  <div class="p-6" id="drawerBody"></div>
+</aside>
+
+<footer class="text-center text-xs text-gray-400 py-8">
+  <p>Visual framework prototype · v2 · Data from Tweak Marketing's July 2026 OffGrid Pro report</p>
+  <p class="mt-1 text-gray-300">© Tweak Marketing UK · Client Success Platform</p>
+</footer>
+
 <script>
-  // LinkedIn 3-Month Chart
-  const liCtx = document.getElementById('linkedinChart').getContext('2d');
-  new Chart(liCtx, {
+// ==================================================================
+// DATA  (real July figures + historical months for comparisons)
+// ==================================================================
+const MONTHS = ['April','May','June','July'];
+
+const DATA = {
+  conversions:  { series: [3, 4, 5, 18], unit: '', label: 'Conversions' },
+  impressions:  { series: [12500, 28800, 25300, 72400], unit: '', label: 'Impressions' },
+  engagement:   { series: [143, 403, 268, 958], unit: '', label: 'Interactions' }, // LI+FB+IG interactions
+  spend:        { series: [510, 505, 496.71, 474.83], unit: '£', label: 'Ad spend' },
+  keywords:     { series: [61, 68, 74, 81], unit: '', label: 'Ranking keywords' },
+  siteHealth:   { series: [79, 82, 85, 88], unit: '%', label: 'Site health' },
+
+  // Awareness — impressions by channel, July vs June
+  awareness: {
+    labels: ['Google Ads','LinkedIn','Facebook','Instagram','TikTok'],
+    july:   [3838, 1936, 19400, 45000, 5700],
+    june:   [4100, 1496, 2400, 7800, 0],
+  },
+  // Traffic strength (relative index 0-100)
+  traffic: {
+    labels: ['Paid Social','Direct','Organic Search','Paid Search'],
+    july: [100, 85, 70, 55],
+    june: [60, 80, 55, 75],
+  },
+  // Conversions by campaign
+  convCamp: {
+    labels: ['Energy Storage','Victron'],
+    july: [12, 6],
+    june: [3, 2],
+  },
+  // Followers by platform (4-month)
+  followers: {
+    linkedin: [194, 208, 233, 272],
+    facebook: [215, 222, 231, 502],
+    instagram:[820, 880, 914, 1175],
+  },
+  // Ads: spend vs conversions (4-month, dual axis)
+  ads: {
+    spend: [510, 505, 496.71, 474.83],
+    conv:  [3, 4, 5, 18],
+  },
+};
+
+// Comparison baselines derived from history
+function baseline(series, mode) {
+  const jul = series[series.length - 1];
+  if (mode === 'prev1') return series[series.length - 2];
+  if (mode === 'prev3') return avg(series.slice(0, 3));      // Apr–Jun avg
+  if (mode === 'prev6') return avg(series.slice(0, 3));      // only 4mo data → same as 3mo here
+  return series[series.length - 2];
+}
+const avg = a => a.reduce((s,x)=>s+x,0) / a.length;
+
+// ==================================================================
+// FUNNEL  (hero)
+// ==================================================================
+const FUNNEL = [
+  { key:'spend',  label:'Paid Investment', value:'£475',  sub:'total ad spend',        delta:-4,  deltaGood:true,  color:'#0ea5e9' },
+  { key:'impr',   label:'Awareness',       value:'72.4k', sub:'cross-channel impr.',   delta:186, deltaGood:true,  color:'#8b5cf6' },
+  { key:'traffic',label:'Traffic',         value:'~2x',   sub:'website visits',        delta:98,  deltaGood:true,  color:'#14b8a6' },
+  { key:'engage', label:'Engagement',      value:'958',   sub:'engaged interactions',  delta:257, deltaGood:true,  color:'#f59e0b' },
+  { key:'conv',   label:'Conversion',      value:'18',    sub:'leads / enquiries',     delta:260, deltaGood:true,  color:'#059669' },
+];
+
+function renderFunnel() {
+  const el = document.getElementById('funnel');
+  const parts = [];
+  FUNNEL.forEach((s, i) => {
+    const trendClass = s.deltaGood ? 'trend-up' : 'trend-down';
+    const arrow = s.delta >= 0 ? '↑' : '↓';
+    parts.push(`
+      <div class="funnel-stage md:col-span-1 rounded-xl p-4 text-white" style="background:linear-gradient(135deg, ${s.color}, ${shade(s.color,-18)});">
+        <p class="text-[10px] uppercase tracking-widest text-white/80 font-semibold">${s.label}</p>
+        <p class="text-2xl font-extrabold mt-1 metric-value">${s.value}</p>
+        <p class="text-[11px] text-white/80 mt-0.5">${s.sub}</p>
+        <p class="text-xs font-bold mt-2 bg-white/20 rounded-full inline-block px-2 py-0.5">${arrow} ${Math.abs(s.delta)}%</p>
+      </div>
+    `);
+    if (i < FUNNEL.length - 1) {
+      parts.push(`<div class="hidden md:flex items-center justify-center funnel-arrow text-2xl">›</div>`);
+    }
+  });
+  el.innerHTML = parts.join('');
+}
+
+// darken/lighten a hex colour
+function shade(hex, pct) {
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));
+  g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));
+  b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+// ==================================================================
+// CHARTS
+// ==================================================================
+const EM = '#059669', TEAL='#14b8a6', BLUE='#0ea5e9', VIOLET='#8b5cf6', AMBER='#f59e0b', GRAY='#cbd5e1';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#64748b';
+const charts = {};
+
+function line(id, labels, datasets, opts={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels: ['April', 'May', 'June'],
-      datasets: [
-        {
-          label: 'Followers',
-          data: [194, 208, 233],
-          borderColor: '#059669',
-          backgroundColor: 'rgba(5, 150, 105, 0.08)',
-          tension: 0.4,
-          fill: true,
-          yAxisID: 'y'
-        },
-        {
-          label: 'Impressions',
-          data: [564, 1563, 1496],
-          borderColor: '#14b8a6',
-          backgroundColor: 'rgba(20, 184, 166, 0.08)',
-          tension: 0.4,
-          fill: true,
-          yAxisID: 'y1'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false } },
-      scales: {
-        y: { type: 'linear', position: 'left', beginAtZero: false, title: { display: true, text: 'Followers' } },
-        y1: { type: 'linear', position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Impressions' } }
-      }
+    data: { labels, datasets },
+    options: Object.assign({
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, padding:16 } } },
+      scales:{ y:{ beginAtZero:false, grid:{ color:'#f1f5f9' } }, x:{ grid:{ display:false } } },
+      interaction:{ mode:'index', intersect:false },
+    }, opts),
+  });
+}
+function bar(id, labels, datasets, opts={}) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: Object.assign({
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, padding:16 } } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' } }, x:{ grid:{ display:false } } },
+    }, opts),
+  });
+}
+
+function fill(color, a=0.12) {
+  const n = parseInt(color.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+function buildCharts() {
+  line('convTrend', MONTHS, [{
+    label:'Conversions', data:DATA.conversions.series, borderColor:EM, backgroundColor:fill(EM),
+    tension:0.4, fill:true, pointRadius:4, pointBackgroundColor:EM, borderWidth:3,
+  }]);
+
+  line('imprTrend', MONTHS, [{
+    label:'Impressions', data:DATA.impressions.series, borderColor:VIOLET, backgroundColor:fill(VIOLET),
+    tension:0.4, fill:true, pointRadius:4, pointBackgroundColor:VIOLET, borderWidth:3,
+  }]);
+
+  bar('awareChart', DATA.awareness.labels, [
+    { label:'June', data:DATA.awareness.june, backgroundColor:GRAY, borderRadius:6 },
+    { label:'July', data:DATA.awareness.july, backgroundColor:VIOLET, borderRadius:6 },
+  ]);
+
+  bar('trafficChart', DATA.traffic.labels, [
+    { label:'June', data:DATA.traffic.june, backgroundColor:GRAY, borderRadius:6 },
+    { label:'July', data:DATA.traffic.july, backgroundColor:TEAL, borderRadius:6 },
+  ]);
+
+  line('engageChart', MONTHS, [{
+    label:'Interactions', data:DATA.engagement.series, borderColor:AMBER, backgroundColor:fill(AMBER),
+    tension:0.4, fill:true, pointRadius:4, pointBackgroundColor:AMBER, borderWidth:3,
+  }]);
+
+  bar('convCampChart', DATA.convCamp.labels, [
+    { label:'June', data:DATA.convCamp.june, backgroundColor:GRAY, borderRadius:6 },
+    { label:'July', data:DATA.convCamp.july, backgroundColor:EM, borderRadius:6 },
+  ]);
+
+  line('socialChart', MONTHS, [
+    { label:'LinkedIn', data:DATA.followers.linkedin, borderColor:BLUE, backgroundColor:fill(BLUE), tension:0.4, borderWidth:3, pointRadius:3 },
+    { label:'Facebook', data:DATA.followers.facebook, borderColor:VIOLET, backgroundColor:fill(VIOLET), tension:0.4, borderWidth:3, pointRadius:3 },
+    { label:'Instagram',data:DATA.followers.instagram,borderColor:AMBER, backgroundColor:fill(AMBER), tension:0.4, borderWidth:3, pointRadius:3 },
+  ]);
+
+  line('adsChart', MONTHS, [
+    { label:'Ad spend (£)', data:DATA.ads.spend, borderColor:BLUE, backgroundColor:fill(BLUE), tension:0.4, borderWidth:3, yAxisID:'y', pointRadius:3 },
+    { label:'Conversions', data:DATA.ads.conv, borderColor:EM, backgroundColor:fill(EM), tension:0.4, borderWidth:3, yAxisID:'y1', pointRadius:3 },
+  ], {
+    scales:{
+      y:{ position:'left', beginAtZero:true, title:{display:true,text:'Spend (£)'}, grid:{color:'#f1f5f9'} },
+      y1:{ position:'right', beginAtZero:true, title:{display:true,text:'Conversions'}, grid:{display:false} },
+      x:{ grid:{display:false} },
     }
   });
 
-  // ============================================================
-  // Live Google Ads Data (pulled from data.json — generated by scripts/pull-google-ads.js)
-  // ============================================================
-  const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2 });
-  const numFmt = new Intl.NumberFormat('en-GB');
-
-  function timeAgo(iso) {
-    const then = new Date(iso).getTime();
-    const now = Date.now();
-    const diffMs = now - then;
-    const mins = Math.round(diffMs / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'} ago`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
-    const days = Math.round(hrs / 24);
-    return `${days} day${days === 1 ? '' : 's'} ago`;
-  }
-
-  function statusBadge(status) {
-    if (status === 'ENABLED') return '<span class="text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Active</span>';
-    if (status === 'PAUSED') return '<span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Paused</span>';
-    return `<span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">${status}</span>`;
-  }
-
-  function renderLive(data) {
-    const t = data.totals;
-    const activeCampaigns = data.campaigns.filter(c => c.status === 'ENABLED');
-    const html = `
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Total Clicks</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">${numFmt.format(t.clicks)}</p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Impressions</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">${numFmt.format(t.impressions)}</p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Conversions</p>
-          <p class="text-2xl font-bold text-emerald-600 mt-1 metric-value">${t.conversions}</p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Total Spend</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">${gbp.format(t.cost)}</p>
-        </div>
-        <div class="bg-gray-50 rounded-lg p-3">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Avg CPC</p>
-          <p class="text-2xl font-bold text-gray-900 mt-1 metric-value">${gbp.format(t.cpc)}</p>
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
-              <th class="py-2 pr-4">Campaign</th>
-              <th class="py-2 px-3 text-right">Impr.</th>
-              <th class="py-2 px-3 text-right">Clicks</th>
-              <th class="py-2 px-3 text-right">CTR</th>
-              <th class="py-2 px-3 text-right">Avg CPC</th>
-              <th class="py-2 px-3 text-right">Spend</th>
-              <th class="py-2 px-3 text-right">Conv.</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            ${data.campaigns.map(c => `
-              <tr class="${c.status === 'PAUSED' ? 'opacity-60' : ''}">
-                <td class="py-3 pr-4">
-                  <div class="flex items-center gap-2">
-                    <span class="font-semibold text-gray-900">${c.name}</span>
-                    ${statusBadge(c.status)}
-                  </div>
-                </td>
-                <td class="py-3 px-3 text-right tabular-nums text-gray-700">${numFmt.format(c.impressions)}</td>
-                <td class="py-3 px-3 text-right tabular-nums text-gray-700">${numFmt.format(c.clicks)}</td>
-                <td class="py-3 px-3 text-right tabular-nums text-gray-700">${c.ctr}%</td>
-                <td class="py-3 px-3 text-right tabular-nums text-gray-700">${gbp.format(c.cpc)}</td>
-                <td class="py-3 px-3 text-right tabular-nums text-gray-700">${gbp.format(c.cost)}</td>
-                <td class="py-3 px-3 text-right tabular-nums font-semibold text-emerald-700">${c.conversions || '—'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-          <tfoot>
-            <tr class="font-bold border-t-2 border-gray-200">
-              <td class="py-3 pr-4 text-gray-900">Total (${activeCampaigns.length} active, ${data.campaigns.length - activeCampaigns.length} paused)</td>
-              <td class="py-3 px-3 text-right tabular-nums text-gray-900">${numFmt.format(t.impressions)}</td>
-              <td class="py-3 px-3 text-right tabular-nums text-gray-900">${numFmt.format(t.clicks)}</td>
-              <td class="py-3 px-3 text-right tabular-nums text-gray-900">${t.ctr}%</td>
-              <td class="py-3 px-3 text-right tabular-nums text-gray-900">${gbp.format(t.cpc)}</td>
-              <td class="py-3 px-3 text-right tabular-nums text-gray-900">${gbp.format(t.cost)}</td>
-              <td class="py-3 px-3 text-right tabular-nums text-emerald-700">${t.conversions}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <div class="mt-5 pt-5 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">Top Home Energy keywords</p>
-          <ul class="space-y-1.5 text-sm">
-            ${data.keywords.homeEnergy.slice(0, 5).map(k => `
-              <li class="flex justify-between gap-2">
-                <span class="text-gray-700">${k.keyword}</span>
-                <span class="text-gray-500 tabular-nums whitespace-nowrap">${k.clicks} clicks · ${k.ctr}%</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-        <div>
-          <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">Top Victron keywords</p>
-          <ul class="space-y-1.5 text-sm">
-            ${data.keywords.victron.slice(0, 5).map(k => `
-              <li class="flex justify-between gap-2">
-                <span class="text-gray-700">${k.keyword}</span>
-                <span class="text-gray-500 tabular-nums whitespace-nowrap">${k.clicks} clicks · ${k.ctr}%</span>
-              </li>
-            `).join('')}
-          </ul>
-        </div>
-      </div>
-
-      <p class="mt-5 text-xs text-gray-400 italic">✓ All Google Ads numbers above are pulled live from the Google Ads API via Maton. Read-only access. Manual sections below (SEO, Social, Web Analytics) will migrate to live data as remaining APIs are connected.</p>
-    `;
-    document.getElementById('liveDataContent').innerHTML = html;
-    document.getElementById('lastUpdated').textContent = `Updated ${timeAgo(data.meta.pulledAt)}`;
-  }
-
-  function renderError(msg) {
-    document.getElementById('liveDataContent').innerHTML = `
-      <div class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">
-        <p class="font-semibold">Couldn't load live data</p>
-        <p class="text-xs mt-1 text-red-500">${msg}</p>
-      </div>`;
-    document.getElementById('lastUpdated').textContent = 'Update failed';
-  }
-
-  async function loadLiveData(force) {
-    try {
-      const url = 'data.json' + (force ? `?t=${Date.now()}` : '');
-      const res = await fetch(url, { cache: force ? 'no-store' : 'default' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      renderLive(data);
-    } catch (e) {
-      renderError(e.message);
+  line('seoChart', MONTHS, [
+    { label:'Ranking keywords', data:DATA.keywords.series, borderColor:TEAL, backgroundColor:fill(TEAL), tension:0.4, borderWidth:3, yAxisID:'y', pointRadius:3 },
+    { label:'Site health (%)', data:DATA.siteHealth.series, borderColor:EM, backgroundColor:fill(EM), tension:0.4, borderWidth:3, yAxisID:'y1', pointRadius:3 },
+  ], {
+    scales:{
+      y:{ position:'left', beginAtZero:false, title:{display:true,text:'Keywords'}, grid:{color:'#f1f5f9'} },
+      y1:{ position:'right', min:60, max:100, title:{display:true,text:'Health %'}, grid:{display:false} },
+      x:{ grid:{display:false} },
     }
+  });
+}
+
+// map trend chart id -> underlying series key for comparison overlay
+const TREND_KEY = { convTrend:'conversions', imprTrend:'impressions', engageChart:'engagement', seoChart:'keywords' };
+
+// ==================================================================
+// COMPARISON FEATURE
+//  - toggle: show/hide the compare panel
+//  - create: overlay a comparison baseline on the chart
+// ==================================================================
+function wireComparisons() {
+  document.querySelectorAll('.cmp-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.chart;
+      const panel = document.querySelector(`.cmp-panel[data-cmp="${id}"]`);
+      if (panel) panel.classList.toggle('hidden');
+    });
+  });
+
+  document.querySelectorAll('.cmp-create').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panel = btn.closest('.cmp-panel');
+      const id = panel.dataset.cmp;
+      const mode = panel.querySelector('.cmp-period').value;
+      applyComparison(id, mode);
+      btn.textContent = 'Updated ✓';
+      setTimeout(() => (btn.textContent = 'Create'), 1200);
+    });
+  });
+}
+
+function applyComparison(id, mode) {
+  const chart = charts[id];
+  if (!chart) return;
+
+  // Trend line charts: add a flat baseline series (prev month / 3mo avg)
+  if (TREND_KEY[id]) {
+    const series = DATA[TREND_KEY[id]].series;
+    const base = baseline(series, mode);
+    const label = mode==='prev1' ? 'June' : mode==='prev6' ? '6-mo avg' : '3-mo avg';
+    // remove any prior comparison dataset
+    chart.data.datasets = chart.data.datasets.filter(d => !d._cmp);
+    chart.data.datasets.push({
+      label:`Comparison (${label})`, data: chart.data.labels.map(()=>base),
+      borderColor:'#94a3b8', borderDash:[6,5], borderWidth:2, pointRadius:0, fill:false, tension:0, _cmp:true,
+    });
+    chart.update();
+    return;
   }
 
-  loadLiveData();
+  // Grouped bar charts (July/June): toggle which comparison bar shows
+  // Here we simply ensure the June comparison series is visible/emphasised.
+  chart.data.datasets.forEach(d => {
+    if (d.label === 'June') d.hidden = false;
+  });
+  chart.update();
+}
+
+// ==================================================================
+// TABS
+// ==================================================================
+function wireTabs() {
+  const btns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    b.classList.add('active');
+    const panel = document.querySelector(`.tab-panel[data-panel="${b.dataset.tab}"]`);
+    if (panel) panel.classList.add('active');
+    // resize charts inside the newly shown panel
+    Object.values(charts).forEach(c => c.resize());
+    window.scrollTo({ top: 0, behavior:'smooth' });
+  }));
+}
+
+// ==================================================================
+// DETAIL DRAWER
+// ==================================================================
+const DETAILS = {
+  conversions: {
+    title: 'Conversions — Full Report',
+    body: `
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-5">
+          <p class="text-xs uppercase text-emerald-700 font-bold">Energy Storage</p>
+          <p class="text-4xl font-extrabold text-emerald-700 mt-1">12</p>
+          <p class="text-sm text-emerald-800 mt-1">↑ +300% vs June (3)</p>
+        </div>
+        <div class="bg-teal-50 border-2 border-teal-300 rounded-xl p-5">
+          <p class="text-xs uppercase text-teal-700 font-bold">Victron</p>
+          <p class="text-4xl font-extrabold text-teal-700 mt-1">6</p>
+          <p class="text-sm text-teal-800 mt-1">↑ +200% vs June (2)</p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-600 leading-relaxed">July delivered the strongest conversion month to date — 18 conversions vs 5 in June (+260%). Cost per lead fell from ~£99 to ~£26 as spend held flat while conversions tripled. Energy Storage is now clearly the primary conversion driver, with "battery backup for home" and "best energy deals" (15.79% CTR) leading performance.</p>`,
+  },
+  awareness: {
+    title: 'Awareness — Full Report',
+    body: `<p class="text-sm text-gray-600 leading-relaxed mb-4">Cross-channel impressions reached 72.4k in July, up 186% MoM. The surge was driven by paid + organic social: Instagram (45k), Facebook (19.4k) and a fresh TikTok launch (5.7k), alongside steady Google Ads (3.8k) and LinkedIn (1.9k).</p>
+      <table class="w-full text-sm border border-gray-100 rounded-lg overflow-hidden">
+        <thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="px-3 py-2 text-left">Channel</th><th class="px-3 py-2 text-right">July</th><th class="px-3 py-2 text-right">June</th></tr></thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr><td class="px-3 py-2">Instagram</td><td class="px-3 py-2 text-right font-semibold">45,000</td><td class="px-3 py-2 text-right text-gray-500">7,800</td></tr>
+          <tr><td class="px-3 py-2">Facebook</td><td class="px-3 py-2 text-right font-semibold">19,400</td><td class="px-3 py-2 text-right text-gray-500">2,400</td></tr>
+          <tr><td class="px-3 py-2">TikTok</td><td class="px-3 py-2 text-right font-semibold">5,700</td><td class="px-3 py-2 text-right text-gray-500">—</td></tr>
+          <tr><td class="px-3 py-2">Google Ads</td><td class="px-3 py-2 text-right font-semibold">3,838</td><td class="px-3 py-2 text-right text-gray-500">4,100</td></tr>
+          <tr><td class="px-3 py-2">LinkedIn</td><td class="px-3 py-2 text-right font-semibold">1,936</td><td class="px-3 py-2 text-right text-gray-500">1,496</td></tr>
+        </tbody>
+      </table>`,
+  },
+  traffic:   { title:'Traffic — Full Report', body:`<p class="text-sm text-gray-600 leading-relaxed">Paid social, direct traffic and organic search all outperformed paid search in July. Pageviews roughly doubled vs June, with users viewing 3+ pages per session — a strong signal that brand awareness and organic authority are compounding.</p>` },
+  engagement:{ title:'Engagement — Full Report', body:`<p class="text-sm text-gray-600 leading-relaxed">Total social interactions jumped to 958 (LinkedIn 49 reactions, Facebook 79 interactions, Instagram 830 interactions). Instagram reach hit 24.6k (up 7x) and average engagement time on site climbed as video content ramped up.</p>` },
+  social:    { title:'Social — Full Report', body:`<p class="text-sm text-gray-600 leading-relaxed">Facebook followers more than doubled (231 → 502) with link clicks exploding from 1 to 464. Instagram gained +261 followers (+668% vs June) and logged 213 link clicks. LinkedIn added 39 followers. TikTok launched with 5.7k views and 35 followers from a standing start.</p>` },
+  ads:       { title:'Google Ads — Full Report', body:`<p class="text-sm text-gray-600 leading-relaxed">£474.83 total spend (-4.4% vs June) produced 18 conversions — the efficiency story of the month. Victron CTR climbed from 4.83% to 10.23%. Energy Storage CTR dipped to 4.49% but conversion quality improved. Avg CPC £2.29 across 207 clicks / 3,838 impressions.</p>` },
+  seo:       { title:'SEO — Full Report', body:`<p class="text-sm text-gray-600 leading-relaxed">81 ranking keywords (up from 74), 88% site health, and the Victron page held its #3 position after climbing from #7 in May. New keyword footprint expanding around "off grid power systems / storage systems".</p>` },
+};
+
+function wireDrawer() {
+  const backdrop = document.getElementById('drawerBackdrop');
+  const drawer = document.getElementById('drawer');
+  const close = () => { drawer.classList.remove('open'); backdrop.classList.remove('open'); };
+  document.querySelectorAll('.see-more').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const d = DETAILS[a.dataset.detail];
+      if (!d) return;
+      document.getElementById('drawerTitle').textContent = d.title;
+      document.getElementById('drawerBody').innerHTML = d.body;
+      drawer.classList.add('open'); backdrop.classList.add('open');
+    });
+  });
+  document.getElementById('drawerClose').addEventListener('click', close);
+  backdrop.addEventListener('click', close);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+}
+
+// ==================================================================
+// CONTENT SHOWCASE (placeholder tiles)
+// ==================================================================
+function renderShowcase() {
+  const tiles = [
+    { t:'Energy Security Campaign', c:'#059669', tag:'Ad creative' },
+    { t:'TikTok Project Reel', c:'#8b5cf6', tag:'Social video' },
+    { t:'Contact Landing Page', c:'#0ea5e9', tag:'Website' },
+    { t:'Blog — Battery Backup', c:'#14b8a6', tag:'Content' },
+    { t:'Instagram Carousel', c:'#f59e0b', tag:'Social post' },
+    { t:'Victron Install Photo', c:'#0f766e', tag:'Photography' },
+    { t:'Newsletter — July', c:'#6366f1', tag:'Email' },
+    { t:'Homepage Banner', c:'#10b981', tag:'Website' },
+  ];
+  document.getElementById('showcaseGrid').innerHTML = tiles.map(x => `
+    <div class="card rounded-xl overflow-hidden border border-gray-100 cursor-pointer">
+      <div class="h-28 flex items-center justify-center text-white text-2xl" style="background:linear-gradient(135deg,${x.c},${shade(x.c,-18)})">🖼️</div>
+      <div class="p-3">
+        <p class="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">${x.tag}</p>
+        <p class="text-sm font-semibold text-gray-800 mt-0.5">${x.t}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================================================================
+// INIT
+// ==================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderFunnel();
+  buildCharts();
+  wireComparisons();
+  wireTabs();
+  wireDrawer();
+  renderShowcase();
+});
 </script>
 
 </body>
