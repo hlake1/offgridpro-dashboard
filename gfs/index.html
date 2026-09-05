@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="./assets/auth.js"></script>
+<script src="./assets/reports-store.js"></script>
 <script>window.GFSAuth.ensureAuth();</script>
 <style>
   :root {
@@ -66,6 +67,11 @@
   }
   .status-pending { background:#fef3c7; color:#92400e; }
   .status-active  { background:#dcfce7; color:#166534; }
+
+  .admin-panel { background: #f6f9fc; border: 1px solid #e5e7eb; border-left: 4px solid var(--gfs-dark); border-radius: 4px; }
+  .report-status-published { background:#dcfce7; color:#166534; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; padding:3px 9px; border-radius:2px; font-weight:700; }
+  .report-status-draft { background:#fef3c7; color:#92400e; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; padding:3px 9px; border-radius:2px; font-weight:700; }
+  .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -226,6 +232,44 @@
     </div>
   </section>
 
+  <!-- Published reports (visible to everyone once published) -->
+  <section id="published-reports-section" class="mt-12" style="display:none;">
+    <div class="mb-6">
+      <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Published</p>
+      <h2 class="text-3xl font-medium text-gray-900">Monthly reports</h2>
+      <div class="gfs-accent-bar w-24 mt-4"></div>
+    </div>
+    <div id="published-reports-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  </section>
+
+  <!-- =============================================================== -->
+  <!-- ADMIN ONLY: Monthly Report Builder Panel                        -->
+  <!-- =============================================================== -->
+  <section class="admin-only mt-12">
+    <div class="admin-panel p-8">
+      <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="admin-badge">Admin · Tweak</span>
+            <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">Report builder</p>
+          </div>
+          <h2 class="text-3xl font-medium text-gray-900">Monthly Report</h2>
+          <div class="gfs-accent-bar w-24 mt-4"></div>
+          <p class="text-gray-600 mt-4 max-w-2xl">Build the next monthly report by answering a short set of questions, then entering the month's metrics. We'll assemble a draft you can review, tweak and publish.</p>
+        </div>
+        <a href="./admin/builder.html" class="btn-primary rounded-sm no-underline whitespace-nowrap">
+          + New monthly report
+        </a>
+      </div>
+
+      <div id="admin-drafts-wrap">
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Drafts &amp; recent</p>
+        <div id="admin-drafts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <p id="admin-drafts-empty" class="text-sm text-gray-500 italic mt-2" style="display:none;">No drafts yet. Click “New monthly report” to start one.</p>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer class="border-t border-gray-100 mt-16 py-8 text-center text-xs text-gray-400 tracking-wide">
@@ -235,14 +279,76 @@
 <script>
   // Auth-aware rendering
   (function () {
+    function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function renderPublished() {
+      const section = document.getElementById('published-reports-section');
+      const wrap = document.getElementById('published-reports-list');
+      if (!wrap || !window.GFSReports) return;
+      const items = window.GFSReports.listPublished();
+      if (!items.length) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+      wrap.innerHTML = items.map(r => {
+        const label = window.GFSReports.monthLabel(r.month);
+        const headline = esc(r.summary?.headline || '');
+        return `
+          <a href="./admin/view.html?id=${encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--gfs-blue);">Monthly report</p>
+                <h3 class="text-2xl font-medium text-gray-900 mt-2">${esc(label)}</h3>
+                <p class="text-sm text-gray-500 mt-1">Published</p>
+              </div>
+              <span class="report-status-published">Published</span>
+            </div>
+            <div class="gfs-accent-bar w-full mb-4"></div>
+            <p class="text-sm text-gray-700 leading-relaxed line-clamp-3">${headline}</p>
+            <p class="text-sm font-semibold mt-4" style="color: var(--gfs-dark);">Open report →</p>
+          </a>`;
+      }).join('');
+    }
+
+    function renderAdminDrafts() {
+      const list = document.getElementById('admin-drafts-list');
+      const empty = document.getElementById('admin-drafts-empty');
+      if (!list || !window.GFSReports) return;
+      const items = window.GFSReports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      if (!items.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      list.innerHTML = items.map(r => {
+        const label = window.GFSReports.monthLabel(r.month);
+        const statusClass = r.status === 'published' ? 'report-status-published' : 'report-status-draft';
+        const notes = (r.revisionNotes && r.revisionNotes.length) ? `${r.revisionNotes.length} revision note${r.revisionNotes.length>1?'s':''}` : '';
+        return `
+          <div class="bg-white p-5 border border-gray-200 rounded-sm flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="${statusClass}">${r.status}</span>
+                ${notes ? `<span class="text-[10px] uppercase tracking-widest text-amber-700 font-semibold">${notes}</span>` : ''}
+              </div>
+              <p class="font-medium text-gray-900">${esc(label)}</p>
+              <p class="text-xs text-gray-500 mt-1">Updated ${r.updatedAt ? new Date(r.updatedAt).toLocaleString('en-GB') : '—'}</p>
+            </div>
+            <div class="flex flex-col gap-1 text-sm shrink-0">
+              <a class="font-semibold hover:underline" style="color: var(--gfs-blue);" href="./admin/view.html?id=${encodeURIComponent(r.id)}">Review →</a>
+              <a class="text-gray-500 hover:underline" href="./admin/builder.html?id=${encodeURIComponent(r.id)}">Edit</a>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
     function apply(role) {
       const isAdmin = role === 'admin';
       document.documentElement.classList.toggle('gfs-admin', isAdmin);
       const badge = document.getElementById('role-indicator');
       if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
+      renderPublished();
+      if (isAdmin) renderAdminDrafts();
     }
+
     const role = window.GFSAuth.getRole();
     if (role) apply(role);
+    document.addEventListener('gfs:auth', (e) => apply(e.detail.role));
     window.GFSAuthReady = apply;
   })();
 </script>

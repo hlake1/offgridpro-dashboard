@@ -89,10 +89,23 @@
     });
   }
 
-  function ensureAuth() {
+  function isAdmin() { return getRole() === 'admin'; }
+  function isClient() { return getRole() === 'client'; }
+  function isAuthed() { return isAdmin() || isClient(); }
+
+  function emitAuth(role) {
+    document.dispatchEvent(new CustomEvent('gfs:auth', { detail: { role } }));
+    if (typeof window.GFSAuthReady === 'function') window.GFSAuthReady(role);
+  }
+
+  function ensureAuth(opts) {
+    opts = opts || {};
     const role = getRole();
     if (role) {
       document.documentElement.classList.toggle('gfs-admin', role === 'admin');
+      // Fire on next tick so listeners attached after this script still receive it
+      queueMicrotask(() => emitAuth(role));
+      if (typeof opts.onSuccess === 'function') opts.onSuccess(role);
       return role;
     }
     // Paint overlay early to prevent flash of protected content.
@@ -104,11 +117,21 @@
       paintOverlay((role) => {
         document.documentElement.classList.toggle('gfs-admin', role === 'admin');
         guard.remove();
-        // Give consumers a hook to react to newly-granted auth
-        if (typeof window.GFSAuthReady === 'function') window.GFSAuthReady(role);
+        emitAuth(role);
+        if (typeof opts.onSuccess === 'function') opts.onSuccess(role);
       });
     });
     return null;
+  }
+
+  // Send non-admins home to authenticate (used by admin-only pages).
+  function requireAdmin(redirectTo) {
+    if (isAdmin()) return true;
+    const target = redirectTo || '../';
+    // If not authed at all, let ensureAuth's overlay handle it; only bounce
+    // an authenticated *client* who lacks admin.
+    if (isClient()) { location.replace(target); return false; }
+    return false;
   }
 
   window.GFSAuth = {
@@ -116,12 +139,16 @@
     getRole,
     setRole,
     clearRole,
-    logout() {
+    isAdmin,
+    isClient,
+    isAuthed,
+    requireAdmin,
+    logout(redirectTo) {
       clearRole();
       try { sessionStorage.removeItem('tw_session'); } catch {}
       try { sessionStorage.removeItem('ogp_dashboard_auth'); } catch {}
-      // Return to Tweak Reporting portal login
-      window.location.href = '../';
+      // Return to Tweak Reporting portal login (or an explicit target)
+      window.location.href = redirectTo || '../';
     },
   };
 })();
