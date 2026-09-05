@@ -272,6 +272,57 @@
       ],
       colorBar: 'linear-gradient(180deg, #004080, #0066b3, #0099cc)',
     },
+    'scl': {
+      path: '../scl/',
+      name: 'SCL',
+      fullName: 'SCL',
+      sector: 'Security · Technology',
+      location: 'UK',
+      accountManager: 'Daniela',
+      latestReport: 'June 2026',
+      latestReportDate: '1 – 30 June 2026',
+      status: 'Active',
+      previewStats: [
+        { label: 'Conversions', value: '—' },
+        { label: 'Top Channel', value: '—', accent: true },
+        { label: 'Site Health', value: '—' },
+      ],
+      colorBar: 'linear-gradient(180deg, #0f766e, #17a697, #2dd4bf)',
+    },
+    'autowatch': {
+      path: '../autowatch/',
+      name: 'Autowatch',
+      fullName: 'Autowatch',
+      sector: 'Automotive · Security',
+      location: 'UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      latestReportDate: '1 – 30 June 2026',
+      status: 'Active',
+      previewStats: [
+        { label: 'Conversions', value: '—' },
+        { label: 'Top Channel', value: '—', accent: true },
+        { label: 'Site Health', value: '—' },
+      ],
+      colorBar: 'linear-gradient(180deg, #1a1a1a, #3a3f4a, #8a94a6)',
+    },
+    'autoid': {
+      path: '../autoid/',
+      name: 'AUTOID',
+      fullName: 'AUTOID',
+      sector: 'Technology · AIDC',
+      location: 'UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      latestReportDate: '1 – 30 June 2026',
+      status: 'Active',
+      previewStats: [
+        { label: 'Conversions', value: '—' },
+        { label: 'Top Channel', value: '—', accent: true },
+        { label: 'Site Health', value: '—' },
+      ],
+      colorBar: 'linear-gradient(180deg, #1e40af, #2563eb, #60a5fa)',
+    },
   };
 
   // ------------------------------------------------------------------
@@ -300,8 +351,9 @@
   // Keep the codes here identical to the root file.
   // ------------------------------------------------------------------
   const TEAM_ROSTER = {
-    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl'] },
     'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
+    'Louise':   { name: 'Louise',   role: 'Manager',         clients: ['autowatch', 'autoid'] },
     'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
     'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: [] },
   };
@@ -327,6 +379,9 @@
   const CLIENT_LABELS = {
     'offgridpro': 'OffGrid Pro',
     'gfs':        'GFS',
+    'scl':        'SCL',
+    'autowatch':  'Autowatch',
+    'autoid':     'AUTOID',
   };
 
   const AVATAR_COLORS = [
@@ -480,6 +535,9 @@
         try {
           sessionStorage.setItem('ogp_dashboard_auth', payload);
           sessionStorage.setItem('gfs_dashboard_auth', payload);
+          sessionStorage.setItem('scl_dashboard_auth', payload);
+          sessionStorage.setItem('autowatch_dashboard_auth', payload);
+          sessionStorage.setItem('autoid_dashboard_auth', payload);
         } catch {}
       });
     });
@@ -566,6 +624,9 @@
       sessionStorage.removeItem('tw_session');
       sessionStorage.removeItem('ogp_dashboard_auth');
       sessionStorage.removeItem('gfs_dashboard_auth');
+      sessionStorage.removeItem('scl_dashboard_auth');
+      sessionStorage.removeItem('autowatch_dashboard_auth');
+      sessionStorage.removeItem('autoid_dashboard_auth');
     } catch {}
     window.location.replace('../');
   });

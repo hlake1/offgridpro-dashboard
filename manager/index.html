@@ -283,8 +283,9 @@
   // Keep names + roles + client assignments in sync.
   // ------------------------------------------------------------------
   const TEAM_ROSTER = {
-    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl'] },
     'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
+    'Louise':   { name: 'Louise',   role: 'Manager',         clients: ['autowatch', 'autoid'] },
     'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
     'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: [] },
   };
@@ -293,6 +294,9 @@
   const CLIENT_LABELS = {
     'offgridpro': 'OffGrid Pro',
     'gfs':        'GFS',
+    'scl':        'SCL',
+    'autowatch':  'Autowatch',
+    'autoid':     'AUTOID',
   };
 
   // Avatar palette — deterministic per name
@@ -412,6 +416,9 @@
         try {
           sessionStorage.setItem('ogp_dashboard_auth', payload);
           sessionStorage.setItem('gfs_dashboard_auth', payload);
+          sessionStorage.setItem('scl_dashboard_auth', payload);
+          sessionStorage.setItem('autowatch_dashboard_auth', payload);
+          sessionStorage.setItem('autoid_dashboard_auth', payload);
         } catch {}
       });
     });
@@ -422,6 +429,9 @@
       sessionStorage.removeItem('tw_session');
       sessionStorage.removeItem('ogp_dashboard_auth');
       sessionStorage.removeItem('gfs_dashboard_auth');
+      sessionStorage.removeItem('scl_dashboard_auth');
+      sessionStorage.removeItem('autowatch_dashboard_auth');
+      sessionStorage.removeItem('autoid_dashboard_auth');
     } catch {}
     window.location.replace('../');
   });

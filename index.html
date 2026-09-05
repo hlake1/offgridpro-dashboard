@@ -176,6 +176,33 @@
       latestReport: 'June 2026',
       status: 'Active',
     },
+    'scl': {
+      path: './scl/',
+      name: 'SCL',
+      sector: 'Security · Technology',
+      location: 'UK',
+      accountManager: 'Daniela',
+      latestReport: 'June 2026',
+      status: 'Active',
+    },
+    'autowatch': {
+      path: './autowatch/',
+      name: 'Autowatch',
+      sector: 'Automotive · Security',
+      location: 'UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      status: 'Active',
+    },
+    'autoid': {
+      path: './autoid/',
+      name: 'AUTOID',
+      sector: 'Technology · AIDC',
+      location: 'UK',
+      accountManager: 'Louise',
+      latestReport: 'June 2026',
+      status: 'Active',
+    },
     // Add more clients here as they come online:
     // 'clientslug': { path: './clientfolder/', name: 'Client Name', sector: '...', location: '...', accountManager: '...', latestReport: '...', status: 'Active' },
   };
@@ -183,11 +210,14 @@
   // Access codes — client, team, or admin.
   const CODES = {
     // Client codes: land on that client's dashboard
-    'OffGrid':  { type: 'client', clientId: 'offgridpro' },
-    'GFS':      { type: 'client', clientId: 'gfs' },
+    'OffGrid':   { type: 'client', clientId: 'offgridpro' },
+    'GFS':       { type: 'client', clientId: 'gfs' },
+    'Scl':       { type: 'client', clientId: 'scl' },
+    'Autowatch': { type: 'client', clientId: 'autowatch' },
+    'Autoid':    { type: 'client', clientId: 'autoid' },
 
     // Tweak team member codes: land on team overview with their assigned clients
-    'Daniela':  { type: 'team', name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro'] },
+    'Daniela':  { type: 'team', name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl'] },
     'Imogen':   { type: 'team', name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
     'Georgia':  { type: 'team', name: 'Georgia',  role: 'Team Member',     clients: [] },
     'Bethanie': { type: 'team', name: 'Bethanie', role: 'Team Member',     clients: [] },
@@ -234,6 +264,9 @@
       try {
         sessionStorage.setItem('ogp_dashboard_auth', payload); // OffGrid Pro
         sessionStorage.setItem('gfs_dashboard_auth', payload); // GFS
+        sessionStorage.setItem('scl_dashboard_auth', payload); // SCL
+        sessionStorage.setItem('autowatch_dashboard_auth', payload); // Autowatch
+        sessionStorage.setItem('autoid_dashboard_auth', payload); // AUTOID
       } catch {}
     }
 
