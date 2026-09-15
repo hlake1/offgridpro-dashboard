@@ -16,6 +16,14 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 // ----------------------------------------------------------------------------
+// AI report assistant (Cloudflare Worker) — see /cloudflare-worker/README.md
+// ----------------------------------------------------------------------------
+// Placeholder until the Worker is deployed and its real workers.dev URL is
+// known. Update this, then re-run `node scripts/build-all.js` to bake the
+// real URL into every client's admin/builder.html.
+const AI_WORKER_URL = 'https://tweak-report-ai.YOUR-SUBDOMAIN.workers.dev';
+
+// ----------------------------------------------------------------------------
 // Client config
 // ----------------------------------------------------------------------------
 const CLIENTS = [
@@ -104,6 +112,9 @@ const CLIENTS = [
     ],
   },
 ];
+
+// Every client shares the one AI Worker deployment.
+CLIENTS.forEach((c) => { c.aiWorkerUrl = AI_WORKER_URL; });
 
 // ----------------------------------------------------------------------------
 // Templates

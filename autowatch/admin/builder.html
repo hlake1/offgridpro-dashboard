@@ -259,6 +259,8 @@
       </div>
     </section>
 
+    <p id="ai-status" class="text-xs text-gray-500 mt-2" style="display:none;"></p>
+
   </div>
 
 </main>
@@ -267,6 +269,12 @@
 (function () {
   const qs = new URLSearchParams(location.search);
   const editingId = qs.get('id');
+
+  // AI report assistant — see /cloudflare-worker/. Polishes the answers
+  // below into client-ready copy and adds a few data-grounded insights.
+  // Never touches the actual metrics; falls back to the plain
+  // question-to-field mapping if the Worker is unreachable or errors.
+  const AI_WORKER_URL = 'https://tweak-report-ai.YOUR-SUBDOMAIN.workers.dev';
 
   const form = document.getElementById('q-form');
   const monthEl = document.getElementById('month');
@@ -487,14 +495,78 @@
     return ads;
   }
 
-  async function saveReport(status, redirectToView) {
+  async function callAIAssistant(fields) {
+    if (!AI_WORKER_URL || AI_WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      throw new Error('AI Worker not deployed yet');
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const res = await fetch(AI_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client: { name: 'Autowatch', sector: 'Automotive · Security' }, ...fields }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Worker responded ${res.status}`);
+      }
+      return await res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function saveReport(status, redirectToView, useAI) {
     const report = buildBase(status);
     if (!report) return;
     const res = await resolveData(report);
-    report.summary = window.AutowatchReports.generateSummary(report.answers, res.data);
+    const baseline = window.AutowatchReports.generateSummary(report.answers, res.data);
+    report.summary = baseline;
     report.summary.dataStatus = res.matched
       ? { available: true, source: res.source }
       : { available: false, source: null, month: report.month };
+
+    if (useAI) {
+      const aiStatus = document.getElementById('ai-status');
+      const genBtn = document.getElementById('generate');
+      const originalLabel = genBtn.textContent;
+      aiStatus.style.display = 'block';
+      aiStatus.textContent = 'Polishing with AI — this can take a few seconds…';
+      genBtn.disabled = true;
+      genBtn.textContent = 'Generating…';
+      try {
+        const ai = await callAIAssistant({
+          answers: report.answers,
+          metrics: baseline.metrics,
+          topCampaign: baseline.topCampaign,
+          campaigns: (res.data && res.data.campaigns) || [],
+          priorities: baseline.priorities,
+        });
+        Object.assign(report.summary, {
+          headline: ai.headline || baseline.headline,
+          overperformer: ai.overperformer || baseline.overperformer,
+          feedback: ai.feedback || baseline.feedback,
+          focus: ai.focus || baseline.focus,
+          rationale: ai.rationale || baseline.rationale,
+          challenges: ai.challenges || baseline.challenges,
+          budget: ai.budget || baseline.budget,
+          extras: ai.extras || baseline.extras,
+          insights: Array.isArray(ai.insights) ? ai.insights : [],
+          aiEnhanced: true,
+        });
+      } catch (err) {
+        report.summary.aiEnhanced = false;
+        report.summary.insights = [];
+        aiStatus.textContent = 'AI polish unavailable this time — used your answers as written.';
+        console.warn('AI assist failed, falling back to plain summary:', err);
+      } finally {
+        genBtn.disabled = false;
+        genBtn.textContent = originalLabel;
+      }
+    }
+
     window.AutowatchReports.upsert(report);
     if (redirectToView) {
       location.href = `./view.html?id=${encodeURIComponent(report.id)}`;
@@ -538,7 +610,7 @@
     const r = await saveReport('draft', false);
     if (r) showFlash('save-flash-2', 'Draft saved');
   });
-  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true));
+  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true, true));
 
   document.getElementById('logout-btn').addEventListener('click', () => window.AutowatchAuth.logout('../'));
 

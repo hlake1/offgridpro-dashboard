@@ -92,6 +92,7 @@
     <div class="flex items-center gap-4 flex-wrap">
       <h1 id="report-title" class="text-4xl md:text-5xl font-medium text-white leading-tight">—</h1>
       <span id="status-badge"></span>
+      <span id="ai-badge" class="bg-white/10 border border-white/20 text-white/80 text-[10px] px-2 py-1 rounded-sm uppercase tracking-widest" style="display:none;" title="Narrative copy was polished by AI from the account manager's notes; all figures are computed directly from the entered data.">AI-polished copy</span>
     </div>
     <div class="cl-accent-bar w-24 mt-5"></div>
     <p id="report-headline" class="text-white/80 mt-5 max-w-3xl text-lg leading-relaxed"></p>
@@ -134,6 +135,13 @@
     </div>
     <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
     <div id="campaigns-list" class="mt-6"></div>
+  </section>
+
+  <section id="insights-section" class="card p-6 cl-soft-bg" style="display:none; border-left:4px solid var(--cl-2);">
+    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Key insights</p>
+    <h3 class="text-lg font-medium text-gray-900 mt-1">What the data shows</h3>
+    <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
+    <ul id="insights-list" class="text-sm text-gray-800 space-y-2 list-disc ml-5"></ul>
   </section>
 
   <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -277,6 +285,17 @@
 
     const s = report.summary || {};
     document.getElementById('report-headline').textContent = s.headline || '';
+    document.getElementById('ai-badge').style.display = s.aiEnhanced ? 'inline-flex' : 'none';
+
+    const insightsSection = document.getElementById('insights-section');
+    const insightsList = document.getElementById('insights-list');
+    if (Array.isArray(s.insights) && s.insights.length) {
+      insightsSection.style.display = 'block';
+      insightsList.innerHTML = s.insights.map(i => `<li>${esc(i)}</li>`).join('');
+    } else {
+      insightsSection.style.display = 'none';
+      insightsList.innerHTML = '';
+    }
 
     const banner = document.getElementById('draft-banner');
     if (isAdmin && report.status === 'draft') banner.style.display = 'block';
