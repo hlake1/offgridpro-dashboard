@@ -19,7 +19,7 @@
 
 const ANTHROPIC_VERSION = '2023-06-01';
 const MODEL = 'claude-sonnet-5';
-const MAX_TOKENS = 1200;
+const MAX_TOKENS = 2000;
 
 const SYSTEM_PROMPT = `You are a marketing report assistant for Tweak Marketing, a UK digital marketing agency. Your job is to help an account manager turn their rough monthly notes into polished, client-ready report copy, and to surface genuine data-driven observations from the campaign figures they give you.
 
@@ -115,9 +115,17 @@ async function callClaude(env, payload) {
   }
 
   const data = await res.json();
-  const text = data?.content?.[0]?.text;
-  if (!text) throw new Error('Anthropic response had no text content');
-  return extractJson(text);
+  const blocks = Array.isArray(data?.content) ? data.content : [];
+  // Don't assume content[0] is the text block — some responses put other
+  // block types (e.g. thinking) first. Scan for the first real text block.
+  const textBlock = blocks.find((b) => b && b.type === 'text' && typeof b.text === 'string' && b.text.length > 0);
+  if (!textBlock) {
+    const blockTypes = blocks.length ? blocks.map((b) => b?.type || 'unknown').join(',') : 'none';
+    throw new Error(
+      `Anthropic response had no usable text block (stop_reason=${data?.stop_reason || 'unknown'}, blocks=[${blockTypes}], raw=${JSON.stringify(data).slice(0, 500)})`
+    );
+  }
+  return extractJson(textBlock.text);
 }
 
 const REQUIRED_FIELDS = [
