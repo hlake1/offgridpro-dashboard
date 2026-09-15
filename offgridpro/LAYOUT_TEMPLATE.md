@@ -1,21 +1,31 @@
 # OffGrid Pro Dashboard — Standard Layout
 
-## Current Standard
-All OffGrid Pro reports now use the **v2 layout** defined in `_template/index.html`.
+## Current Standard (Sept 2026 — channel-based restructure, per Rob)
+All OffGrid Pro reports now use the **channel-tab layout** defined in `_template/index.html`.
+
+Tabs, top to bottom: **Overview → Google Ads → Meta → SEO → Organic Social → Content**.
+Overview holds everything cross-channel / GA4-level (funnel hero, trend charts, impressions
+by channel, traffic by source); every other tab is a single channel's complete story — no
+splitting one channel's data across multiple tabs, and no "Ads" hiding among funnel-stage
+tabs like the old Awareness/Traffic/Engagement/Conversions split. The Meta tab ships with an
+honest placeholder until Meta Ads Manager access lands — never fabricate numbers there.
 
 This layout includes:
-- Clean, modern hero section with funnel metrics
+- Clean, modern hero section with funnel metrics (Overview)
 - 4-month trend charts (Conversions, Impressions, Engagement, Keywords, Site Health)
-- Channel awareness breakdown (Google Ads, LinkedIn, Facebook, Instagram, TikTok)
-- Traffic strength by channel (Paid Social, Direct, Organic, Paid Search)
-- Conversions by campaign
-- Followers by platform (LinkedIn, Facebook, Instagram)
-- Ad spend vs conversions dual-axis chart
+- Channel awareness breakdown (Google Ads, LinkedIn, Facebook, Instagram, TikTok) — Overview
+- Traffic strength by channel (Paid Social, Direct, Organic, Paid Search) — Overview
+- Conversions by campaign — Google Ads tab
+- Followers by platform (LinkedIn, Facebook, Instagram) — Organic Social tab
+- Ad spend vs conversions dual-axis chart — Google Ads tab
 
 ## Reports Using This Layout
 ✅ june-2026/  
 ✅ july-2026/  
 ✅ july-2026-v2/  
+
+(`july-2026-old/` is a superseded draft, not linked from the client homepage — left
+untouched rather than restructured, since nothing points to it.)
 
 ## Creating a New Report
 

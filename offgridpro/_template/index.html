@@ -119,13 +119,10 @@
       <a href="../" class="text-xs text-gray-500 hover:text-emerald-700 font-semibold uppercase tracking-wide whitespace-nowrap">← All Reports</a>
       <div class="flex items-center gap-1 text-sm font-medium text-gray-600 overflow-x-auto" id="tabBar">
         <button class="tab-btn active px-3 py-2 rounded-t-lg" data-tab="overview">Overview</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="awareness">Awareness</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="traffic">Traffic</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="engagement">Engagement</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="conversions">Conversions</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="social">Social</button>
-        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="ads">Ads</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="ads">Google Ads</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="meta">Meta</button>
         <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="seo">SEO</button>
+        <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="social">Organic Social</button>
         <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="content">Content</button>
       </div>
     </div>
@@ -242,12 +239,9 @@
         </div>
       </div>
     </section>
-  </div>
 
-  <!-- ============================================================
-       TAB: AWARENESS
-       ============================================================ -->
-  <div class="tab-panel" data-panel="awareness">
+    <!-- Restructured Sept 2026: cross-channel widgets relocated here from the
+         former Awareness and Traffic tabs (channel restructure, per Rob). -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <div class="flex items-start justify-between mb-1">
         <div>
@@ -272,12 +266,7 @@
         <a href="#" class="see-more" data-detail="awareness">See full report →</a>
       </div>
     </div>
-  </div>
 
-  <!-- ============================================================
-       TAB: TRAFFIC
-       ============================================================ -->
-  <div class="tab-panel" data-panel="traffic">
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <div class="flex items-start justify-between mb-1">
         <div>
@@ -305,39 +294,35 @@
   </div>
 
   <!-- ============================================================
-       TAB: ENGAGEMENT
+       TAB: GOOGLE ADS  (was "Ads" — renamed in the Sept 2026 channel restructure)
        ============================================================ -->
-  <div class="tab-panel" data-panel="engagement">
+  <div class="tab-panel" data-panel="ads">
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <div class="flex items-start justify-between mb-1">
         <div>
-          <h3 class="font-bold text-gray-900 text-lg">Social engagement — 4-month trend</h3>
-          <p class="text-xs text-gray-500 mt-0.5">Total interactions across LinkedIn, Facebook &amp; Instagram</p>
+          <h3 class="font-bold text-gray-900 text-lg">Google Ads — spend vs conversions</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Efficiency story · July 2026</p>
         </div>
-        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="engageChart">＋ Compare</button>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="adsChart">＋ Compare</button>
       </div>
-      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="engageChart">
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="adsChart">
         <div class="flex items-center gap-2 flex-wrap text-xs">
           <span class="text-gray-600 font-semibold">Compare July against:</span>
           <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
-            <option value="prev1">Previous month (June)</option>
-            <option value="prev3" selected>3-month average</option>
+            <option value="prev1" selected>Previous month (June)</option>
+            <option value="prev3">3-month average</option>
           </select>
           <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
         </div>
       </div>
-      <div class="chart-wrap mt-3" style="height:300px"><canvas id="engageChart"></canvas></div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="adsChart"></canvas></div>
       <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <p class="text-sm text-gray-500">Engaged interactions surged as video content ramped up.</p>
-        <a href="#" class="see-more" data-detail="engagement">See full report →</a>
+        <p class="text-sm text-gray-500">More conversions at slightly lower spend — CPL down 73%.</p>
+        <a href="#" class="see-more" data-detail="ads">See full report →</a>
       </div>
     </div>
-  </div>
 
-  <!-- ============================================================
-       TAB: CONVERSIONS
-       ============================================================ -->
-  <div class="tab-panel" data-panel="conversions">
+    <!-- Relocated from the former Conversions tab: these are the Google Ads campaigns. -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
       <div class="flex items-start justify-between mb-1">
         <div>
@@ -365,62 +350,19 @@
   </div>
 
   <!-- ============================================================
-       TAB: SOCIAL
+       TAB: META  (channel restructure, Sept 2026 — per Rob's proposal)
        ============================================================ -->
-  <div class="tab-panel" data-panel="social">
+  <div class="tab-panel" data-panel="meta">
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-      <div class="flex items-start justify-between mb-1">
+      <div class="flex items-start justify-between mb-4">
         <div>
-          <h3 class="font-bold text-gray-900 text-lg">Follower growth by platform</h3>
-          <p class="text-xs text-gray-500 mt-0.5">4-month trend · LinkedIn, Facebook, Instagram</p>
+          <h3 class="font-bold text-gray-900 text-lg">Meta Ads performance</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Facebook &amp; Instagram paid campaigns</p>
         </div>
-        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="socialChart">＋ Compare</button>
+        <span class="text-xs bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded-full border border-blue-200">PENDING CLIENT ACCESS</span>
       </div>
-      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="socialChart">
-        <div class="flex items-center gap-2 flex-wrap text-xs">
-          <span class="text-gray-600 font-semibold">Highlight:</span>
-          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
-            <option value="prev1" selected>Month-on-month change</option>
-            <option value="prev3">3-month average line</option>
-          </select>
-          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
-        </div>
-      </div>
-      <div class="chart-wrap mt-3" style="height:300px"><canvas id="socialChart"></canvas></div>
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <p class="text-sm text-gray-500">Facebook +271 followers · Instagram +261 · TikTok launched (35).</p>
-        <a href="#" class="see-more" data-detail="social">See full report →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       TAB: ADS
-       ============================================================ -->
-  <div class="tab-panel" data-panel="ads">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-      <div class="flex items-start justify-between mb-1">
-        <div>
-          <h3 class="font-bold text-gray-900 text-lg">Google Ads — spend vs conversions</h3>
-          <p class="text-xs text-gray-500 mt-0.5">Efficiency story · July 2026</p>
-        </div>
-        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="adsChart">＋ Compare</button>
-      </div>
-      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="adsChart">
-        <div class="flex items-center gap-2 flex-wrap text-xs">
-          <span class="text-gray-600 font-semibold">Compare July against:</span>
-          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
-            <option value="prev1" selected>Previous month (June)</option>
-            <option value="prev3">3-month average</option>
-          </select>
-          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
-        </div>
-      </div>
-      <div class="chart-wrap mt-3" style="height:300px"><canvas id="adsChart"></canvas></div>
-      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-        <p class="text-sm text-gray-500">More conversions at slightly lower spend — CPL down 73%.</p>
-        <a href="#" class="see-more" data-detail="ads">See full report →</a>
-      </div>
+      <p class="text-sm text-gray-500 leading-relaxed">No paid Meta campaigns are currently active, so there's nothing to report here yet this month. Once Meta Ads Manager access is granted (spend, impressions, clicks, CTR, conversions), this tab will show the same trend + creative breakdown as the Google Ads tab.</p>
+      <p class="text-xs text-gray-400 italic mt-4">Organic Facebook/Instagram activity (followers, reach, top posts) lives under the Organic Social tab.</p>
     </div>
   </div>
 
@@ -450,6 +392,62 @@
       <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
         <p class="text-sm text-gray-500">81 ranking keywords · Victron page held #3 · 88% site health.</p>
         <a href="#" class="see-more" data-detail="seo">See full report →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: ORGANIC SOCIAL  (was "Social" — renamed in the Sept 2026 channel restructure)
+       ============================================================ -->
+  <div class="tab-panel" data-panel="social">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <h3 class="font-bold text-gray-900 text-lg">Follower growth by platform</h3>
+          <p class="text-xs text-gray-500 mt-0.5">4-month trend · LinkedIn, Facebook, Instagram</p>
+        </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="socialChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="socialChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Highlight:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1" selected>Month-on-month change</option>
+            <option value="prev3">3-month average line</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="socialChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Facebook +271 followers · Instagram +261 · TikTok launched (35).</p>
+        <a href="#" class="see-more" data-detail="social">See full report →</a>
+      </div>
+    </div>
+
+    <!-- Relocated from the former Engagement tab. -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <h3 class="font-bold text-gray-900 text-lg">Social engagement — 4-month trend</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Total interactions across LinkedIn, Facebook &amp; Instagram</p>
+        </div>
+        <button class="cmp-toggle text-xs font-semibold text-emerald-700 border border-emerald-200 rounded-full px-3 py-1 hover:bg-emerald-50" data-chart="engageChart">＋ Compare</button>
+      </div>
+      <div class="cmp-panel rounded-lg p-3 mt-3 mb-2 hidden" data-cmp="engageChart">
+        <div class="flex items-center gap-2 flex-wrap text-xs">
+          <span class="text-gray-600 font-semibold">Compare July against:</span>
+          <select class="cmp-period border border-gray-300 rounded-md px-2 py-1 text-gray-700">
+            <option value="prev1">Previous month (June)</option>
+            <option value="prev3" selected>3-month average</option>
+          </select>
+          <button class="cmp-create bg-emerald-600 text-white font-semibold rounded-md px-3 py-1 hover:bg-emerald-700">Create</button>
+        </div>
+      </div>
+      <div class="chart-wrap mt-3" style="height:300px"><canvas id="engageChart"></canvas></div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500">Engaged interactions surged as video content ramped up.</p>
+        <a href="#" class="see-more" data-detail="engagement">See full report →</a>
       </div>
     </div>
   </div>
