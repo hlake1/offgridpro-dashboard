@@ -1,0 +1,12 @@
+name = "tweak-report-ai"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+# Non-secret config. Override per-environment if you ever need a second
+# (e.g. staging) origin — for now this repo only has one live site.
+[vars]
+ALLOWED_ORIGIN = "https://hlake1.github.io"
+
+# ANTHROPIC_API_KEY is NOT set here — it's a secret, set via:
+#   wrangler secret put ANTHROPIC_API_KEY
+# See README.md for the full deploy walkthrough.
