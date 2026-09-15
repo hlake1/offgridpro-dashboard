@@ -19,6 +19,14 @@
   .card { background:#fff; border:1px solid #e5e7eb; }
   .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+
+  /* Channel tabs — standard layout, per Rob (matches OffGrid Pro reports) */
+  .tab-btn { transition: all 0.18s ease; border-bottom: 2px solid transparent; white-space: nowrap; color: #6b7280; font-weight: 500; }
+  .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 700; }
+  .tab-btn:not(.active):hover { color: #2563eb; background: #f6f9fc; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -36,7 +44,7 @@
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-6 py-14 space-y-10">
+<main class="max-w-5xl mx-auto px-6 py-14 space-y-6">
 
   <div class="card p-6" style="border-left:4px solid #d97706; background:#fffbeb;">
     <p class="text-sm text-gray-800">
@@ -45,34 +53,84 @@
     </p>
   </div>
 
-  <section class="card p-8">
-    <div class="mb-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
-      <h2 class="text-2xl font-medium text-gray-900 mt-1">Performance at a glance</h2>
-      <div class="accent-bar w-16 mt-3"></div>
+  <!-- Channel tabs: Overview → Google Ads → Meta → SEO → Organic Social → Content -->
+  <div class="border-b border-gray-200 -mb-px">
+    <div class="flex flex-wrap gap-1">
+      <button class="tab-btn active px-3 py-2 rounded-t-lg" data-tab="overview">Overview</button>
+      <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="ads">Google Ads</button>
+      <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="meta">Meta</button>
+      <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="seo">SEO</button>
+      <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="social">Organic Social</button>
+      <button class="tab-btn px-3 py-2 rounded-t-lg" data-tab="content">Content</button>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Impressions</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
-      <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
-      <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p><p class="font-bold text-2xl mt-1" style="color:#2563eb;">—</p></div>
-      <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
-    </div>
-  </section>
+  </div>
 
-  <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="card p-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">SEO &amp; Search</p>
-      <h3 class="text-lg font-medium text-gray-900 mt-1">Organic visibility</h3>
-      <div class="accent-bar w-12 mt-3 mb-4"></div>
-      <p class="text-sm text-gray-500 italic">Populates once Search Console access is connected.</p>
-    </div>
-    <div class="card p-6">
+  <div class="tab-panel active space-y-6" data-panel="overview">
+    <section class="card p-8">
+      <div class="mb-6">
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
+        <h2 class="text-2xl font-medium text-gray-900 mt-1">Performance at a glance</h2>
+        <div class="accent-bar w-16 mt-3"></div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Impressions</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
+        <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
+        <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p><p class="font-bold text-2xl mt-1" style="color:#2563eb;">—</p></div>
+        <div class="stat-card card p-4"><p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p><p class="font-bold text-gray-900 text-2xl mt-1">—</p></div>
+      </div>
+    </section>
+    <section class="card p-6">
       <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Conversions</p>
       <h3 class="text-lg font-medium text-gray-900 mt-1">Leads &amp; enquiries</h3>
       <div class="accent-bar w-12 mt-3 mb-4"></div>
       <p class="text-sm text-gray-500 italic">Populates once conversion tracking is connected.</p>
-    </div>
-  </section>
+    </section>
+  </div>
+
+  <div class="tab-panel" data-panel="ads">
+    <section class="card p-6">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Google Ads</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">Campaign performance</h3>
+      <div class="accent-bar w-12 mt-3 mb-4"></div>
+      <p class="text-sm text-gray-500 italic">Populates once Google Ads API access is connected via Maton.</p>
+    </section>
+  </div>
+
+  <div class="tab-panel" data-panel="meta">
+    <section class="card p-6">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Meta</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">Meta Ads performance</h3>
+      <div class="accent-bar w-12 mt-3 mb-4"></div>
+      <p class="text-sm text-gray-500 italic">Populates once Meta Ads Manager access is connected. We never fabricate numbers here in the meantime.</p>
+    </section>
+  </div>
+
+  <div class="tab-panel" data-panel="seo">
+    <section class="card p-6">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">SEO &amp; Search</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">Organic visibility</h3>
+      <div class="accent-bar w-12 mt-3 mb-4"></div>
+      <p class="text-sm text-gray-500 italic">Populates once Search Console access is connected.</p>
+    </section>
+  </div>
+
+  <div class="tab-panel" data-panel="social">
+    <section class="card p-6">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Organic Social</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">Follower growth &amp; engagement</h3>
+      <div class="accent-bar w-12 mt-3 mb-4"></div>
+      <p class="text-sm text-gray-500 italic">Populates once social account access is connected.</p>
+    </section>
+  </div>
+
+  <div class="tab-panel" data-panel="content">
+    <section class="card p-6">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Content</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">Content showcase</h3>
+      <div class="accent-bar w-12 mt-3 mb-4"></div>
+      <p class="text-sm text-gray-500 italic">Populates once this month's content assets are added.</p>
+    </section>
+  </div>
 
 </main>
 
@@ -82,6 +140,24 @@
     <p class="text-xs text-gray-400">Placeholder · June 2026</p>
   </div>
 </footer>
+
+<script>
+  (function () {
+    function wireTabs() {
+      const btns = document.querySelectorAll('.tab-btn');
+      const panels = document.querySelectorAll('.tab-panel');
+      btns.forEach(b => b.addEventListener('click', () => {
+        btns.forEach(x => x.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        b.classList.add('active');
+        const panel = document.querySelector(`.tab-panel[data-panel="${b.dataset.tab}"]`);
+        if (panel) panel.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }));
+    }
+    wireTabs();
+  })();
+</script>
 
 </body>
 </html>
