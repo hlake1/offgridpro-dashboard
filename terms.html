@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — Tweak Reporting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Montserrat', -apple-system, Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background: #f6f7f5;
+    min-height: 100vh;
+  }
+  .hero {
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 3rem 1.25rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before, .hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.25;
+    pointer-events: none;
+  }
+  .hero::before {
+    width: 500px; height: 500px;
+    background: var(--tw-accent-2);
+    top: -150px; left: -100px;
+  }
+  .hero::after {
+    width: 500px; height: 500px;
+    background: var(--tw-accent-1);
+    bottom: -200px; right: -100px;
+  }
+  .hero-inner {
+    max-width: 720px; margin: 0 auto; position: relative; z-index: 1;
+  }
+  .tagline {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.78rem; letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .brand-row { display: flex; align-items: baseline; gap: 0.4rem; }
+  .brand { font-weight: 800; letter-spacing: -0.01em; font-size: 1.5rem; color: #fff; }
+  .accent-bar {
+    height: 4px; margin-top: 10px; max-width: 200px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+  h1 {
+    color: #fff; font-weight: 500; font-size: 1.9rem;
+    margin: 1.5rem 0 0.4rem; letter-spacing: -0.01em;
+  }
+  .updated { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+  main {
+    max-width: 720px; margin: -1.75rem auto 3rem; padding: 0 1.25rem;
+    position: relative; z-index: 1;
+  }
+  .card {
+    background: #fff; border-radius: 6px;
+    padding: 2.25rem 2.25rem 2.5rem;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+  }
+  h2 {
+    font-weight: 600; font-size: 1.15rem; color: var(--tw-text);
+    margin: 2rem 0 0.6rem;
+  }
+  .card > h2:first-child { margin-top: 0; }
+  p { color: #333; font-size: 0.95rem; line-height: 1.7; margin: 0 0 0.9rem; }
+  ul { margin: 0 0 0.9rem; padding-left: 1.25rem; }
+  li { color: #333; font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.4rem; }
+  a { color: var(--tw-accent-3); }
+  .muted { color: var(--tw-muted); font-size: 0.85rem; }
+  .foot {
+    text-align: center; margin-top: 2rem; font-size: 0.72rem;
+    color: #9ca3af; letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <p class="tagline">Tweak Marketing</p>
+    <div class="brand-row">
+      <span class="brand">TWEAK</span>
+      <span class="brand" style="font-weight:400;">REPORTING</span>
+    </div>
+    <div class="accent-bar"></div>
+    <h1>Terms of Service</h1>
+    <p class="updated">Last updated: September 2026</p>
+  </div>
+</div>
+
+<main>
+  <div class="card">
+    <p>
+      Tweak Reporting is an internal tool built and operated by Tweak Marketing for its
+      own team and clients. These terms cover its use, including the Google account
+      connection team members can set up to pull reporting data automatically. For how
+      that data is handled, see the
+      <a href="./privacy.html">Privacy Policy</a>.
+    </p>
+
+    <h2>Who this is for</h2>
+    <p>
+      Tweak Reporting is not a public product. It's used by Tweak Marketing staff to
+      build and share performance reports with Tweak's own clients. Access is by
+      Tweak-issued code or account only.
+    </p>
+
+    <h2>Connecting a Google account</h2>
+    <p>
+      Team members may optionally connect a Google account so Tweak Reporting can pull
+      GA4, Search Console, and Google Ads figures directly instead of entering them by
+      hand. Connecting is voluntary, can be undone at any time from
+      <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>,
+      and is governed by the scope described in the Privacy Policy: read-only access,
+      used only to populate that team member's own client reports.
+    </p>
+
+    <h2>Acceptable use</h2>
+    <p>
+      Tweak Reporting is provided for preparing and viewing Tweak client reports only.
+      Team members are responsible for only connecting Google accounts and accessing
+      client data they're authorised to work with, and for keeping their access codes
+      confidential.
+    </p>
+
+    <h2>No warranty</h2>
+    <p>
+      Tweak Reporting is provided as an internal working tool, as-is, without warranty
+      of any kind. Report figures are pulled from third-party platforms (Google
+      Analytics, Search Console, Google Ads) and Tweak Marketing is not responsible for
+      inaccuracies originating in those platforms.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      These terms may be updated as Tweak Reporting evolves. Continued use after a
+      change means you accept the updated terms.
+    </p>
+
+    <h2>Questions</h2>
+    <p>
+      For any question about these terms, contact Tweak Marketing directly.
+    </p>
+  </div>
+  <p class="foot">Tweak Marketing · Tweak Reporting</p>
+</main>
+
+</body>
+</html>
