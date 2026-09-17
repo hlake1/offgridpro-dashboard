@@ -363,14 +363,18 @@ function viewHTML(c) {
         el.textContent = t;
       }
     };
+    // Prefer the (possibly AI-polished) summary fields over the account
+    // manager's raw notes — this is the whole point of the AI assistant.
+    // Falling back to the raw answer only covers the unlikely case of a
+    // summary object missing a field entirely (e.g. hand-edited data).
     const a = report.answers || {};
-    setText('ans-q1', a.q1);
-    setText('ans-q2', a.q2);
-    setText('ans-q3', a.q3);
-    setText('ans-q4', a.q4);
-    setText('ans-q5', a.q5);
-    setText('ans-q6', a.q6);
-    setText('ans-q8', a.q8);
+    setText('ans-q1', s.headline || a.q1);
+    setText('ans-q2', s.overperformer || a.q2);
+    setText('ans-q3', s.feedback || a.q3);
+    setText('ans-q4', s.focus || a.q4);
+    setText('ans-q5', s.rationale || a.q5);
+    setText('ans-q6', s.challenges || a.q6);
+    setText('ans-q8', s.budget || a.q8);
 
     const list = document.getElementById('priorities-list');
     const fallback = document.getElementById('ans-q7-fallback');
@@ -388,9 +392,10 @@ function viewHTML(c) {
       list.style.marginLeft = '0';
     }
 
-    if ((a.q9 || '').trim()) {
+    const extrasText = (s.extras || a.q9 || '').trim();
+    if (extrasText) {
       document.getElementById('extras-section').style.display = 'block';
-      setText('ans-q9', a.q9);
+      setText('ans-q9', extrasText);
     }
 
     document.getElementById('footer-author').textContent =
