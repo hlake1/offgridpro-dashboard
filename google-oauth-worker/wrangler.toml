@@ -18,4 +18,4 @@ ALLOWED_ORIGIN = "https://hlake1.github.io"
 # then paste the "id" it prints into the line below.
 [[kv_namespaces]]
 binding = "OAUTH_TOKENS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "5d3f80276ae9426f9ad9e049d1f6041e"
