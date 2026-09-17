@@ -1,0 +1,21 @@
+name = "tweak-google-oauth"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+# Non-secret config.
+[vars]
+GOOGLE_CLIENT_ID = "1042274607188-mu0sv68prq82f6ricoksl8mqpkjk7cm6.apps.googleusercontent.com"
+REDIRECT_URI = "https://tweak-google-oauth.herbielakeai.workers.dev/callback"
+ALLOWED_ORIGIN = "https://hlake1.github.io"
+
+# GOOGLE_CLIENT_SECRET is NOT set here — it's a secret, set via:
+#   wrangler secret put GOOGLE_CLIENT_SECRET
+# See README.md for the full deploy walkthrough.
+
+# KV stores one small record per team member: { email, refreshToken,
+# connectedAt, scope }. Create the namespace first with:
+#   wrangler kv namespace create OAUTH_TOKENS
+# then paste the "id" it prints into the line below.
+[[kv_namespaces]]
+binding = "OAUTH_TOKENS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

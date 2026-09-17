@@ -1,0 +1,88 @@
+# Tweak Google Account Connect — Cloudflare Worker
+
+Lets each Tweak team member connect their own Google account once, so future
+report-building steps can pull GA4 / Search Console / Google Ads data
+automatically instead of typing numbers in by hand. See `src/worker.js` for
+the full explanation of how it works — the short version: it holds the
+OAuth Client Secret and every team member's refresh token server-side, and
+never sends either of those back to the browser.
+
+This Worker only handles the "connect your account" step. Pulling actual
+report data (GA4/Search Console/Ads) is the next piece to build — it'll be
+added as new routes in this same Worker, reusing the tokens already stored
+here.
+
+## One-time setup
+
+You've already created the Google Cloud project ("Tweak Reporting"), added
+the `analytics.readonly` / `webmasters.readonly` / `adwords` scopes on the
+OAuth consent screen, published the app to Production (not Testing — that
+avoids the 7-day token expiry), and created a Web application OAuth client
+with:
+- Authorized JavaScript origin: `https://hlake1.github.io`
+- Authorized redirect URI: `https://tweak-google-oauth.herbielakeai.workers.dev/callback`
+
+1. **Create the KV namespace** that stores each team member's connection:
+   ```bash
+   cd google-oauth-worker
+   npx wrangler kv namespace create OAUTH_TOKENS
+   ```
+   This prints an `id`. Paste it into `wrangler.toml`, replacing
+   `REPLACE_WITH_KV_NAMESPACE_ID`.
+
+2. **Store the Google Client Secret** — this prompts you to paste it
+   directly into the terminal, so it never touches this repo, chat, or
+   shell history:
+   ```bash
+   npx wrangler secret put GOOGLE_CLIENT_SECRET
+   ```
+   Paste the Client Secret from the Google Cloud console when prompted.
+
+3. **Deploy:**
+   ```bash
+   npx wrangler deploy
+   ```
+   This should confirm the URL `https://tweak-google-oauth.herbielakeai.workers.dev`
+   — if your workers.dev subdomain isn't `herbielakeai`, update `REDIRECT_URI`
+   in `wrangler.toml` *and* the Authorized redirect URI in Google Cloud
+   console to match exactly before deploying, since Google rejects any
+   mismatch.
+
+## Trying it
+
+Once deployed, visiting this in a browser should send you through Google's
+consent screen (you'll see the "unverified app" warning we discussed —
+click Advanced → "Go to Tweak Reporting (unsafe)"), then land on a
+confirmation page:
+
+```
+https://tweak-google-oauth.herbielakeai.workers.dev/start?member=jeremy
+```
+
+("jeremy" is a placeholder — there's no real per-person login on the site
+yet, so for now this is just a name someone types in themselves. Swap in
+the real logged-in user's id once that exists; nothing else here changes.)
+
+Then check it stuck, from any page on `https://hlake1.github.io`:
+
+```js
+fetch('https://tweak-google-oauth.herbielakeai.workers.dev/status?member=jeremy')
+  .then(r => r.json()).then(console.log);
+// { connected: true, email: "jeremy@...", connectedAt: "..." }
+```
+
+## Redeploying after a change
+
+```bash
+cd google-oauth-worker
+npx wrangler deploy
+```
+The KV namespace and secret persist across deploys.
+
+## Tests
+
+```bash
+node --experimental-vm-modules /tmp/qa/oauth_worker_test.mjs
+```
+(or wherever you keep the test file — it only imports `src/worker.js` and
+mocks Google's token endpoint and Workers KV, no live network calls.)
