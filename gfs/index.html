@@ -91,6 +91,7 @@
     </div>
     <div class="flex items-center gap-3">
       <span id="role-indicator" class="prototype-badge text-white text-[11px] px-3 py-1.5 rounded-sm uppercase">Dashboard</span>
+      <a id="back-portal-link" href="../team/" style="display:none;" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Back to portal">← Back to portal</a>
       <button id="logout-btn" onclick="window.GFSAuth.logout()" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest" title="Sign out">Sign out</button>
     </div>
   </div>
@@ -342,6 +343,19 @@
       document.documentElement.classList.toggle('gfs-admin', isAdmin);
       const badge = document.getElementById('role-indicator');
       if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
+      {
+        const backLink = document.getElementById('back-portal-link');
+        if (backLink) {
+          if (isAdmin) {
+            let q = '';
+            try { q = sessionStorage.getItem('tw_portal_query') || ''; } catch {}
+            backLink.href = '../team/' + q;
+            backLink.style.display = '';
+          } else {
+            backLink.style.display = 'none';
+          }
+        }
+      }
       renderPublished();
       if (isAdmin) renderAdminDrafts();
     }

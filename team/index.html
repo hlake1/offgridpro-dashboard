@@ -417,6 +417,8 @@
     const session = requireSession();
     if (!session) return;
 
+    try { sessionStorage.setItem('tw_portal_query', window.location.search || ''); } catch {}
+
     // Managers AND team members can browse another member's portfolio via ?as=<code>.
     const viewAs = (session.type === 'manager' || session.type === 'team') ? getViewAsMember() : null;
 
