@@ -180,11 +180,37 @@
 
   <div id="step-2" class="hidden">
 
-    <section class="card p-6">
+    <section class="card p-6" id="meta-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Meta Ads (Facebook/Instagram)</h2>
+          <p class="hint mt-1" id="meta-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="meta-badge">Checking…</span>
+      </div>
+
+      <div id="meta-connect-row" class="mt-4" style="display:none;">
+        <a id="meta-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Meta Ads</a>
+        <p class="hint mt-2">Opens Meta's sign-in in a new tab. Once approved, come back and click "Refresh".</p>
+        <button id="meta-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+
+      <div id="meta-pull-row" class="mt-4 flex items-end gap-3 flex-wrap" style="display:none;">
+        <div class="qbox" style="min-width:260px;">
+          <label for="meta-account">Ad account</label>
+          <select id="meta-account"></select>
+        </div>
+        <button id="meta-pull" type="button" class="btn btn-primary">Pull Meta data for this month</button>
+        <span id="meta-pull-flash" class="save-flash">Pulled</span>
+      </div>
+      <p id="meta-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+    </section>
+
+    <section class="card p-6 mt-6">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h2 class="text-xl font-medium">Google Ads metrics</h2>
-          <p class="hint mt-1">Enter the month's totals manually. These feed the report exactly like a live API pull would.</p>
+          <p class="hint mt-1">Enter manually, or use the Meta Ads pull above to fill these in — edit anything below before generating.</p>
         </div>
         <span class="admin-badge">Manual entry</span>
       </div>
@@ -452,6 +478,136 @@
     flash._t = setTimeout(() => flash.classList.remove('on'), 1400);
   }
 
+  // ---------------------------------------------------------------------
+  // Meta Ads pull — see /meta-ads-worker/. Fills the same totals/campaign
+  // fields above that manual entry uses, via loadManualData(), so nothing
+  // downstream (readManualData, generateSummary, the AI assistant call)
+  // needs to know or care whether the numbers came from a click or from
+  // typing. The account manager can still edit anything after pulling.
+  // ---------------------------------------------------------------------
+  const META_WORKER_URL = 'https://tweak-meta-ads.herbielakeai.workers.dev';
+  const META_MEMBER = 'daniela';
+  const META_ACCOUNT_KEY = 'scl_reports_v1_meta_account';
+
+  const metaBadge = document.getElementById('meta-badge');
+  const metaStatusText = document.getElementById('meta-status-text');
+  const metaConnectRow = document.getElementById('meta-connect-row');
+  const metaConnectLink = document.getElementById('meta-connect-link');
+  const metaPullRow = document.getElementById('meta-pull-row');
+  const metaAccountSel = document.getElementById('meta-account');
+  const metaPullBtn = document.getElementById('meta-pull');
+  const metaPullError = document.getElementById('meta-pull-error');
+
+  function showMetaError(msg) {
+    metaPullError.textContent = msg || '';
+    metaPullError.style.display = msg ? 'block' : 'none';
+  }
+
+  function showMetaConnectRow() {
+    metaConnectLink.href = `${META_WORKER_URL}/start?member=${encodeURIComponent(META_MEMBER)}`;
+    metaConnectRow.style.display = 'block';
+    metaPullRow.style.display = 'none';
+  }
+
+  async function loadMetaAccounts() {
+    try {
+      const res = await fetch(`${META_WORKER_URL}/accounts?member=${encodeURIComponent(META_MEMBER)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) { showMetaConnectRow(); return; }
+        throw new Error(data.error || 'Could not load ad accounts');
+      }
+      const accounts = data.accounts || [];
+      if (accounts.length === 0) {
+        metaAccountSel.innerHTML = '<option value="">No ad accounts found on this login</option>';
+        return;
+      }
+      const saved = localStorage.getItem(META_ACCOUNT_KEY);
+      metaAccountSel.innerHTML = accounts.map((a) =>
+        `<option value="${a.id}">${(a.name || a.id).replace(/</g, '&lt;')}${a.businessName ? ' — ' + a.businessName.replace(/</g, '&lt;') : ''}</option>`
+      ).join('');
+      if (saved && accounts.some((a) => a.id === saved)) metaAccountSel.value = saved;
+    } catch (err) {
+      showMetaError(String(err.message || err));
+    }
+  }
+
+  async function refreshMetaStatus() {
+    showMetaError('');
+    if (!META_WORKER_URL || !META_MEMBER) {
+      metaBadge.textContent = 'Not set up';
+      metaStatusText.textContent = 'Meta Ads pull has no account manager configured for this client yet.';
+      metaConnectRow.style.display = 'none';
+      metaPullRow.style.display = 'none';
+      return;
+    }
+    metaStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(`${META_WORKER_URL}/status?member=${encodeURIComponent(META_MEMBER)}`);
+      const data = await res.json();
+      if (data.connected) {
+        metaBadge.textContent = 'Connected';
+        metaStatusText.textContent = `Connected as ${data.name || META_MEMBER}. Pick the ad account for this client, then pull.`;
+        metaConnectRow.style.display = 'none';
+        metaPullRow.style.display = 'flex';
+        await loadMetaAccounts();
+      } else if (data.expired) {
+        metaBadge.textContent = 'Reconnect needed';
+        metaStatusText.textContent = 'This connection expired (Meta connections last ~60 days) — reconnect to keep pulling live data.';
+        showMetaConnectRow();
+      } else {
+        metaBadge.textContent = 'Not connected';
+        metaStatusText.textContent = `${META_MEMBER} hasn't connected a Meta account yet.`;
+        showMetaConnectRow();
+      }
+    } catch (err) {
+      metaBadge.textContent = 'Unavailable';
+      metaStatusText.textContent = 'Could not reach the Meta Ads Worker right now — you can still enter figures manually below.';
+    }
+  }
+
+  function monthToDateRange(month) {
+    const [y, m] = month.split('-').map(Number);
+    const since = `${y}-${String(m).padStart(2, '0')}-01`;
+    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const until = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    return { since, until };
+  }
+
+  metaAccountSel?.addEventListener('change', () => {
+    localStorage.setItem(META_ACCOUNT_KEY, metaAccountSel.value);
+  });
+
+  document.getElementById('meta-refresh')?.addEventListener('click', refreshMetaStatus);
+
+  metaPullBtn?.addEventListener('click', async () => {
+    const month = monthEl.value;
+    const account = metaAccountSel.value;
+    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!account) { showMetaError('Pick an ad account first.'); return; }
+    showMetaError('');
+    const original = metaPullBtn.textContent;
+    metaPullBtn.disabled = true;
+    metaPullBtn.textContent = 'Pulling…';
+    try {
+      const { since, until } = monthToDateRange(month);
+      const url = `${META_WORKER_URL}/insights?member=${encodeURIComponent(META_MEMBER)}&account=${encodeURIComponent(account)}&start=${since}&end=${until}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) showMetaConnectRow();
+        throw new Error(data.error || `Worker responded ${res.status}`);
+      }
+      loadManualData({ meta: data.meta, totals: data.totals, campaigns: data.campaigns });
+      showFlash('meta-pull-flash', 'Pulled');
+    } catch (err) {
+      showMetaError(`Couldn't pull Meta data: ${String(err.message || err)}`);
+    } finally {
+      metaPullBtn.disabled = false;
+      metaPullBtn.textContent = original;
+    }
+  });
+
   const MONTH_DATA_FOLDERS = {};
 
   async function fetchAdsData(month) {
@@ -615,6 +771,7 @@
   document.getElementById('logout-btn').addEventListener('click', () => window.SCLAuth.logout('../'));
 
   loadExisting();
+  refreshMetaStatus();
   setStep(1);
 })();
 </script>
