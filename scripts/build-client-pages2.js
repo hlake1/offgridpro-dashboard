@@ -665,7 +665,8 @@ function builderHTML(c) {
       googleConnectRow.style.display = 'block';
     } catch (err) {
       googleBadge.textContent = 'Unavailable';
-      googleStatusText.textContent = 'Could not reach the Google connect Worker right now.';
+      googleStatusText.textContent = 'Could not check the connection status right now, but you can still connect below.';
+      googleConnectRow.style.display = 'block';
     }
   }
 
