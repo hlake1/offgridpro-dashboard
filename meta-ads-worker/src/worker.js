@@ -30,10 +30,20 @@
  *   - each team member's long-lived access token (stored in Workers KV,
  *     never sent back to the client)
  *
- * What this file does NOT do yet: actually call the Marketing API's
- * Insights endpoints. That's the next increment — it'll live in this same
- * Worker as new routes that call getFreshAccessToken() below, so a report
- * page never sees a raw Meta token, only the finished data.
+ * This Worker also exposes the actual data-pull routes report-building
+ * pages call:
+ *   GET /accounts?member=<slug>
+ *     Lists the ad accounts that member's connected Meta login can see, so
+ *     a builder page can let the account manager pick which one is "this
+ *     client" (once, then remembered client-side) instead of needing to
+ *     know the raw act_XXXXXXXXX id.
+ *   GET /insights?member=<slug>&account=<act_id>&start=YYYY-MM-DD&end=YYYY-MM-DD
+ *     Pulls per-campaign Insights (impressions, clicks, spend, conversions)
+ *     for that ad account and date range, shaped the same way
+ *     scripts/pull-google-ads.js shapes Google's data ({ totals, campaigns }),
+ *     so it drops straight into the existing report-builder code
+ *     (loadManualData / generateSummary) with no other changes needed.
+ * A report page never sees a raw Meta token — only these finished shapes.
  *
  * Flow:
  *   1. Front end sends someone to  /start?member=<slug>
@@ -56,7 +66,7 @@
  * set up — Meta deprecates old versions roughly two years after release.
  */
 
-const GRAPH_API_VERSION = 'v21.0';
+const GRAPH_API_VERSION = 'v26.0';
 const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
 const OAUTH_DIALOG_BASE = `https://www.facebook.com/${GRAPH_API_VERSION}/dialog/oauth`;
 
@@ -253,6 +263,197 @@ async function handleStatus(url, env, origin) {
   }, 200, headers);
 }
 
+// ---------------------------------------------------------------------
+// Data-pull routes (/accounts, /insights) — the actual report-building step.
+// ---------------------------------------------------------------------
+
+async function fetchAdAccounts(env, accessToken) {
+  const proof = await computeAppSecretProof(env, accessToken);
+  const params = new URLSearchParams({
+    access_token: accessToken,
+    appsecret_proof: proof,
+    fields: 'id,account_id,name,account_status,currency,business_name',
+    limit: '200',
+  });
+  const res = await fetch(`${GRAPH_BASE}/me/adaccounts?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Meta ad accounts lookup failed: ${data.error?.message || res.status}`);
+  return data.data || [];
+}
+
+async function handleAccounts(url, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  const member = url.searchParams.get('member');
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getFreshAccessToken(env, member);
+  } catch (err) {
+    // Distinct status so the front end knows to show "reconnect" rather
+    // than a generic error — see NOTE on Meta's token model up top.
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+
+  try {
+    const accounts = await fetchAdAccounts(env, accessToken);
+    return jsonResponse({
+      accounts: accounts.map((a) => ({
+        id: a.id, // "act_123456789" — this is what /insights expects as `account`
+        accountId: a.account_id,
+        name: a.name,
+        businessName: a.business_name || null,
+        currency: a.currency,
+        status: a.account_status,
+      })),
+    }, 200, headers);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err) }, 502, headers);
+  }
+}
+
+// Insights doesn't carry campaign status, so it's fetched separately from
+// the Campaign node and merged in below.
+async function fetchCampaignStatuses(env, accessToken, accountId) {
+  const proof = await computeAppSecretProof(env, accessToken);
+  const params = new URLSearchParams({
+    access_token: accessToken,
+    appsecret_proof: proof,
+    fields: 'id,name,effective_status',
+    limit: '300',
+  });
+  const res = await fetch(`${GRAPH_BASE}/${accountId}/campaigns?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Meta campaigns lookup failed: ${data.error?.message || res.status}`);
+  const byId = {};
+  (data.data || []).forEach((c) => { byId[c.id] = c; });
+  return byId;
+}
+
+async function fetchInsights(env, accessToken, accountId, since, until) {
+  const proof = await computeAppSecretProof(env, accessToken);
+  const params = new URLSearchParams({
+    access_token: accessToken,
+    appsecret_proof: proof,
+    level: 'campaign',
+    fields: 'campaign_id,campaign_name,impressions,clicks,spend,ctr,cpc,actions',
+    time_range: JSON.stringify({ since, until }),
+    limit: '300',
+  });
+  const res = await fetch(`${GRAPH_BASE}/${accountId}/insights?${params.toString()}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Meta insights lookup failed: ${data.error?.message || res.status}`);
+  return data.data || [];
+}
+
+function normalizeStatus(effectiveStatus) {
+  // Mapped onto the same ENABLED/PAUSED/REMOVED vocabulary the report
+  // builder's manual-entry UI already uses for Google campaigns, so the
+  // "top ENABLED campaign" logic in reports-store.js works unchanged.
+  if (effectiveStatus === 'ACTIVE') return 'ENABLED';
+  if (effectiveStatus === 'PAUSED') return 'PAUSED';
+  return 'REMOVED'; // ARCHIVED, DELETED, PENDING_REVIEW, WITH_ISSUES, etc.
+}
+
+// Meta reports conversions as a bag of { action_type, value } pairs rather
+// than one "conversions" number, because a single ad account can have many
+// different conversion events (leads, purchases, sign-ups, ...). This sums
+// the ones that generally represent an actual conversion rather than a
+// passthrough engagement metric (e.g. it excludes plain link clicks/video
+// views). If a client's real conversion event isn't caught by this list,
+// this is the line to extend.
+const CONVERSION_ACTION_HINTS = [
+  'lead', 'purchase', 'complete_registration', 'submit_application',
+  'schedule', 'contact', 'onsite_conversion', 'omni_purchase', 'omni_lead',
+];
+
+function sumConversions(actions) {
+  if (!Array.isArray(actions)) return 0;
+  return actions
+    .filter((a) => CONVERSION_ACTION_HINTS.some((hint) => (a.action_type || '').includes(hint)))
+    .reduce((sum, a) => sum + Number(a.value || 0), 0);
+}
+
+async function handleInsights(url, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  const member = url.searchParams.get('member');
+  const account = url.searchParams.get('account'); // e.g. "act_123456789"
+  const start = url.searchParams.get('start');
+  const end = url.searchParams.get('end');
+
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+  if (!account || !/^act_\d+$/.test(account)) {
+    return jsonResponse({ error: 'Missing or invalid "account" — expected e.g. act_123456789 (from /accounts)' }, 400, headers);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(end || '')) {
+    return jsonResponse({ error: 'Missing or invalid "start"/"end" — expected YYYY-MM-DD' }, 400, headers);
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getFreshAccessToken(env, member);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+
+  try {
+    const [insightRows, statusById] = await Promise.all([
+      fetchInsights(env, accessToken, account, start, end),
+      fetchCampaignStatuses(env, accessToken, account),
+    ]);
+
+    const campaigns = insightRows.map((r) => {
+      const campaignMeta = statusById[r.campaign_id] || {};
+      const impressions = Number(r.impressions || 0);
+      const clicks = Number(r.clicks || 0);
+      const cost = Math.round(Number(r.spend || 0) * 100) / 100;
+      return {
+        id: r.campaign_id,
+        name: r.campaign_name || campaignMeta.name || 'Untitled campaign',
+        status: normalizeStatus(campaignMeta.effective_status),
+        // Meta has no direct equivalent to Google's advertising_channel_type
+        // (SEARCH/DISPLAY/...); this only feeds a cosmetic dropdown in the
+        // report builder, so it's left as a fixed placeholder here.
+        channelType: 'DISPLAY',
+        impressions,
+        clicks,
+        conversions: sumConversions(r.actions),
+        cost,
+        ctr: impressions ? Math.round((clicks / impressions) * 10000) / 100 : 0,
+        cpc: clicks ? Math.round((cost / clicks) * 100) / 100 : 0,
+      };
+    }).sort((a, b) => b.impressions - a.impressions);
+
+    const totals = campaigns.reduce((acc, c) => {
+      acc.impressions += c.impressions;
+      acc.clicks += c.clicks;
+      acc.conversions += c.conversions;
+      acc.cost += c.cost;
+      return acc;
+    }, { impressions: 0, clicks: 0, conversions: 0, cost: 0 });
+    totals.cost = Math.round(totals.cost * 100) / 100;
+    totals.ctr = totals.impressions ? Math.round((totals.clicks / totals.impressions) * 10000) / 100 : 0;
+    totals.cpc = totals.clicks ? Math.round((totals.cost / totals.clicks) * 100) / 100 : 0;
+
+    return jsonResponse({
+      meta: {
+        source: 'Meta Ads Insights API',
+        pulledAt: new Date().toISOString(),
+        account,
+        period: { start, end },
+      },
+      totals,
+      campaigns,
+    }, 200, headers);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err) }, 502, headers);
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -269,9 +470,10 @@ export default {
     if (url.pathname === '/start') return handleStart(url, env);
     if (url.pathname === '/callback') return handleCallback(url, env);
     if (url.pathname === '/status') return handleStatus(url, env, origin);
+    if (url.pathname === '/accounts') return handleAccounts(url, env, origin);
+    if (url.pathname === '/insights') return handleInsights(url, env, origin);
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
-  // Exported for the data-pull routes we'll add next.
   _internal: { getFreshAccessToken },
 };

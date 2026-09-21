@@ -129,6 +129,39 @@ fetch('https://tweak-meta-ads.herbielakeai.workers.dev/status?member=daniela')
 front end — it's the one meaningfully different thing about this flow
 compared to the Google one (see "Why tokens expire" below).
 
+## Pulling report data
+
+Two more routes exist for the actual report-building step, both requiring
+that `member` already be connected via `/start`:
+
+```
+GET /accounts?member=daniela
+```
+
+Lists the ad accounts that member's Meta login can see — `{ accounts: [{
+id: "act_123...", name, businessName, currency, status }] }`. This is how
+a report builder lets someone pick "this is SCL's ad account" once
+(remembered client-side afterwards) without needing to know the raw
+`act_` id up front.
+
+```
+GET /insights?member=daniela&account=act_123456789&start=2026-09-01&end=2026-09-30
+```
+
+Pulls that ad account's campaign-level Insights for the date range and
+returns `{ meta, totals, campaigns }` — the exact same shape
+`scripts/pull-google-ads.js` produces for Google, so it drops straight
+into the existing report-builder code (`loadManualData` /
+`generateSummary` in each client's `reports-store.js`) with no other
+changes needed. Conversions are summed from Meta's `actions` array using a
+hint-based match (see `CONVERSION_ACTION_HINTS` in `src/worker.js`) since
+Meta doesn't report a single "conversions" figure — extend that list if a
+client's real conversion event isn't being picked up.
+
+Both routes return `{ error, reconnectNeeded: true }` with a 409 status if
+that member's connection is missing or expired, so the front end can show
+a reconnect prompt instead of a generic failure.
+
 ## Why tokens expire (and what to do eventually)
 
 Meta doesn't offer a refresh-token grant for standard user access tokens.

@@ -114,6 +114,21 @@ const CLIENTS = [
 CLIENTS.forEach((c) => { c.aiWorkerUrl = AI_WORKER_URL; });
 
 // ----------------------------------------------------------------------------
+// Meta Ads Connect (Cloudflare Worker) — see /meta-ads-worker/README.md
+// ----------------------------------------------------------------------------
+// Every client shares the one Worker deployment too; what's per-client is
+// which team member's connected Meta login the report builder asks it to
+// pull with. That's just each client's account manager, lowercased into the
+// same "member" slug they'd use with /start?member=<slug> — so once Daniela
+// (say) connects her own Meta account once, every client she manages can
+// pull through that same connection without asking her to connect per-client.
+const META_WORKER_URL = 'https://tweak-meta-ads.herbielakeai.workers.dev';
+CLIENTS.forEach((c) => {
+  c.metaWorkerUrl = META_WORKER_URL;
+  c.metaMember = (c.accountManager || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
+});
+
+// ----------------------------------------------------------------------------
 // Templates
 // ----------------------------------------------------------------------------
 
