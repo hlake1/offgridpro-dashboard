@@ -4,7 +4,7 @@ compatibility_date = "2026-09-01"
 
 # Non-secret config.
 [vars]
-META_APP_ID = "REPLACE_WITH_META_APP_ID"
+META_APP_ID = "1455481483141520"
 REDIRECT_URI = "https://tweak-meta-ads.herbielakeai.workers.dev/callback"
 ALLOWED_ORIGIN = "https://tweakreporting.com"
 
@@ -18,4 +18,4 @@ ALLOWED_ORIGIN = "https://tweakreporting.com"
 # then paste the "id" it prints into the line below.
 [[kv_namespaces]]
 binding = "OAUTH_TOKENS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "f70591f20b7c4f3abffabc06ee82f27b"
