@@ -210,6 +210,22 @@ function builderHTML(c) {
       <p id="meta-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
     </section>
 
+    <section class="card p-6 mt-6" id="google-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Google Ads &amp; Analytics</h2>
+          <p class="hint mt-1" id="google-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="google-badge">Checking…</span>
+      </div>
+
+      <div id="google-connect-row" class="mt-4" style="display:none;">
+        <a id="google-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Google Account</a>
+        <p class="hint mt-2">This app is still going through Google's review, so you may see an "unverified app" warning — that's expected for now. Connecting now means it's ready the moment that's approved.</p>
+        <button id="google-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+    </section>
+
     <section class="card p-6 mt-6">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
@@ -612,6 +628,49 @@ function builderHTML(c) {
     }
   });
 
+  // ---------------------------------------------------------------------
+  // Google connect — see /google-oauth-worker/. Connect-only for now: the
+  // app is still going through Google's verification, and there are no
+  // data-pull routes on that Worker yet (unlike Meta above). This just
+  // gets the account connected and stored ahead of time, so nothing else
+  // needs to change here once the data-pull routes exist.
+  // ---------------------------------------------------------------------
+  const GOOGLE_WORKER_URL = '${c.googleWorkerUrl || ''}';
+  const GOOGLE_MEMBER = '${c.googleMember || ''}';
+
+  const googleBadge = document.getElementById('google-badge');
+  const googleStatusText = document.getElementById('google-status-text');
+  const googleConnectRow = document.getElementById('google-connect-row');
+  const googleConnectLink = document.getElementById('google-connect-link');
+
+  async function refreshGoogleStatus() {
+    if (!GOOGLE_WORKER_URL || !GOOGLE_MEMBER) {
+      googleBadge.textContent = 'Not set up';
+      googleStatusText.textContent = 'Google connect has no account manager configured for this client yet.';
+      googleConnectRow.style.display = 'none';
+      return;
+    }
+    googleConnectLink.href = \`\${GOOGLE_WORKER_URL}/start?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`;
+    googleStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`);
+      const data = await res.json();
+      if (data.connected) {
+        googleBadge.textContent = 'Connected';
+        googleStatusText.textContent = \`Connected as \${data.email || GOOGLE_MEMBER}. Live pulls aren't wired up yet — that's next, once Google finishes review.\`;
+      } else {
+        googleBadge.textContent = 'Not connected';
+        googleStatusText.textContent = \`\${GOOGLE_MEMBER} hasn't connected a Google account yet. Won't pull live data yet (Google's app review is still in progress), but connecting now means it's ready the moment that's approved.\`;
+      }
+      googleConnectRow.style.display = 'block';
+    } catch (err) {
+      googleBadge.textContent = 'Unavailable';
+      googleStatusText.textContent = 'Could not reach the Google connect Worker right now.';
+    }
+  }
+
+  document.getElementById('google-refresh')?.addEventListener('click', refreshGoogleStatus);
+
   const MONTH_DATA_FOLDERS = {};
 
   async function fetchAdsData(month) {
@@ -776,6 +835,7 @@ function builderHTML(c) {
 
   loadExisting();
   refreshMetaStatus();
+  refreshGoogleStatus();
   setStep(1);
 })();
 </script>

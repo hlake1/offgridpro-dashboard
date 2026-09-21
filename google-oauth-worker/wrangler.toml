@@ -6,7 +6,7 @@ compatibility_date = "2026-09-01"
 [vars]
 GOOGLE_CLIENT_ID = "1042274607188-mu0sv68prq82f6ricoksl8mqpkjk7cm6.apps.googleusercontent.com"
 REDIRECT_URI = "https://tweak-google-oauth.herbielakeai.workers.dev/callback"
-ALLOWED_ORIGIN = "https://hlake1.github.io"
+ALLOWED_ORIGIN = "https://tweakreporting.com"
 
 # GOOGLE_CLIENT_SECRET is NOT set here — it's a secret, set via:
 #   wrangler secret put GOOGLE_CLIENT_SECRET

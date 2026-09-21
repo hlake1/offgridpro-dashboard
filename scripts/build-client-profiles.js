@@ -129,6 +129,20 @@ CLIENTS.forEach((c) => {
 });
 
 // ----------------------------------------------------------------------------
+// Google account connect (Cloudflare Worker) — see /google-oauth-worker/README.md
+// ----------------------------------------------------------------------------
+// Same "member" convention as Meta above. The Google app is still going
+// through Google's verification process as of this writing, so connecting
+// may show an "unverified app" warning and no data-pull routes exist on
+// this Worker yet — but the connect button is wired up now so it's ready
+// the moment that's sorted, without another round of template changes.
+const GOOGLE_WORKER_URL = 'https://tweak-google-oauth.herbielakeai.workers.dev';
+CLIENTS.forEach((c) => {
+  c.googleWorkerUrl = GOOGLE_WORKER_URL;
+  c.googleMember = c.metaMember;
+});
+
+// ----------------------------------------------------------------------------
 // Templates
 // ----------------------------------------------------------------------------
 
