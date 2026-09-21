@@ -1,0 +1,21 @@
+name = "tweak-meta-ads"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+# Non-secret config.
+[vars]
+META_APP_ID = "REPLACE_WITH_META_APP_ID"
+REDIRECT_URI = "https://tweak-meta-ads.herbielakeai.workers.dev/callback"
+ALLOWED_ORIGIN = "https://tweakreporting.com"
+
+# META_APP_SECRET is NOT set here — it's a secret, set via:
+#   wrangler secret put META_APP_SECRET
+# See README.md for the full deploy walkthrough.
+
+# KV stores one small record per team member: { name, accessToken,
+# expiresAt, connectedAt, scope }. Create the namespace first with:
+#   wrangler kv namespace create META_TOKENS
+# then paste the "id" it prints into the line below.
+[[kv_namespaces]]
+binding = "OAUTH_TOKENS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
