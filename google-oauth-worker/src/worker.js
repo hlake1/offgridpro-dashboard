@@ -36,11 +36,7 @@ const SCOPES = [
   'email',
   'https://www.googleapis.com/auth/analytics.readonly',
   'https://www.googleapis.com/auth/webmasters.readonly',
-  // 'adwords' intentionally left out for now: the Google Ads API needs its
-  // own developer token (a separate approval from OAuth verification,
-  // via ads.google.com/aw/apicenter) that this app doesn't have yet.
-  // Add it back to this list once that's sorted, then re-run Google's
-  // verification for the added scope.
+  'https://www.googleapis.com/auth/adwords',
 ].join(' ');
 
 const NONCE_TTL_SECONDS = 600; // 10 minutes to complete the Google consent screen
@@ -236,6 +232,25 @@ async function fetchAnalyticsAccounts(accessToken) {
   return accounts;
 }
 
+async function fetchGoogleAdsAccounts(accessToken, developerToken) {
+  if (!developerToken) {
+    throw new Error('Google Ads developer token not configured on this Worker yet (set GOOGLE_ADS_DEVELOPER_TOKEN)');
+  }
+  const res = await fetch('https://googleads.googleapis.com/v19/customers:listAccessibleCustomers', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'developer-token': developerToken,
+    },
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data.error?.message || (Array.isArray(data) && data[0]?.error?.message) || `Google Ads API error (${res.status})`;
+    throw new Error(msg);
+  }
+  // resourceNames look like "customers/1234567890"
+  return (data.resourceNames || []).map((rn) => rn.split('/')[1]).filter(Boolean);
+}
+
 async function fetchSearchConsoleSites(accessToken) {
   const res = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -261,7 +276,7 @@ async function handlePreview(url, env, origin) {
     return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
   }
 
-  const [analytics, searchConsole] = await Promise.all([
+  const [analytics, searchConsole, ads] = await Promise.all([
     fetchAnalyticsAccounts(accessToken).then(
       (accounts) => ({ ok: true, accounts }),
       (err) => ({ ok: false, error: String(err.message || err) })
@@ -270,9 +285,13 @@ async function handlePreview(url, env, origin) {
       (sites) => ({ ok: true, sites }),
       (err) => ({ ok: false, error: String(err.message || err) })
     ),
+    fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN).then(
+      (customerIds) => ({ ok: true, customerIds }),
+      (err) => ({ ok: false, error: String(err.message || err) })
+    ),
   ]);
 
-  return jsonResponse({ analytics, searchConsole }, 200, headers);
+  return jsonResponse({ analytics, searchConsole, ads }, 200, headers);
 }
 
 async function handleStatus(url, env, origin) {

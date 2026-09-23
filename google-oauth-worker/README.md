@@ -16,11 +16,23 @@ here.
 
 You've already created the Google Cloud project ("Tweak Reporting"), added
 the `analytics.readonly` / `webmasters.readonly` / `adwords` scopes on the
-OAuth consent screen, published the app to Production (not Testing — that
-avoids the 7-day token expiry), and created a Web application OAuth client
-with:
+OAuth consent screen, and created a Web application OAuth client with:
 - Authorized JavaScript origin: `https://hlake1.github.io`
 - Authorized redirect URI: `https://tweak-google-oauth.herbielakeai.workers.dev/callback`
+
+**Getting real account managers connected before Google's verification is
+approved:** keep the OAuth consent screen's publishing status set to
+**Testing** (Audience tab in Cloud Console) and add each account manager's
+Google email under "Test users" there. Test users can grant every scope
+above — including the restricted `adwords` one — with zero Google review,
+they just click through the "unverified app" warning the same way you do
+as the project owner. The only trade-off: a test user's connection expires
+after 7 days and needs reconnecting. Once full verification is approved,
+flip the consent screen to "In production" and that 7-day limit goes away
+for everyone.
+
+**Google Ads specifically also needs a developer token** — see
+"Pulling report data" below.
 
 1. **Create the KV namespace** that stores each team member's connection:
    ```bash
@@ -70,6 +82,37 @@ fetch('https://tweak-google-oauth.herbielakeai.workers.dev/status?member=jeremy'
   .then(r => r.json()).then(console.log);
 // { connected: true, email: "jeremy@...", connectedAt: "..." }
 ```
+
+## Pulling report data
+
+`GET /preview?member=<slug>` returns a small, real, read-only slice of
+data via each granted scope — used both to sanity-check a connection and
+to give Google's verification demo video something genuine to show
+happening after "Connect" (not just the consent screen):
+
+```json
+{
+  "analytics": { "ok": true, "accounts": [{ "account": "...", "properties": ["..."] }] },
+  "searchConsole": { "ok": true, "sites": [{ "url": "...", "permission": "..." }] },
+  "ads": { "ok": true, "customerIds": ["1234567890"] }
+}
+```
+
+Any of the three can come back `{ "ok": false, "error": "..." }` instead —
+e.g. if an API isn't enabled yet on the Cloud project, or (for `ads`)
+`GOOGLE_ADS_DEVELOPER_TOKEN` isn't set. 409 + `reconnectNeeded: true` means
+the member's connection expired (the 7-day Testing-mode limit, most likely)
+and they need to click "Connect" again.
+
+**Google Ads needs one more secret** — a developer token from
+`ads.google.com/aw/apicenter` (Google Ads' own approval, separate from
+OAuth verification; see the main project notes on the new, faster
+Cloud-Console-based Basic Access process). Once you have one:
+```bash
+npx wrangler secret put GOOGLE_ADS_DEVELOPER_TOKEN
+```
+Until that's set, the `ads` field in `/preview` just reports it's missing
+— Analytics and Search Console work independently of it.
 
 ## Redeploying after a change
 

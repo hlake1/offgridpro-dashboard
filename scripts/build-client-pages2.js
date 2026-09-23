@@ -234,6 +234,8 @@ function builderHTML(c) {
           <ul id="google-preview-analytics" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
           <p class="hint mt-2"><strong>Search Console sites</strong> (read via <code>webmasters.readonly</code>):</p>
           <ul id="google-preview-searchconsole" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Google Ads accounts</strong> (read via <code>adwords</code>):</p>
+          <ul id="google-preview-ads" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
         </div>
       </div>
     </section>
@@ -661,6 +663,7 @@ function builderHTML(c) {
   const googlePreviewResults = document.getElementById('google-preview-results');
   const googlePreviewAnalyticsList = document.getElementById('google-preview-analytics');
   const googlePreviewSearchConsoleList = document.getElementById('google-preview-searchconsole');
+  const googlePreviewAdsList = document.getElementById('google-preview-ads');
 
   function showGooglePreviewError(msg) {
     googlePreviewError.textContent = msg;
@@ -741,6 +744,21 @@ function builderHTML(c) {
         }
       } else {
         googlePreviewSearchConsoleList.innerHTML = \`<li>Couldn't read Search Console: \${(data.searchConsole && data.searchConsole.error) || 'unknown error'}</li>\`;
+      }
+
+      googlePreviewAdsList.innerHTML = '';
+      if (data.ads && data.ads.ok) {
+        if (!data.ads.customerIds.length) {
+          googlePreviewAdsList.innerHTML = '<li>No Google Ads accounts visible to this Google account.</li>';
+        } else {
+          for (const id of data.ads.customerIds) {
+            const li = document.createElement('li');
+            li.textContent = \`Customer ID \${id}\`;
+            googlePreviewAdsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAdsList.innerHTML = \`<li>Couldn't read Google Ads: \${(data.ads && data.ads.error) || 'unknown error'}</li>\`;
       }
 
       googlePreviewResults.style.display = 'block';
