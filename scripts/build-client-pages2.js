@@ -224,6 +224,18 @@ function builderHTML(c) {
         <p class="hint mt-2">This app is still going through Google's review, so you may see an "unverified app" warning — that's expected for now. Connecting now means it's ready the moment that's approved.</p>
         <button id="google-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
       </div>
+
+      <div id="google-preview-row" class="mt-4" style="display:none;">
+        <button id="google-preview" type="button" class="btn btn-secondary">Preview connected Google data</button>
+        <span id="google-preview-flash" class="save-flash">Pulled</span>
+        <p id="google-preview-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+        <div id="google-preview-results" class="mt-3" style="display:none;">
+          <p class="hint"><strong>Analytics accounts</strong> (read via <code>analytics.readonly</code>):</p>
+          <ul id="google-preview-analytics" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Search Console sites</strong> (read via <code>webmasters.readonly</code>):</p>
+          <ul id="google-preview-searchconsole" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+        </div>
+      </div>
     </section>
 
     <section class="card p-6 mt-6">
@@ -642,12 +654,25 @@ function builderHTML(c) {
   const googleStatusText = document.getElementById('google-status-text');
   const googleConnectRow = document.getElementById('google-connect-row');
   const googleConnectLink = document.getElementById('google-connect-link');
+  const googlePreviewRow = document.getElementById('google-preview-row');
+  const googlePreviewBtn = document.getElementById('google-preview');
+  const googlePreviewFlash = document.getElementById('google-preview-flash');
+  const googlePreviewError = document.getElementById('google-preview-error');
+  const googlePreviewResults = document.getElementById('google-preview-results');
+  const googlePreviewAnalyticsList = document.getElementById('google-preview-analytics');
+  const googlePreviewSearchConsoleList = document.getElementById('google-preview-searchconsole');
+
+  function showGooglePreviewError(msg) {
+    googlePreviewError.textContent = msg;
+    googlePreviewError.style.display = 'block';
+  }
 
   async function refreshGoogleStatus() {
     if (!GOOGLE_WORKER_URL || !GOOGLE_MEMBER) {
       googleBadge.textContent = 'Not set up';
       googleStatusText.textContent = 'Google connect has no account manager configured for this client yet.';
       googleConnectRow.style.display = 'none';
+      googlePreviewRow.style.display = 'none';
       return;
     }
     googleConnectLink.href = \`\${GOOGLE_WORKER_URL}/start?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`;
@@ -657,20 +682,77 @@ function builderHTML(c) {
       const data = await res.json();
       if (data.connected) {
         googleBadge.textContent = 'Connected';
-        googleStatusText.textContent = \`Connected as \${data.email || GOOGLE_MEMBER}. Live pulls aren't wired up yet — that's next, once Google finishes review.\`;
+        googleStatusText.textContent = \`Connected as \${data.email || GOOGLE_MEMBER}.\`;
+        googlePreviewRow.style.display = 'block';
       } else {
         googleBadge.textContent = 'Not connected';
-        googleStatusText.textContent = \`\${GOOGLE_MEMBER} hasn't connected a Google account yet. Won't pull live data yet (Google's app review is still in progress), but connecting now means it's ready the moment that's approved.\`;
+        googleStatusText.textContent = \`\${GOOGLE_MEMBER} hasn't connected a Google account yet.\`;
+        googlePreviewRow.style.display = 'none';
       }
       googleConnectRow.style.display = 'block';
     } catch (err) {
       googleBadge.textContent = 'Unavailable';
       googleStatusText.textContent = 'Could not check the connection status right now, but you can still connect below.';
       googleConnectRow.style.display = 'block';
+      googlePreviewRow.style.display = 'none';
     }
   }
 
   document.getElementById('google-refresh')?.addEventListener('click', refreshGoogleStatus);
+
+  googlePreviewBtn?.addEventListener('click', async () => {
+    googlePreviewError.style.display = 'none';
+    googlePreviewResults.style.display = 'none';
+    googlePreviewBtn.disabled = true;
+    googlePreviewBtn.textContent = 'Pulling…';
+    try {
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/preview?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`);
+      const data = await res.json();
+      if (!res.ok) {
+        showGooglePreviewError(data.error || \`Preview failed (\${res.status})\`);
+        return;
+      }
+
+      googlePreviewAnalyticsList.innerHTML = '';
+      if (data.analytics && data.analytics.ok) {
+        if (!data.analytics.accounts.length) {
+          googlePreviewAnalyticsList.innerHTML = '<li>No Analytics accounts visible to this Google account.</li>';
+        } else {
+          for (const acc of data.analytics.accounts) {
+            const li = document.createElement('li');
+            li.textContent = \`\${acc.account} — \${acc.properties.join(', ') || 'no properties'}\`;
+            googlePreviewAnalyticsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAnalyticsList.innerHTML = \`<li>Couldn't read Analytics: \${(data.analytics && data.analytics.error) || 'unknown error'}</li>\`;
+      }
+
+      googlePreviewSearchConsoleList.innerHTML = '';
+      if (data.searchConsole && data.searchConsole.ok) {
+        if (!data.searchConsole.sites.length) {
+          googlePreviewSearchConsoleList.innerHTML = '<li>No Search Console sites visible to this Google account.</li>';
+        } else {
+          for (const site of data.searchConsole.sites) {
+            const li = document.createElement('li');
+            li.textContent = \`\${site.url} (\${site.permission})\`;
+            googlePreviewSearchConsoleList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewSearchConsoleList.innerHTML = \`<li>Couldn't read Search Console: \${(data.searchConsole && data.searchConsole.error) || 'unknown error'}</li>\`;
+      }
+
+      googlePreviewResults.style.display = 'block';
+      googlePreviewFlash.classList.add('show');
+      setTimeout(() => googlePreviewFlash.classList.remove('show'), 1500);
+    } catch (err) {
+      showGooglePreviewError(String(err.message || err));
+    } finally {
+      googlePreviewBtn.disabled = false;
+      googlePreviewBtn.textContent = 'Preview connected Google data';
+    }
+  });
 
   const MONTH_DATA_FOLDERS = {};
 

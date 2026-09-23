@@ -36,7 +36,11 @@ const SCOPES = [
   'email',
   'https://www.googleapis.com/auth/analytics.readonly',
   'https://www.googleapis.com/auth/webmasters.readonly',
-  'https://www.googleapis.com/auth/adwords',
+  // 'adwords' intentionally left out for now: the Google Ads API needs its
+  // own developer token (a separate approval from OAuth verification,
+  // via ads.google.com/aw/apicenter) that this app doesn't have yet.
+  // Add it back to this list once that's sorted, then re-run Google's
+  // verification for the added scope.
 ].join(' ');
 
 const NONCE_TTL_SECONDS = 600; // 10 minutes to complete the Google consent screen
@@ -213,6 +217,64 @@ async function handleCallback(url, env) {
   `);
 }
 
+// Used by the /preview route: a couple of small, real, read-only calls
+// that exercise each granted scope, so there's something genuine to show
+// happening after "Connect" — both for the Google verification demo video
+// and for anyone sanity-checking a connection actually works.
+async function fetchAnalyticsAccounts(accessToken) {
+  const res = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Analytics Admin API error (${res.status})`);
+  }
+  const accounts = (data.accountSummaries || []).map((a) => ({
+    account: a.displayName,
+    properties: (a.propertySummaries || []).map((p) => p.displayName),
+  }));
+  return accounts;
+}
+
+async function fetchSearchConsoleSites(accessToken) {
+  const res = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error?.message || `Search Console API error (${res.status})`);
+  }
+  return (data.siteEntry || []).map((s) => ({ url: s.siteUrl, permission: s.permissionLevel }));
+}
+
+async function handlePreview(url, env, origin) {
+  const member = url.searchParams.get('member');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getFreshAccessToken(env, member);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+
+  const [analytics, searchConsole] = await Promise.all([
+    fetchAnalyticsAccounts(accessToken).then(
+      (accounts) => ({ ok: true, accounts }),
+      (err) => ({ ok: false, error: String(err.message || err) })
+    ),
+    fetchSearchConsoleSites(accessToken).then(
+      (sites) => ({ ok: true, sites }),
+      (err) => ({ ok: false, error: String(err.message || err) })
+    ),
+  ]);
+
+  return jsonResponse({ analytics, searchConsole }, 200, headers);
+}
+
 async function handleStatus(url, env, origin) {
   const member = url.searchParams.get('member');
   const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
@@ -241,6 +303,7 @@ export default {
     if (url.pathname === '/start') return handleStart(url, env);
     if (url.pathname === '/callback') return handleCallback(url, env);
     if (url.pathname === '/status') return handleStatus(url, env, origin);
+    if (url.pathname === '/preview') return handlePreview(url, env, origin);
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
