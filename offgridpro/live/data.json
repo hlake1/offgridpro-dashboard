@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-09-22T11:06:14.649Z",
+    "pulledAt": "2026-09-23T10:55:59.435Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-08-26",
-      "end": "2026-09-22",
+      "start": "2026-08-27",
+      "end": "2026-09-23",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 2679,
-    "clicks": 156,
+    "impressions": 2727,
+    "clicks": 158,
     "conversions": 2,
-    "cost": 363.27,
-    "ctr": 5.82,
-    "cpc": 2.33
+    "cost": 355.35,
+    "ctr": 5.79,
+    "cpc": 2.25
   },
   "campaigns": [
     {
@@ -32,24 +32,24 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 2270,
-      "clicks": 118,
+      "impressions": 2341,
+      "clicks": 124,
       "conversions": 1,
-      "cost": 220.54,
-      "ctr": 5.2,
-      "cpc": 1.87
+      "cost": 230.2,
+      "ctr": 5.3,
+      "cpc": 1.86
     },
     {
       "id": "23851985894",
       "name": "Victron",
       "status": "PAUSED",
       "channelType": "SEARCH",
-      "impressions": 409,
-      "clicks": 38,
+      "impressions": 386,
+      "clicks": 34,
       "conversions": 1,
-      "cost": 142.73,
-      "ctr": 9.29,
-      "cpc": 3.76
+      "cost": 125.15,
+      "ctr": 8.81,
+      "cpc": 3.68
     },
     {
       "id": "23758381168",
@@ -92,53 +92,53 @@
     "homeEnergy": [],
     "victron": [
       {
-        "keyword": "victron energy uk",
-        "matchType": "PHRASE",
-        "impressions": 123,
-        "clicks": 14,
-        "conversions": 1,
-        "cost": 65.63,
-        "ctr": 11.38,
-        "cpc": 4.69
-      },
-      {
         "keyword": "victron installer near me",
         "matchType": "PHRASE",
-        "impressions": 50,
+        "impressions": 49,
         "clicks": 13,
         "conversions": 0,
         "cost": 54.65,
-        "ctr": 26,
+        "ctr": 26.53,
         "cpc": 4.2
+      },
+      {
+        "keyword": "victron energy uk",
+        "matchType": "PHRASE",
+        "impressions": 116,
+        "clicks": 11,
+        "conversions": 1,
+        "cost": 48.57,
+        "ctr": 9.48,
+        "cpc": 4.42
       },
       {
         "keyword": "victron installer",
         "matchType": "PHRASE",
-        "impressions": 34,
+        "impressions": 32,
         "clicks": 6,
         "conversions": 0,
         "cost": 11.96,
-        "ctr": 17.65,
+        "ctr": 18.75,
         "cpc": 1.99
       },
       {
         "keyword": "victron solar",
         "matchType": "PHRASE",
-        "impressions": 95,
-        "clicks": 4,
+        "impressions": 90,
+        "clicks": 3,
         "conversions": 0,
-        "cost": 6.98,
-        "ctr": 4.21,
-        "cpc": 1.75
+        "cost": 6.46,
+        "ctr": 3.33,
+        "cpc": 2.15
       },
       {
         "keyword": "victron energy inverter",
         "matchType": "PHRASE",
-        "impressions": 17,
+        "impressions": 15,
         "clicks": 1,
         "conversions": 0,
         "cost": 3.52,
-        "ctr": 5.88,
+        "ctr": 6.67,
         "cpc": 3.52
       }
     ]
@@ -154,8 +154,8 @@
     {
       "term": "victron uk",
       "campaign": "Victron",
-      "impressions": 26,
-      "clicks": 5,
+      "impressions": 22,
+      "clicks": 3,
       "conversions": 1
     },
     {
@@ -187,6 +187,13 @@
       "conversions": 0
     },
     {
+      "term": "10kw battery system",
+      "campaign": "Energy Storage",
+      "impressions": 1,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
       "term": "backup generator for home uk",
       "campaign": "Energy Storage",
       "impressions": 3,
@@ -203,7 +210,7 @@
     {
       "term": "batteries for solar panels",
       "campaign": "Energy Storage",
-      "impressions": 4,
+      "impressions": 3,
       "clicks": 1,
       "conversions": 0
     },
@@ -311,13 +318,6 @@
       "impressions": 1,
       "clicks": 1,
       "conversions": 0
-    },
-    {
-      "term": "off grid solar power",
-      "campaign": "Energy Storage",
-      "impressions": 1,
-      "clicks": 1,
-      "conversions": 0
     }
   ],
   "topAds": [
@@ -348,9 +348,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 1497,
-      "clicks": 81,
-      "ctr": 5.41
+      "impressions": 1517,
+      "clicks": 84,
+      "ctr": 5.54
     },
     {
       "id": "823436679571",
@@ -379,9 +379,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 522,
-      "clicks": 24,
-      "ctr": 4.6
+      "impressions": 552,
+      "clicks": 25,
+      "ctr": 4.53
     },
     {
       "id": "809035951826",
@@ -410,9 +410,9 @@
         "Trusted UK Victron installers for off-grid and hybrid energy systems",
         "Reliable energy security solutions using Victron Energy technology"
       ],
-      "impressions": 409,
-      "clicks": 38,
-      "ctr": 9.29
+      "impressions": 386,
+      "clicks": 34,
+      "ctr": 8.81
     },
     {
       "id": "819096374767",
@@ -441,9 +441,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 166,
-      "clicks": 9,
-      "ctr": 5.42
+      "impressions": 185,
+      "clicks": 11,
+      "ctr": 5.95
     },
     {
       "id": "823514840114",
@@ -472,9 +472,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 81,
+      "impressions": 83,
       "clicks": 4,
-      "ctr": 4.94
+      "ctr": 4.82
     },
     {
       "id": "821669539822",
