@@ -184,7 +184,17 @@ function builderHTML(c) {
 
   <div id="step-2" class="hidden">
 
-    <section class="card p-6" id="meta-card">
+    <section class="card p-6" id="team-member-card">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Connecting as</h2>
+          <p class="hint mt-1">Any team member's connected account works for any client — pick whoever's logged in below before connecting or pulling data.</p>
+        </div>
+        <select id="team-member-select" class="qbox" style="min-width:180px;"></select>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6" id="meta-card">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h2 class="text-xl font-medium">Meta Ads (Facebook/Instagram)</h2>
@@ -513,6 +523,36 @@ function builderHTML(c) {
   }
 
   // ---------------------------------------------------------------------
+  // "Connecting as" — any team member's Meta/Google connection works for
+  // any client, so this is one shared picker (not a fixed per-client
+  // member) remembered across the whole site via localStorage, not just
+  // this one report.
+  // ---------------------------------------------------------------------
+  const TEAM_MEMBERS = ${JSON.stringify(c.teamMembers || [])};
+  const TEAM_MEMBER_KEY = 'tweak_connect_member';
+  function slugify(name) { return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
+  let currentMember = localStorage.getItem(TEAM_MEMBER_KEY) || slugify('${c.defaultMember || ''}');
+  const teamMemberSelect = document.getElementById('team-member-select');
+  if (teamMemberSelect) {
+    teamMemberSelect.innerHTML = TEAM_MEMBERS.map((name) => {
+      const slug = slugify(name);
+      return \`<option value="\${slug}"\${slug === currentMember ? ' selected' : ''}>\${name}</option>\`;
+    }).join('');
+    // The saved slug might belong to someone no longer in TEAM_MEMBERS, or
+    // no one's chosen yet on this browser — fall back to the first option.
+    if (!TEAM_MEMBERS.some((name) => slugify(name) === currentMember)) {
+      currentMember = slugify(TEAM_MEMBERS[0] || '');
+      teamMemberSelect.value = currentMember;
+    }
+    teamMemberSelect.addEventListener('change', () => {
+      currentMember = teamMemberSelect.value;
+      localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
+      refreshMetaStatus();
+      refreshGoogleStatus();
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // Meta Ads pull — see /meta-ads-worker/. Fills the same totals/campaign
   // fields above that manual entry uses, via loadManualData(), so nothing
   // downstream (readManualData, generateSummary, the AI assistant call)
@@ -520,7 +560,6 @@ function builderHTML(c) {
   // typing. The account manager can still edit anything after pulling.
   // ---------------------------------------------------------------------
   const META_WORKER_URL = '${c.metaWorkerUrl || ''}';
-  const META_MEMBER = '${c.metaMember || ''}';
   const META_ACCOUNT_KEY = '${c.reportsKey}_meta_account';
 
   const metaBadge = document.getElementById('meta-badge');
@@ -538,14 +577,14 @@ function builderHTML(c) {
   }
 
   function showMetaConnectRow() {
-    metaConnectLink.href = \`\${META_WORKER_URL}/start?member=\${encodeURIComponent(META_MEMBER)}\`;
+    metaConnectLink.href = \`\${META_WORKER_URL}/start?member=\${encodeURIComponent(currentMember)}\`;
     metaConnectRow.style.display = 'block';
     metaPullRow.style.display = 'none';
   }
 
   async function loadMetaAccounts() {
     try {
-      const res = await fetch(\`\${META_WORKER_URL}/accounts?member=\${encodeURIComponent(META_MEMBER)}\`);
+      const res = await fetch(\`\${META_WORKER_URL}/accounts?member=\${encodeURIComponent(currentMember)}\`);
       const data = await res.json();
       if (!res.ok) {
         if (data.reconnectNeeded) { showMetaConnectRow(); return; }
@@ -568,7 +607,7 @@ function builderHTML(c) {
 
   async function refreshMetaStatus() {
     showMetaError('');
-    if (!META_WORKER_URL || !META_MEMBER) {
+    if (!META_WORKER_URL || !currentMember) {
       metaBadge.textContent = 'Not set up';
       metaStatusText.textContent = 'Meta Ads pull has no account manager configured for this client yet.';
       metaConnectRow.style.display = 'none';
@@ -577,11 +616,11 @@ function builderHTML(c) {
     }
     metaStatusText.textContent = 'Checking connection…';
     try {
-      const res = await fetch(\`\${META_WORKER_URL}/status?member=\${encodeURIComponent(META_MEMBER)}\`);
+      const res = await fetch(\`\${META_WORKER_URL}/status?member=\${encodeURIComponent(currentMember)}\`);
       const data = await res.json();
       if (data.connected) {
         metaBadge.textContent = 'Connected';
-        metaStatusText.textContent = \`Connected as \${data.name || META_MEMBER}. Pick the ad account for this client, then pull.\`;
+        metaStatusText.textContent = \`Connected as \${data.name || currentMember}. Pick the ad account for this client, then pull.\`;
         metaConnectRow.style.display = 'none';
         metaPullRow.style.display = 'flex';
         await loadMetaAccounts();
@@ -591,7 +630,7 @@ function builderHTML(c) {
         showMetaConnectRow();
       } else {
         metaBadge.textContent = 'Not connected';
-        metaStatusText.textContent = \`\${META_MEMBER} hasn't connected a Meta account yet.\`;
+        metaStatusText.textContent = \`\${currentMember} hasn't connected a Meta account yet.\`;
         showMetaConnectRow();
       }
     } catch (err) {
@@ -625,7 +664,7 @@ function builderHTML(c) {
     metaPullBtn.textContent = 'Pulling…';
     try {
       const { since, until } = monthToDateRange(month);
-      const url = \`\${META_WORKER_URL}/insights?member=\${encodeURIComponent(META_MEMBER)}&account=\${encodeURIComponent(account)}&start=\${since}&end=\${until}\`;
+      const url = \`\${META_WORKER_URL}/insights?member=\${encodeURIComponent(currentMember)}&account=\${encodeURIComponent(account)}&start=\${since}&end=\${until}\`;
       const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) {
@@ -650,7 +689,6 @@ function builderHTML(c) {
   // needs to change here once the data-pull routes exist.
   // ---------------------------------------------------------------------
   const GOOGLE_WORKER_URL = '${c.googleWorkerUrl || ''}';
-  const GOOGLE_MEMBER = '${c.googleMember || ''}';
 
   const googleBadge = document.getElementById('google-badge');
   const googleStatusText = document.getElementById('google-status-text');
@@ -671,25 +709,25 @@ function builderHTML(c) {
   }
 
   async function refreshGoogleStatus() {
-    if (!GOOGLE_WORKER_URL || !GOOGLE_MEMBER) {
+    if (!GOOGLE_WORKER_URL || !currentMember) {
       googleBadge.textContent = 'Not set up';
       googleStatusText.textContent = 'Google connect has no account manager configured for this client yet.';
       googleConnectRow.style.display = 'none';
       googlePreviewRow.style.display = 'none';
       return;
     }
-    googleConnectLink.href = \`\${GOOGLE_WORKER_URL}/start?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`;
+    googleConnectLink.href = \`\${GOOGLE_WORKER_URL}/start?member=\${encodeURIComponent(currentMember)}\`;
     googleStatusText.textContent = 'Checking connection…';
     try {
-      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`);
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(currentMember)}\`);
       const data = await res.json();
       if (data.connected) {
         googleBadge.textContent = 'Connected';
-        googleStatusText.textContent = \`Connected as \${data.email || GOOGLE_MEMBER}.\`;
+        googleStatusText.textContent = \`Connected as \${data.email || currentMember}.\`;
         googlePreviewRow.style.display = 'block';
       } else {
         googleBadge.textContent = 'Not connected';
-        googleStatusText.textContent = \`\${GOOGLE_MEMBER} hasn't connected a Google account yet.\`;
+        googleStatusText.textContent = \`\${currentMember} hasn't connected a Google account yet.\`;
         googlePreviewRow.style.display = 'none';
       }
       googleConnectRow.style.display = 'block';
@@ -709,7 +747,7 @@ function builderHTML(c) {
     googlePreviewBtn.disabled = true;
     googlePreviewBtn.textContent = 'Pulling…';
     try {
-      const res = await fetch(\`\${GOOGLE_WORKER_URL}/preview?member=\${encodeURIComponent(GOOGLE_MEMBER)}\`);
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/preview?member=\${encodeURIComponent(currentMember)}\`);
       const data = await res.json();
       if (!res.ok) {
         showGooglePreviewError(data.error || \`Preview failed (\${res.status})\`);

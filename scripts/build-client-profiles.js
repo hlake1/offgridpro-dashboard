@@ -108,6 +108,62 @@ const CLIENTS = [
       { label: 'Site Health', value: '—' },
     ],
   },
+  {
+    slug: 'offgridpro',
+    NS: 'OGP',
+    authKey: 'ogp_dashboard_auth',
+    reportsKey: 'ogp_reports_v1',
+    adminClass: 'ogp-admin',
+    clientCode: 'OffGrid',
+    name: 'OffGrid Pro',
+    fullName: 'OffGrid Pro Ltd.',
+    tagline: 'Battery Storage & Microgrids',
+    sector: 'Energy · Battery Storage',
+    location: 'Southampton, UK',
+    accountManager: 'Louise',
+    // Branding: matches the original OffGrid Pro dashboard (green/teal/blue accent bar)
+    c1: '#a3c94a',
+    c2: '#4bc7bf',
+    c3: '#5aa5d8',
+    accent: '#5aa5d8',
+    dark: '#1a1a1a',
+    heroA: '#1e293b',
+    heroB: '#16202f',
+    heroC: '#0f172a',
+    previewStats: [
+      { label: 'Conversions', value: '—' },
+      { label: 'Top Channel', value: '—' },
+      { label: 'Site Health', value: '—' },
+    ],
+  },
+  {
+    slug: 'gfs',
+    NS: 'GFS',
+    authKey: 'gfs_dashboard_auth',
+    reportsKey: 'gfs_reports_v1',
+    adminClass: 'gfs-admin',
+    clientCode: 'GFS',
+    name: 'GFS',
+    fullName: 'Global Freight Solutions',
+    tagline: 'Logistics & eCommerce Shipping',
+    sector: 'Logistics · eCommerce Shipping',
+    location: 'UK',
+    accountManager: 'Imogen',
+    // Branding: matches the original GFS dashboard (navy/blue accent bar)
+    c1: '#004080',
+    c2: '#0066b3',
+    c3: '#0099cc',
+    accent: '#0099cc',
+    dark: '#0a1f3d',
+    heroA: '#0a1f3d',
+    heroB: '#002855',
+    heroC: '#004080',
+    previewStats: [
+      { label: 'Conversions', value: '—' },
+      { label: 'Top Channel', value: '—' },
+      { label: 'Site Health', value: '—' },
+    ],
+  },
 ];
 
 // Every client shares the one AI Worker deployment.
@@ -122,20 +178,30 @@ CLIENTS.forEach((c) => { c.aiWorkerUrl = AI_WORKER_URL; });
 // same "member" slug they'd use with /start?member=<slug> — so once Daniela
 // (say) connects her own Meta account once, every client she manages can
 // pull through that same connection without asking her to connect per-client.
+// Every team member can connect on behalf of any client — nobody's
+// personal Meta/Google login is tied to just the clients they manage.
+// The builder page shows a "Connecting as" picker (built from this list)
+// instead of a fixed per-client member, remembered per browser via
+// localStorage so switching clients doesn't mean re-picking every time.
+const TEAM_MEMBERS = ['Daniela', 'Imogen', 'Louise', 'Herbie'];
+function slugify(name) {
+  return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
+}
+
 const META_WORKER_URL = 'https://tweak-meta-ads.herbielakeai.workers.dev';
 CLIENTS.forEach((c) => {
   c.metaWorkerUrl = META_WORKER_URL;
-  c.metaMember = (c.accountManager || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
+  c.teamMembers = TEAM_MEMBERS;
+  // Used only as this client's default pick in the "Connecting as" selector —
+  // whoever's actually building the report can switch it to anyone on the team.
+  c.defaultMember = slugify(c.accountManager || TEAM_MEMBERS[0]);
+  c.metaMember = c.defaultMember; // kept for anything still reading the old field name
 });
 
 // ----------------------------------------------------------------------------
 // Google account connect (Cloudflare Worker) — see /google-oauth-worker/README.md
 // ----------------------------------------------------------------------------
-// Same "member" convention as Meta above. The Google app is still going
-// through Google's verification process as of this writing, so connecting
-// may show an "unverified app" warning and no data-pull routes exist on
-// this Worker yet — but the connect button is wired up now so it's ready
-// the moment that's sorted, without another round of template changes.
+// Same "member" convention as Meta above.
 const GOOGLE_WORKER_URL = 'https://tweak-google-oauth.herbielakeai.workers.dev';
 CLIENTS.forEach((c) => {
   c.googleWorkerUrl = GOOGLE_WORKER_URL;
@@ -434,7 +500,7 @@ function reportsStoreJS(c) {
 `;
 }
 
-module.exports = { CLIENTS, ROOT, authJS, reportsStoreJS };
+module.exports = { CLIENTS, ROOT, authJS, reportsStoreJS, TEAM_MEMBERS };
 
 if (require.main === module) {
   console.log('This module is imported by build-client-pages.js');

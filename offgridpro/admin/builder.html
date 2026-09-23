@@ -11,39 +11,37 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/reports-store.js"></script>
 <script>
-  // Admin-only page. Kick back to root if not admin.
   window.OGPAuth.ensureAuth();
-  document.addEventListener('ogp:auth', (e) => {
+  document.addEventListener('offgridpro:auth', (e) => {
     if (e.detail.role !== 'admin') location.replace('../');
   });
-  // If already authed but not admin, redirect immediately
   if (window.OGPAuth.isAuthed() && !window.OGPAuth.isAdmin()) location.replace('../');
 </script>
 <style>
   :root {
-    --ogp-text: #444;
-    --ogp-muted: #666;
-    --ogp-light: #f7f8f4;
-    --ogp-accent-1: #a3c94a;
-    --ogp-accent-2: #4bc7bf;
-    --ogp-accent-3: #5aa5d8;
-    --ogp-dark: #1a1a1a;
+    --cl-text: #333;
+    --cl-muted: #666;
+    --cl-light: #f6f9fc;
+    --cl-1: #a3c94a;
+    --cl-2: #4bc7bf;
+    --cl-3: #5aa5d8;
+    --cl-dark: #1a1a1a;
   }
   body {
     font-family: 'Montserrat', Helvetica, Arial, sans-serif;
-    color: var(--ogp-text);
-    background: #f7f8f4;
+    color: var(--cl-text);
+    background: #f6f9fc;
   }
-  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--ogp-dark); }
-  .ogp-accent-bar {
+  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--cl-dark); }
+  .cl-accent-bar {
     height: 4px;
-    background: linear-gradient(90deg, var(--ogp-accent-1) 0%, var(--ogp-accent-2) 50%, var(--ogp-accent-3) 100%);
+    background: linear-gradient(90deg, var(--cl-1) 0%, var(--cl-2) 55%, var(--cl-3) 100%);
     border-radius: 2px;
   }
-  .ogp-hero {
+  .cl-hero {
     background:
-      linear-gradient(rgba(0,0,0,0.65) 0%, rgba(10,10,10,0.55) 100%),
-      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      linear-gradient(rgba(0,0,0,0.55) 0%, rgba(10,10,10,0.45) 100%),
+      linear-gradient(135deg, #1e293b 0%, #16202f 60%, #0f172a 100%);
   }
   .card { background:#fff; border:1px solid #e5e7eb; }
   .qbox label { display:block; font-weight:600; color:#1a1a1a; margin-bottom: 0.25rem; }
@@ -54,20 +52,20 @@
     font-family: inherit; outline:none; transition:border 0.15s ease, background 0.15s ease;
     resize: vertical;
   }
-  .qbox textarea:focus, .qbox input:focus, .qbox select:focus { border-color:#4bc7bf; background:#fff; }
+  .qbox textarea:focus, .qbox input:focus, .qbox select:focus { border-color:var(--cl-2); background:#fff; }
   .qnum {
     display:inline-flex; align-items:center; justify-content:center;
     width:28px; height:28px; border-radius:999px;
-    background:#1a1a1a; color:#fff; font-size:0.8rem; font-weight:600;
+    background:var(--cl-dark); color:#fff; font-size:0.8rem; font-weight:600;
     margin-right:0.6rem;
   }
   .btn { padding: 0.65rem 1.4rem; font-weight:500; letter-spacing:0.02em; border-radius:2px; cursor:pointer; transition: background 0.15s ease; }
-  .btn-primary { background:#1a1a1a; color:#fff; border:0; }
-  .btn-primary:hover { background:#333; }
+  .btn-primary { background:var(--cl-dark); color:#fff; border:0; }
+  .btn-primary:hover { filter: brightness(1.25); }
   .btn-ghost { background:transparent; color:#1a1a1a; border:1px solid #e5e7eb; }
   .btn-ghost:hover { background:#f3f4f6; }
   .admin-badge {
-    background:#1a1a1a; color:#fff; font-size:10px; letter-spacing:0.15em;
+    background:var(--cl-dark); color:#fff; font-size:10px; letter-spacing:0.15em;
     text-transform:uppercase; padding: 3px 8px; border-radius: 2px; font-weight:600;
   }
   .save-flash {
@@ -77,7 +75,6 @@
   }
   .save-flash.on { opacity: 1; }
 
-  /* Step progress indicator */
   .stepper { display:flex; align-items:center; gap:0; }
   .step-pill {
     display:inline-flex; align-items:center; gap:0.5rem;
@@ -91,12 +88,11 @@
   }
   .step-pill.active .step-dot { background:#fff; border-color:#fff; color:#1a1a1a; }
   .step-pill.active { color:#fff; }
-  .step-pill.done .step-dot { background:var(--ogp-accent-1); border-color:var(--ogp-accent-1); color:#1a1a1a; }
+  .step-pill.done .step-dot { background:var(--cl-3); border-color:var(--cl-3); color:#1a1a1a; }
   .step-pill.done { color:#fff; }
   .step-line { width:44px; height:2px; background:rgba(255,255,255,0.25); margin:0 0.75rem; }
-  .step-line.done { background:var(--ogp-accent-1); }
+  .step-line.done { background:var(--cl-1); }
 
-  /* Data-entry table */
   .data-grid { width:100%; border-collapse:collapse; }
   .data-grid th {
     text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em;
@@ -109,7 +105,7 @@
     border:1px solid #e5e7eb; border-radius:4px; background:#f8faf5;
     font-family:inherit; outline:none;
   }
-  .data-grid input:focus, .data-grid select:focus { border-color:#4bc7bf; background:#fff; }
+  .data-grid input:focus, .data-grid select:focus { border-color:var(--cl-2); background:#fff; }
   .data-grid .col-num input { text-align:right; }
   .row-del {
     background:transparent; border:0; color:#b91c1c; font-size:1.1rem; line-height:1;
@@ -127,7 +123,7 @@
 </head>
 <body>
 
-<header class="ogp-hero text-white">
+<header class="cl-hero text-white">
   <div class="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
     <div class="flex items-center gap-4">
       <a href="../" class="text-white/70 hover:text-white text-xs uppercase tracking-widest">← Dashboard</a>
@@ -137,12 +133,11 @@
     <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
   </div>
   <div class="max-w-4xl mx-auto px-6 py-14">
-    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly report builder</p>
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly report builder · OffGrid Pro</p>
     <h1 class="text-4xl font-medium text-white">Build the next report</h1>
-    <div class="ogp-accent-bar w-24 mt-5"></div>
+    <div class="cl-accent-bar w-24 mt-5"></div>
     <p id="hero-sub" class="text-white/80 mt-5 max-w-2xl">Step 1 — answer the questions below. Next you'll enter the month's metrics, then we assemble a draft you can review, tweak and publish.</p>
 
-    <!-- Stepper -->
     <div class="stepper mt-8">
       <div id="pill-1" class="step-pill active"><span class="step-dot">1</span><span>Questions</span></div>
       <div id="line-1" class="step-line"></div>
@@ -153,9 +148,7 @@
 
 <main class="max-w-4xl mx-auto px-6 py-12 space-y-6">
 
-  <!-- ============ STEP 1: QUESTIONS ============ -->
   <div id="step-1">
-    <!-- Meta -->
     <section class="card p-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="qbox">
@@ -171,12 +164,8 @@
       </div>
     </section>
 
-    <!-- Questions rendered dynamically -->
-    <form id="q-form" class="space-y-6 mt-6" autocomplete="off">
-      <!-- populated by JS -->
-    </form>
+    <form id="q-form" class="space-y-6 mt-6" autocomplete="off"></form>
 
-    <!-- Step 1 actions -->
     <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
       <div class="flex items-center gap-3">
         <button id="save-draft-1" type="button" class="btn btn-ghost">Save draft</button>
@@ -189,19 +178,83 @@
     </section>
   </div>
 
-  <!-- ============ STEP 2: DATA ENTRY ============ -->
   <div id="step-2" class="hidden">
 
-    <section class="card p-6">
+    <section class="card p-6" id="team-member-card">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Connecting as</h2>
+          <p class="hint mt-1">Any team member's connected account works for any client — pick whoever's logged in below before connecting or pulling data.</p>
+        </div>
+        <select id="team-member-select" class="qbox" style="min-width:180px;"></select>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6" id="meta-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Meta Ads (Facebook/Instagram)</h2>
+          <p class="hint mt-1" id="meta-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="meta-badge">Checking…</span>
+      </div>
+
+      <div id="meta-connect-row" class="mt-4" style="display:none;">
+        <a id="meta-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Meta Ads</a>
+        <p class="hint mt-2">Opens Meta's sign-in in a new tab. Once approved, come back and click "Refresh".</p>
+        <button id="meta-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+
+      <div id="meta-pull-row" class="mt-4 flex items-end gap-3 flex-wrap" style="display:none;">
+        <div class="qbox" style="min-width:260px;">
+          <label for="meta-account">Ad account</label>
+          <select id="meta-account"></select>
+        </div>
+        <button id="meta-pull" type="button" class="btn btn-primary">Pull Meta data for this month</button>
+        <span id="meta-pull-flash" class="save-flash">Pulled</span>
+      </div>
+      <p id="meta-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+    </section>
+
+    <section class="card p-6 mt-6" id="google-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Google Ads &amp; Analytics</h2>
+          <p class="hint mt-1" id="google-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="google-badge">Checking…</span>
+      </div>
+
+      <div id="google-connect-row" class="mt-4" style="display:none;">
+        <a id="google-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Google Account</a>
+        <p class="hint mt-2">This app is still going through Google's review, so you may see an "unverified app" warning — that's expected for now. Connecting now means it's ready the moment that's approved.</p>
+        <button id="google-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+
+      <div id="google-preview-row" class="mt-4" style="display:none;">
+        <button id="google-preview" type="button" class="btn btn-secondary">Preview connected Google data</button>
+        <span id="google-preview-flash" class="save-flash">Pulled</span>
+        <p id="google-preview-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+        <div id="google-preview-results" class="mt-3" style="display:none;">
+          <p class="hint"><strong>Analytics accounts</strong> (read via <code>analytics.readonly</code>):</p>
+          <ul id="google-preview-analytics" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Search Console sites</strong> (read via <code>webmasters.readonly</code>):</p>
+          <ul id="google-preview-searchconsole" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Google Ads accounts</strong> (read via <code>adwords</code>):</p>
+          <ul id="google-preview-ads" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h2 class="text-xl font-medium">Google Ads metrics</h2>
-          <p class="hint mt-1">Enter the month's totals manually. These feed the report exactly like a live API pull would. Leave blank to fall back to any live <code>data.json</code> for this month.</p>
+          <p class="hint mt-1">Enter manually, or use the Meta Ads pull above to fill these in — edit anything below before generating.</p>
         </div>
         <span class="admin-badge">Manual entry</span>
       </div>
 
-      <!-- Totals -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
         <div class="qbox">
           <label for="t_impressions">Impressions</label>
@@ -232,7 +285,6 @@
       </div>
     </section>
 
-    <!-- Campaigns -->
     <section class="card p-6 mt-6">
       <div class="flex items-center justify-between flex-wrap gap-2">
         <div>
@@ -256,15 +308,12 @@
               <th></th>
             </tr>
           </thead>
-          <tbody id="campaign-rows">
-            <!-- rows injected by JS -->
-          </tbody>
+          <tbody id="campaign-rows"></tbody>
         </table>
       </div>
       <p class="hint mt-3">CTR &amp; CPC per campaign are auto-calculated from the figures above.</p>
     </section>
 
-    <!-- Step 2 actions -->
     <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
       <div class="flex items-center gap-3">
         <button id="back-step-1" type="button" class="btn btn-ghost">← Back to questions</button>
@@ -276,6 +325,8 @@
       </div>
     </section>
 
+    <p id="ai-status" class="text-xs text-gray-500 mt-2" style="display:none;"></p>
+
   </div>
 
 </main>
@@ -284,6 +335,12 @@
 (function () {
   const qs = new URLSearchParams(location.search);
   const editingId = qs.get('id');
+
+  // AI report assistant — see /cloudflare-worker/. Polishes the answers
+  // below into client-ready copy and adds a few data-grounded insights.
+  // Never touches the actual metrics; falls back to the plain
+  // question-to-field mapping if the Worker is unreachable or errors.
+  const AI_WORKER_URL = 'https://tweak-report-ai.herbielakeai.workers.dev';
 
   const form = document.getElementById('q-form');
   const monthEl = document.getElementById('month');
@@ -297,7 +354,6 @@
   const CHANNELS = ['SEARCH', 'PERFORMANCE_MAX', 'DISPLAY', 'SHOPPING', 'VIDEO', 'DEMAND_GEN'];
   const STATUSES = ['ENABLED', 'PAUSED', 'REMOVED'];
 
-  // ---------- Step navigation ----------
   function setStep(n) {
     const p1 = document.getElementById('pill-1');
     const p2 = document.getElementById('pill-2');
@@ -318,7 +374,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ---------- Default month ----------
   function defaultMonth() {
     const now = new Date();
     const y = now.getUTCFullYear();
@@ -327,7 +382,6 @@
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
   }
 
-  // ---------- Step 1: questions ----------
   function renderQuestions(values) {
     values = values || {};
     form.innerHTML = window.OGPReports.QUESTIONS.map((q, i) => {
@@ -351,26 +405,25 @@
     return answers;
   }
 
-  // ---------- Step 2: campaign rows ----------
-  function campaignRowHTML(c) {
-    c = c || {};
-    const statusOpts = STATUSES.map(s => `<option value="${s}" ${c.status===s?'selected':''}>${s.charAt(0)+s.slice(1).toLowerCase()}</option>`).join('');
-    const chanOpts = CHANNELS.map(ch => `<option value="${ch}" ${c.channelType===ch?'selected':''}>${ch.replace(/_/g,' ')}</option>`).join('');
+  function campaignRowHTML(c2) {
+    c2 = c2 || {};
+    const statusOpts = STATUSES.map(s => `<option value="${s}" ${c2.status===s?'selected':''}>${s.charAt(0)+s.slice(1).toLowerCase()}</option>`).join('');
+    const chanOpts = CHANNELS.map(ch => `<option value="${ch}" ${c2.channelType===ch?'selected':''}>${ch.replace(/_/g,' ')}</option>`).join('');
     return `
       <tr>
-        <td><input type="text" class="c-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Campaign name" /></td>
+        <td><input type="text" class="c-name" value="${(c2.name||'').replace(/"/g,'&quot;')}" placeholder="Campaign name" /></td>
         <td><select class="c-status">${statusOpts}</select></td>
         <td><select class="c-channel">${chanOpts}</select></td>
-        <td class="col-num"><input type="number" min="0" step="1" class="c-impr" value="${c.impressions ?? ''}" /></td>
-        <td class="col-num"><input type="number" min="0" step="1" class="c-clicks" value="${c.clicks ?? ''}" /></td>
-        <td class="col-num"><input type="number" min="0" step="1" class="c-conv" value="${c.conversions ?? ''}" /></td>
-        <td class="col-num"><input type="number" min="0" step="0.01" class="c-cost" value="${c.cost ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-impr" value="${c2.impressions ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-clicks" value="${c2.clicks ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-conv" value="${c2.conversions ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="0.01" class="c-cost" value="${c2.cost ?? ''}" /></td>
         <td><button type="button" class="row-del" title="Remove">×</button></td>
       </tr>`;
   }
 
-  function addCampaignRow(c) {
-    campaignRows.insertAdjacentHTML('beforeend', campaignRowHTML(c));
+  function addCampaignRow(c2) {
+    campaignRows.insertAdjacentHTML('beforeend', campaignRowHTML(c2));
     const row = campaignRows.lastElementChild;
     row.querySelector('.row-del').addEventListener('click', () => row.remove());
   }
@@ -387,11 +440,9 @@
     let ctr = num('t_ctr');
     let cpc = num('t_cpc');
 
-    // Auto-calc CTR / CPC if left blank
     if (ctr === null && impressions) ctr = +( (clicks || 0) / impressions * 100 ).toFixed(2);
     if (cpc === null && clicks) cpc = +( (cost || 0) / clicks ).toFixed(2);
 
-    // If everything empty, treat as "no manual data"
     if (impressions === null && clicks === null && conversions === null && cost === null) return null;
 
     return {
@@ -413,7 +464,6 @@
       const clicks = row.querySelector('.c-clicks').value.trim();
       const conv = row.querySelector('.c-conv').value.trim();
       const cost = row.querySelector('.c-cost').value.trim();
-      // Skip fully-empty rows
       if (!name && !impr && !clicks && !conv && !cost) return;
       const impressions = impr === '' ? 0 : Number(impr);
       const clickN = clicks === '' ? 0 : Number(clicks);
@@ -434,8 +484,6 @@
     return out;
   }
 
-  // Build the same shape as a live data.json ({ totals, campaigns }) from manual entry.
-  // Returns null if the admin entered no metrics at all (so we fall back to live data.json).
   function readManualData() {
     const totals = readTotals();
     const campaigns = readCampaigns();
@@ -462,7 +510,6 @@
     if ((md.campaigns || []).length === 0) addCampaignRow({});
   }
 
-  // ---------- Flash ----------
   function showFlash(elId, msg) {
     const flash = document.getElementById(elId);
     flash.textContent = msg || 'Saved';
@@ -471,10 +518,295 @@
     flash._t = setTimeout(() => flash.classList.remove('on'), 1400);
   }
 
-  // ---------- Live data.json fallback ----------
-  const MONTH_DATA_FOLDERS = {
-    '2026-06': 'june-2026',
-  };
+  // ---------------------------------------------------------------------
+  // "Connecting as" — any team member's Meta/Google connection works for
+  // any client, so this is one shared picker (not a fixed per-client
+  // member) remembered across the whole site via localStorage, not just
+  // this one report.
+  // ---------------------------------------------------------------------
+  const TEAM_MEMBERS = ["Daniela","Imogen","Louise","Herbie"];
+  const TEAM_MEMBER_KEY = 'tweak_connect_member';
+  function slugify(name) { return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
+  let currentMember = localStorage.getItem(TEAM_MEMBER_KEY) || slugify('louise');
+  const teamMemberSelect = document.getElementById('team-member-select');
+  if (teamMemberSelect) {
+    teamMemberSelect.innerHTML = TEAM_MEMBERS.map((name) => {
+      const slug = slugify(name);
+      return `<option value="${slug}"${slug === currentMember ? ' selected' : ''}>${name}</option>`;
+    }).join('');
+    // The saved slug might belong to someone no longer in TEAM_MEMBERS, or
+    // no one's chosen yet on this browser — fall back to the first option.
+    if (!TEAM_MEMBERS.some((name) => slugify(name) === currentMember)) {
+      currentMember = slugify(TEAM_MEMBERS[0] || '');
+      teamMemberSelect.value = currentMember;
+    }
+    teamMemberSelect.addEventListener('change', () => {
+      currentMember = teamMemberSelect.value;
+      localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
+      refreshMetaStatus();
+      refreshGoogleStatus();
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Meta Ads pull — see /meta-ads-worker/. Fills the same totals/campaign
+  // fields above that manual entry uses, via loadManualData(), so nothing
+  // downstream (readManualData, generateSummary, the AI assistant call)
+  // needs to know or care whether the numbers came from a click or from
+  // typing. The account manager can still edit anything after pulling.
+  // ---------------------------------------------------------------------
+  const META_WORKER_URL = 'https://tweak-meta-ads.herbielakeai.workers.dev';
+  const META_ACCOUNT_KEY = 'ogp_reports_v1_meta_account';
+
+  const metaBadge = document.getElementById('meta-badge');
+  const metaStatusText = document.getElementById('meta-status-text');
+  const metaConnectRow = document.getElementById('meta-connect-row');
+  const metaConnectLink = document.getElementById('meta-connect-link');
+  const metaPullRow = document.getElementById('meta-pull-row');
+  const metaAccountSel = document.getElementById('meta-account');
+  const metaPullBtn = document.getElementById('meta-pull');
+  const metaPullError = document.getElementById('meta-pull-error');
+
+  function showMetaError(msg) {
+    metaPullError.textContent = msg || '';
+    metaPullError.style.display = msg ? 'block' : 'none';
+  }
+
+  function showMetaConnectRow() {
+    metaConnectLink.href = `${META_WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+    metaConnectRow.style.display = 'block';
+    metaPullRow.style.display = 'none';
+  }
+
+  async function loadMetaAccounts() {
+    try {
+      const res = await fetch(`${META_WORKER_URL}/accounts?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) { showMetaConnectRow(); return; }
+        throw new Error(data.error || 'Could not load ad accounts');
+      }
+      const accounts = data.accounts || [];
+      if (accounts.length === 0) {
+        metaAccountSel.innerHTML = '<option value="">No ad accounts found on this login</option>';
+        return;
+      }
+      const saved = localStorage.getItem(META_ACCOUNT_KEY);
+      metaAccountSel.innerHTML = accounts.map((a) =>
+        `<option value="${a.id}">${(a.name || a.id).replace(/</g, '&lt;')}${a.businessName ? ' — ' + a.businessName.replace(/</g, '&lt;') : ''}</option>`
+      ).join('');
+      if (saved && accounts.some((a) => a.id === saved)) metaAccountSel.value = saved;
+    } catch (err) {
+      showMetaError(String(err.message || err));
+    }
+  }
+
+  async function refreshMetaStatus() {
+    showMetaError('');
+    if (!META_WORKER_URL || !currentMember) {
+      metaBadge.textContent = 'Not set up';
+      metaStatusText.textContent = 'Meta Ads pull has no account manager configured for this client yet.';
+      metaConnectRow.style.display = 'none';
+      metaPullRow.style.display = 'none';
+      return;
+    }
+    metaStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(`${META_WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (data.connected) {
+        metaBadge.textContent = 'Connected';
+        metaStatusText.textContent = `Connected as ${data.name || currentMember}. Pick the ad account for this client, then pull.`;
+        metaConnectRow.style.display = 'none';
+        metaPullRow.style.display = 'flex';
+        await loadMetaAccounts();
+      } else if (data.expired) {
+        metaBadge.textContent = 'Reconnect needed';
+        metaStatusText.textContent = 'This connection expired (Meta connections last ~60 days) — reconnect to keep pulling live data.';
+        showMetaConnectRow();
+      } else {
+        metaBadge.textContent = 'Not connected';
+        metaStatusText.textContent = `${currentMember} hasn't connected a Meta account yet.`;
+        showMetaConnectRow();
+      }
+    } catch (err) {
+      metaBadge.textContent = 'Unavailable';
+      metaStatusText.textContent = 'Could not reach the Meta Ads Worker right now — you can still enter figures manually below.';
+    }
+  }
+
+  function monthToDateRange(month) {
+    const [y, m] = month.split('-').map(Number);
+    const since = `${y}-${String(m).padStart(2, '0')}-01`;
+    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const until = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    return { since, until };
+  }
+
+  metaAccountSel?.addEventListener('change', () => {
+    localStorage.setItem(META_ACCOUNT_KEY, metaAccountSel.value);
+  });
+
+  document.getElementById('meta-refresh')?.addEventListener('click', refreshMetaStatus);
+
+  metaPullBtn?.addEventListener('click', async () => {
+    const month = monthEl.value;
+    const account = metaAccountSel.value;
+    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!account) { showMetaError('Pick an ad account first.'); return; }
+    showMetaError('');
+    const original = metaPullBtn.textContent;
+    metaPullBtn.disabled = true;
+    metaPullBtn.textContent = 'Pulling…';
+    try {
+      const { since, until } = monthToDateRange(month);
+      const url = `${META_WORKER_URL}/insights?member=${encodeURIComponent(currentMember)}&account=${encodeURIComponent(account)}&start=${since}&end=${until}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) showMetaConnectRow();
+        throw new Error(data.error || `Worker responded ${res.status}`);
+      }
+      loadManualData({ meta: data.meta, totals: data.totals, campaigns: data.campaigns });
+      showFlash('meta-pull-flash', 'Pulled');
+    } catch (err) {
+      showMetaError(`Couldn't pull Meta data: ${String(err.message || err)}`);
+    } finally {
+      metaPullBtn.disabled = false;
+      metaPullBtn.textContent = original;
+    }
+  });
+
+  // ---------------------------------------------------------------------
+  // Google connect — see /google-oauth-worker/. Connect-only for now: the
+  // app is still going through Google's verification, and there are no
+  // data-pull routes on that Worker yet (unlike Meta above). This just
+  // gets the account connected and stored ahead of time, so nothing else
+  // needs to change here once the data-pull routes exist.
+  // ---------------------------------------------------------------------
+  const GOOGLE_WORKER_URL = 'https://tweak-google-oauth.herbielakeai.workers.dev';
+
+  const googleBadge = document.getElementById('google-badge');
+  const googleStatusText = document.getElementById('google-status-text');
+  const googleConnectRow = document.getElementById('google-connect-row');
+  const googleConnectLink = document.getElementById('google-connect-link');
+  const googlePreviewRow = document.getElementById('google-preview-row');
+  const googlePreviewBtn = document.getElementById('google-preview');
+  const googlePreviewFlash = document.getElementById('google-preview-flash');
+  const googlePreviewError = document.getElementById('google-preview-error');
+  const googlePreviewResults = document.getElementById('google-preview-results');
+  const googlePreviewAnalyticsList = document.getElementById('google-preview-analytics');
+  const googlePreviewSearchConsoleList = document.getElementById('google-preview-searchconsole');
+  const googlePreviewAdsList = document.getElementById('google-preview-ads');
+
+  function showGooglePreviewError(msg) {
+    googlePreviewError.textContent = msg;
+    googlePreviewError.style.display = 'block';
+  }
+
+  async function refreshGoogleStatus() {
+    if (!GOOGLE_WORKER_URL || !currentMember) {
+      googleBadge.textContent = 'Not set up';
+      googleStatusText.textContent = 'Google connect has no account manager configured for this client yet.';
+      googleConnectRow.style.display = 'none';
+      googlePreviewRow.style.display = 'none';
+      return;
+    }
+    googleConnectLink.href = `${GOOGLE_WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+    googleStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(`${GOOGLE_WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (data.connected) {
+        googleBadge.textContent = 'Connected';
+        googleStatusText.textContent = `Connected as ${data.email || currentMember}.`;
+        googlePreviewRow.style.display = 'block';
+      } else {
+        googleBadge.textContent = 'Not connected';
+        googleStatusText.textContent = `${currentMember} hasn't connected a Google account yet.`;
+        googlePreviewRow.style.display = 'none';
+      }
+      googleConnectRow.style.display = 'block';
+    } catch (err) {
+      googleBadge.textContent = 'Unavailable';
+      googleStatusText.textContent = 'Could not check the connection status right now, but you can still connect below.';
+      googleConnectRow.style.display = 'block';
+      googlePreviewRow.style.display = 'none';
+    }
+  }
+
+  document.getElementById('google-refresh')?.addEventListener('click', refreshGoogleStatus);
+
+  googlePreviewBtn?.addEventListener('click', async () => {
+    googlePreviewError.style.display = 'none';
+    googlePreviewResults.style.display = 'none';
+    googlePreviewBtn.disabled = true;
+    googlePreviewBtn.textContent = 'Pulling…';
+    try {
+      const res = await fetch(`${GOOGLE_WORKER_URL}/preview?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        showGooglePreviewError(data.error || `Preview failed (${res.status})`);
+        return;
+      }
+
+      googlePreviewAnalyticsList.innerHTML = '';
+      if (data.analytics && data.analytics.ok) {
+        if (!data.analytics.accounts.length) {
+          googlePreviewAnalyticsList.innerHTML = '<li>No Analytics accounts visible to this Google account.</li>';
+        } else {
+          for (const acc of data.analytics.accounts) {
+            const li = document.createElement('li');
+            li.textContent = `${acc.account} — ${acc.properties.join(', ') || 'no properties'}`;
+            googlePreviewAnalyticsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAnalyticsList.innerHTML = `<li>Couldn't read Analytics: ${(data.analytics && data.analytics.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewSearchConsoleList.innerHTML = '';
+      if (data.searchConsole && data.searchConsole.ok) {
+        if (!data.searchConsole.sites.length) {
+          googlePreviewSearchConsoleList.innerHTML = '<li>No Search Console sites visible to this Google account.</li>';
+        } else {
+          for (const site of data.searchConsole.sites) {
+            const li = document.createElement('li');
+            li.textContent = `${site.url} (${site.permission})`;
+            googlePreviewSearchConsoleList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewSearchConsoleList.innerHTML = `<li>Couldn't read Search Console: ${(data.searchConsole && data.searchConsole.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewAdsList.innerHTML = '';
+      if (data.ads && data.ads.ok) {
+        if (!data.ads.customerIds.length) {
+          googlePreviewAdsList.innerHTML = '<li>No Google Ads accounts visible to this Google account.</li>';
+        } else {
+          for (const id of data.ads.customerIds) {
+            const li = document.createElement('li');
+            li.textContent = `Customer ID ${id}`;
+            googlePreviewAdsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAdsList.innerHTML = `<li>Couldn't read Google Ads: ${(data.ads && data.ads.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewResults.style.display = 'block';
+      googlePreviewFlash.classList.add('show');
+      setTimeout(() => googlePreviewFlash.classList.remove('show'), 1500);
+    } catch (err) {
+      showGooglePreviewError(String(err.message || err));
+    } finally {
+      googlePreviewBtn.disabled = false;
+      googlePreviewBtn.textContent = 'Preview connected Google data';
+    }
+  });
+
+  const MONTH_DATA_FOLDERS = {};
 
   async function fetchAdsData(month) {
     const folder = MONTH_DATA_FOLDERS[month];
@@ -490,16 +822,14 @@
     return { data: null, source: null, matched: false };
   }
 
-  // ---------- Assemble report ----------
   function buildBase(status) {
     const month = monthEl.value;
     if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
     const answers = readAnswers();
-    const id = month; // "YYYY-MM" acts as a stable id
+    const id = month;
     const existing = window.OGPReports.get(id);
     return {
-      id,
-      month,
+      id, month,
       title: window.OGPReports.monthLabel(month),
       author: authorEl.value.trim(),
       answers,
@@ -508,27 +838,89 @@
     };
   }
 
-  // Resolve which data feeds the summary: manual entry wins; else live data.json.
   async function resolveData(report) {
     const manual = readManualData();
     if (manual) {
       report.manualData = manual;
       return { data: manual, source: 'manual', matched: true };
     }
-    // No manual data — clear any stale manual data and try live.
     delete report.manualData;
     const ads = await fetchAdsData(report.month);
     return ads;
   }
 
-  async function saveReport(status, redirectToView) {
+  async function callAIAssistant(fields) {
+    if (!AI_WORKER_URL || AI_WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      throw new Error('AI Worker not deployed yet');
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const res = await fetch(AI_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client: { name: 'OffGrid Pro', sector: 'Energy · Battery Storage' }, ...fields }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Worker responded ${res.status}`);
+      }
+      return await res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function saveReport(status, redirectToView, useAI) {
     const report = buildBase(status);
     if (!report) return;
     const res = await resolveData(report);
-    report.summary = window.OGPReports.generateSummary(report.answers, res.data);
+    const baseline = window.OGPReports.generateSummary(report.answers, res.data);
+    report.summary = baseline;
     report.summary.dataStatus = res.matched
       ? { available: true, source: res.source }
       : { available: false, source: null, month: report.month };
+
+    if (useAI) {
+      const aiStatus = document.getElementById('ai-status');
+      const genBtn = document.getElementById('generate');
+      const originalLabel = genBtn.textContent;
+      aiStatus.style.display = 'block';
+      aiStatus.textContent = 'Polishing with AI — this can take a few seconds…';
+      genBtn.disabled = true;
+      genBtn.textContent = 'Generating…';
+      try {
+        const ai = await callAIAssistant({
+          answers: report.answers,
+          metrics: baseline.metrics,
+          topCampaign: baseline.topCampaign,
+          campaigns: (res.data && res.data.campaigns) || [],
+          priorities: baseline.priorities,
+        });
+        Object.assign(report.summary, {
+          headline: ai.headline || baseline.headline,
+          overperformer: ai.overperformer || baseline.overperformer,
+          feedback: ai.feedback || baseline.feedback,
+          focus: ai.focus || baseline.focus,
+          rationale: ai.rationale || baseline.rationale,
+          challenges: ai.challenges || baseline.challenges,
+          budget: ai.budget || baseline.budget,
+          extras: ai.extras || baseline.extras,
+          insights: Array.isArray(ai.insights) ? ai.insights : [],
+          aiEnhanced: true,
+        });
+      } catch (err) {
+        report.summary.aiEnhanced = false;
+        report.summary.insights = [];
+        aiStatus.textContent = 'AI polish unavailable this time — used your answers as written.';
+        console.warn('AI assist failed, falling back to plain summary:', err);
+      } finally {
+        genBtn.disabled = false;
+        genBtn.textContent = originalLabel;
+      }
+    }
+
     window.OGPReports.upsert(report);
     if (redirectToView) {
       location.href = `./view.html?id=${encodeURIComponent(report.id)}`;
@@ -536,7 +928,6 @@
     return report;
   }
 
-  // ---------- Load existing / defaults ----------
   function loadExisting() {
     if (!editingId) {
       monthEl.value = defaultMonth();
@@ -561,7 +952,6 @@
     }
   }
 
-  // ---------- Wire up ----------
   document.getElementById('to-step-2').addEventListener('click', () => setStep(2));
   document.getElementById('back-step-1').addEventListener('click', () => setStep(1));
   document.getElementById('add-campaign').addEventListener('click', () => addCampaignRow({}));
@@ -574,11 +964,13 @@
     const r = await saveReport('draft', false);
     if (r) showFlash('save-flash-2', 'Draft saved');
   });
-  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true));
+  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true, true));
 
   document.getElementById('logout-btn').addEventListener('click', () => window.OGPAuth.logout('../'));
 
   loadExisting();
+  refreshMetaStatus();
+  refreshGoogleStatus();
   setStep(1);
 })();
 </script>
