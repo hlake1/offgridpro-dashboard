@@ -104,15 +104,20 @@ e.g. if an API isn't enabled yet on the Cloud project, or (for `ads`)
 the member's connection expired (the 7-day Testing-mode limit, most likely)
 and they need to click "Connect" again.
 
-**Google Ads needs one more secret** — a developer token from
-`ads.google.com/aw/apicenter` (Google Ads' own approval, separate from
-OAuth verification; see the main project notes on the new, faster
-Cloud-Console-based Basic Access process). Once you have one:
-```bash
-npx wrangler secret put GOOGLE_ADS_DEVELOPER_TOKEN
-```
-Until that's set, the `ads` field in `/preview` just reports it's missing
-— Analytics and Search Console work independently of it.
+**Google Ads needs the project's access level raised, not a developer
+token.** Google sunset developer tokens on September 9, 2026 — a new
+project like this one doesn't need one at all. Access is controlled from
+Cloud Console: APIs & Services > Google Ads API > Access levels ("Manage").
+New projects start on "Test" (test accounts only, 15,000 ops/day); apply
+there for "Explorer" (real accounts, 2,880 ops/day — plenty for monthly
+report pulls) — Google's docs say this is now reviewed automatically,
+often within minutes. Once Explorer is granted, `/preview`'s `ads` field
+should just start working with the OAuth token alone, no extra secret.
+
+`GOOGLE_ADS_DEVELOPER_TOKEN` is still supported as an optional escape
+hatch (sent as the `developer-token` header if set) in case Google ever
+asks for one on this project, but leave it unset unless you hit an error
+that specifically says one is required.
 
 ## Redeploying after a change
 

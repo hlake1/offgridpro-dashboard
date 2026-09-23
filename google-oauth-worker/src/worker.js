@@ -232,15 +232,18 @@ async function fetchAnalyticsAccounts(accessToken) {
   return accounts;
 }
 
+// As of September 2026 Google Ads API access is tied to the Google Cloud
+// project behind the OAuth client (see the project's "Access levels" page
+// under APIs & Services > Google Ads API in Cloud Console), not to a
+// separately-issued developer token. New projects don't need one at all.
+// GOOGLE_ADS_DEVELOPER_TOKEN stays optional here purely as an escape hatch
+// in case Google ever asks for one again for this project — if it's unset
+// the header is simply left off and the OAuth token does the talking.
 async function fetchGoogleAdsAccounts(accessToken, developerToken) {
-  if (!developerToken) {
-    throw new Error('Google Ads developer token not configured on this Worker yet (set GOOGLE_ADS_DEVELOPER_TOKEN)');
-  }
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  if (developerToken) headers['developer-token'] = developerToken;
   const res = await fetch('https://googleads.googleapis.com/v19/customers:listAccessibleCustomers', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'developer-token': developerToken,
-    },
+    headers,
   });
   const data = await res.json();
   if (!res.ok) {
