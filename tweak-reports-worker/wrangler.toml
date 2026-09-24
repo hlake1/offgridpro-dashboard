@@ -1,0 +1,22 @@
+name = "tweak-reports"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+# Non-secret config.
+[vars]
+SUPABASE_URL = "https://tbukoyemtlhainumypmd.supabase.co"
+ALLOWED_ORIGIN = "https://tweakreporting.com"
+
+# SUPABASE_SERVICE_KEY is NOT set here — it's a secret, set via:
+#   npx wrangler secret put SUPABASE_SERVICE_KEY
+# (paste the "secret key" / "service_role key" value from
+#  Supabase → Project Settings → API Keys when prompted)
+# See README.md for the full deploy walkthrough.
+
+# Session tokens: { userId, username, role, clientId }, 30-day TTL.
+# Create the namespace first with:
+#   npx wrangler kv namespace create SESSIONS
+# then paste the "id" it prints into the line below.
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "c3913cd8e78e4aed9a931229a281a86f"

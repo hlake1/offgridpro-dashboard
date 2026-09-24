@@ -132,12 +132,14 @@
     </div>
     <div class="accent-bar" style="max-width: 180px;"></div>
     <h2>Sign in</h2>
-    <p class="sub">Enter your access code to view your reports.</p>
-    <label for="pw">Access code</label>
-    <input id="pw" type="password" autofocus autocomplete="off" spellcheck="false" />
+    <p class="sub">Enter your username and password to view your reports.</p>
+    <label for="user">Username</label>
+    <input id="user" type="text" autofocus autocomplete="username" spellcheck="false" />
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" spellcheck="false" />
     <div class="row">
       <div class="err" id="err"></div>
-      <button type="submit">Unlock →</button>
+      <button type="submit">Sign in →</button>
     </div>
     <div class="foot">Tweak Marketing · Client Reporting Portal</div>
   </form>
@@ -147,147 +149,98 @@
   /*
    * Tweak Reporting — Access Router
    *
-   * Four code types:
-   *  - client:  goes straight to that client's dashboard
-   *  - team:    goes to /team/ overview with their assigned clients
-   *  - admin:   goes to /team/ overview showing ALL clients
-   *  - manager: goes to /manager/ — team-member browser (pick a team member to view)
+   * Real username/password login against the Tweak Reports Worker
+   * (Cloudflare Worker backed by Supabase). On success, the worker
+   * returns a session token plus the account's role:
+   *  - 'admin'  → Tweak team member, lands on the team overview
+   *               (sees every client)
+   *  - 'client' → lands on that client's own dashboard folder
    *
-   * NOTE: Client-side friction gate only — not real security.
+   * If the account still needs to add an email or change its
+   * temporary password, the router sends them to account-setup.html
+   * first (required before continuing) and then on to their
+   * destination.
    */
 
+  const WORKER_URL = 'https://tweak-reports.herbielakeai.workers.dev';
+
   // Client dashboards — one entry per client that has a dashboard folder.
+  // Keyed by the client's slug, exactly as stored in Supabase.
   const CLIENTS = {
-    'offgridpro': {
-      path: './offgridpro/',
-      name: 'OffGrid Pro',
-      sector: 'Battery Storage & Microgrids',
-      location: 'Southampton, UK',
-      accountManager: 'Louise',
-      latestReport: 'June 2026',
-      status: 'Active',
-    },
-    'gfs': {
-      path: './gfs/',
-      name: 'GFS',
-      sector: 'Logistics · eCommerce Shipping',
-      location: 'UK',
-      accountManager: 'Imogen',
-      latestReport: 'June 2026',
-      status: 'Active',
-    },
-    'scl': {
-      path: './scl/',
-      name: 'SCL',
-      sector: 'Security · Technology',
-      location: 'UK',
-      accountManager: 'Daniela',
-      latestReport: 'June 2026',
-      status: 'Active',
-    },
-    'autowatch': {
-      path: './autowatch/',
-      name: 'Autowatch',
-      sector: 'Automotive · Security',
-      location: 'UK',
-      accountManager: 'Louise',
-      latestReport: 'June 2026',
-      status: 'Active',
-    },
-    'autoid': {
-      path: './autoid/',
-      name: 'AUTOID',
-      sector: 'Technology · AIDC',
-      location: 'UK',
-      accountManager: 'Louise',
-      latestReport: 'June 2026',
-      status: 'Active',
-    },
-    // Add more clients here as they come online:
-    // 'clientslug': { path: './clientfolder/', name: 'Client Name', sector: '...', location: '...', accountManager: '...', latestReport: '...', status: 'Active' },
-  };
-
-  // Access codes — client, team, or admin.
-  const CODES = {
-    // Client codes: land on that client's dashboard
-    'OffGrid':   { type: 'client', clientId: 'offgridpro' },
-    'GFS':       { type: 'client', clientId: 'gfs' },
-    'Scl':       { type: 'client', clientId: 'scl' },
-    'Autowatch': { type: 'client', clientId: 'autowatch' },
-    'Autoid':    { type: 'client', clientId: 'autoid' },
-
-    // Tweak team member codes: land on team overview with their assigned clients
-    'Daniela':  { type: 'team', name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl'] },
-    'Imogen':   { type: 'team', name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
-    'Georgia':  { type: 'team', name: 'Georgia',  role: 'Team Member',     clients: [] },
-    'Bethanie': { type: 'team', name: 'Bethanie', role: 'Team Member',     clients: [] },
-
-    // Tweak admin code: sees all clients + admin panel inside dashboards
-    'Tweak':    { type: 'admin', name: 'Tweak Admin' },
-
-    // Manager codes: browse the whole team, pick a team member to view their portfolio + drafts
-    'Benedict': { type: 'manager', name: 'Benedict', role: 'Manager' },
-    'Louise':   { type: 'manager', name: 'Louise',   role: 'Manager' },
-    'Rob':      { type: 'manager', name: 'Rob',      role: 'Manager' },
+    'offgridpro': { path: './offgridpro/' },
+    'gfs':        { path: './gfs/' },
+    'scl':        { path: './scl/' },
+    'autowatch':  { path: './autowatch/' },
+    'autoid':     { path: './autoid/' },
   };
 
   const form = document.getElementById('access-form');
-  const input = document.getElementById('pw');
+  const userInput = document.getElementById('user');
+  const pwInput = document.getElementById('pw');
   const err = document.getElementById('err');
+  const submitBtn = form.querySelector('button[type="submit"]');
 
-  form.addEventListener('submit', (e) => {
+  function destinationFor(user) {
+    if (user.role === 'admin') return './team/';
+    if (user.role === 'client' && user.clientSlug && CLIENTS[user.clientSlug]) {
+      return CLIENTS[user.clientSlug].path;
+    }
+    return './';
+  }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const val = input.value.trim();
-    const code = CODES[val];
-    if (!code) {
-      err.textContent = 'Incorrect code. Try again.';
-      input.select();
+    const username = userInput.value.trim();
+    const password = pwInput.value;
+    if (!username || !password) {
+      err.textContent = 'Enter your username and password.';
       return;
     }
     err.textContent = '';
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = 'Signing in…';
 
-    // Persist which code was used so downstream pages can render context.
     try {
-      sessionStorage.setItem('tw_session', JSON.stringify({
-        code: val,
-        type: code.type,
-        name: code.name || null,
-        role: code.role || null,
-        clients: code.clients || null,
+      const res = await fetch(WORKER_URL + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      let body = {};
+      try { body = await res.json(); } catch { /* ignore */ }
+
+      if (!res.ok) {
+        err.textContent = body.error || 'Incorrect username or password.';
+        pwInput.value = '';
+        pwInput.focus();
+        return;
+      }
+
+      const session = {
+        token: body.token,
+        type: body.user.role === 'admin' ? 'admin' : 'client',
+        role: body.user.role,
+        username: body.user.username,
+        name: body.user.displayName,
+        clientSlug: body.user.clientSlug || null,
+        needsEmail: !!body.user.needsEmail,
+        needsPasswordChange: !!body.user.needsPasswordChange,
         ts: Date.now(),
-      }));
-    } catch { /* ignore */ }
+      };
+      try { sessionStorage.setItem('tw_session', JSON.stringify(session)); } catch { /* ignore */ }
 
-    // Helper: pre-authorise every client dashboard so we never re-prompt.
-    // Each client has its own storage key; add here when onboarding new clients.
-    function preAuthAllClients(role) {
-      const payload = JSON.stringify({ role, ts: Date.now() });
-      try {
-        sessionStorage.setItem('ogp_dashboard_auth', payload); // OffGrid Pro
-        sessionStorage.setItem('gfs_dashboard_auth', payload); // GFS
-        sessionStorage.setItem('scl_dashboard_auth', payload); // SCL
-        sessionStorage.setItem('autowatch_dashboard_auth', payload); // Autowatch
-        sessionStorage.setItem('autoid_dashboard_auth', payload); // AUTOID
-      } catch {}
-    }
-
-    if (code.type === 'client') {
-      const client = CLIENTS[code.clientId];
-      if (!client) { err.textContent = 'Client not configured.'; return; }
-      preAuthAllClients('client');
-      window.location.href = client.path;
-    } else if (code.type === 'team') {
-      // Team member: go to team overview
-      window.location.href = './team/';
-    } else if (code.type === 'admin') {
-      // Admin: go to team overview (shows all clients) and pre-auth admin on dashboards
-      preAuthAllClients('admin');
-      window.location.href = './team/';
-    } else if (code.type === 'manager') {
-      // Manager: go to manager team-browser view. Pre-auth downstream dashboards as admin
-      // so they can drill into any client without being re-prompted.
-      preAuthAllClients('admin');
-      window.location.href = './manager/';
+      const dest = destinationFor(body.user);
+      if (session.needsEmail || session.needsPasswordChange) {
+        window.location.href = './account-setup.html?next=' + encodeURIComponent(dest);
+      } else {
+        window.location.href = dest;
+      }
+    } catch (fetchErr) {
+      err.textContent = 'Could not reach the server. Check your connection and try again.';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
     }
   });
 </script>

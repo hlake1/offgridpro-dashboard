@@ -15,3 +15,5 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+tweak-reports-worker/.wrangler/
+.wrangler/

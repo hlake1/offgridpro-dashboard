@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tweak Reporting — Account Setup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: 'Montserrat', -apple-system, Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  body::before, body::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.25;
+    pointer-events: none;
+  }
+  body::before { width: 500px; height: 500px; background: var(--tw-accent-2); top: -100px; left: -100px; }
+  body::after { width: 600px; height: 600px; background: var(--tw-accent-1); bottom: -150px; right: -150px; }
+  .container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 460px; }
+  .tagline {
+    text-align: center; color: rgba(255,255,255,0.75);
+    font-size: 0.78rem; letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 1.5rem; position: relative; z-index: 1;
+  }
+  .card {
+    width: 100%;
+    background: #ffffff; color: var(--tw-text);
+    border-radius: 6px; padding: 2.75rem 2.25rem 2.25rem;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    position: relative; z-index: 1;
+    margin-bottom: 1.25rem;
+  }
+  .brand-row { display: flex; align-items: baseline; gap: 0.4rem; }
+  .brand { font-weight: 800; letter-spacing: -0.01em; font-size: 1.35rem; }
+  .accent-bar {
+    height: 4px; margin-top: 8px; max-width: 180px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+  h2 { margin: 1.5rem 0 0.5rem; font-weight: 500; font-size: 1.5rem; color: var(--tw-text); letter-spacing: -0.01em; }
+  p.sub { color: var(--tw-muted); font-size: 0.9rem; line-height: 1.55; margin: 0; }
+  label {
+    display: block; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.15em; color: var(--tw-muted);
+    margin: 1.5rem 0 0.5rem; font-weight: 600;
+  }
+  input[type="password"], input[type="text"], input[type="email"] {
+    width: 100%; padding: 0.8rem 1rem; font-size: 1rem;
+    border: 1px solid #e5e7eb; border-radius: 4px; background: #f8faf5;
+    font-family: inherit; outline: none;
+    transition: border 0.15s ease, background 0.15s ease;
+  }
+  input:focus { border-color: var(--tw-accent-2); background: #fff; }
+  .row { margin-top: 1.1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .err { color: #dc2626; font-size: 0.85rem; min-height: 1.2em; flex: 1; }
+  .ok { color: #15803d; font-size: 0.85rem; min-height: 1.2em; flex: 1; }
+  button {
+    background: var(--tw-dark); color: #fff; border: 0; cursor: pointer;
+    padding: 0.7rem 1.5rem; font-weight: 500; letter-spacing: 0.02em;
+    font-family: inherit; border-radius: 2px;
+    transition: background 0.15s ease, transform 0.1s ease;
+    font-size: 0.92rem;
+  }
+  button:hover { background: #333; }
+  button:disabled { opacity: 0.6; cursor: default; }
+  button.link {
+    background: none; color: var(--tw-accent-2); padding: 0; text-decoration: underline;
+    font-size: 0.85rem;
+  }
+  button.link:hover { background: none; color: var(--tw-accent-3); }
+  .step-note { font-size: 0.78rem; color: var(--tw-muted); margin-top: 1rem; }
+  .done-note { color: #15803d; font-size: 0.85rem; margin-top: 0.5rem; }
+  .settings-ok { display:flex; align-items:center; gap:0.5rem; margin-top: 0.4rem; }
+  .settings-ok .tick { color:#15803d; font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <p class="tagline">Tweak Marketing</p>
+  <div id="app"></div>
+</div>
+
+<script>
+  const WORKER_URL = 'https://tweak-reports.herbielakeai.workers.dev';
+
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+  function setSession(s) {
+    try { sessionStorage.setItem('tw_session', JSON.stringify(s)); } catch { /* ignore */ }
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const nextUrl = params.get('next') || './login.html';
+
+  let session = getSession();
+  if (!session || !session.token) {
+    window.location.replace('./login.html');
+  }
+
+  const app = document.getElementById('app');
+  const forced = !!(session.needsEmail || session.needsPasswordChange);
+
+  function cardShell(heading, sub) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="brand-row">
+        <span class="brand">TWEAK</span>
+        <span class="brand" style="font-weight:400;">REPORTING</span>
+      </div>
+      <div class="accent-bar"></div>
+      <h2>${heading}</h2>
+      <p class="sub">${sub}</p>
+    `;
+    return card;
+  }
+
+  async function apiPost(path, payload) {
+    const res = await fetch(WORKER_URL + path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.token,
+      },
+      body: JSON.stringify(payload),
+    });
+    let body = {};
+    try { body = await res.json(); } catch { /* ignore */ }
+    if (!res.ok) throw new Error(body.error || 'Something went wrong. Please try again.');
+    return body;
+  }
+
+  function finishAndGo() {
+    window.location.href = nextUrl;
+  }
+
+  function renderEmailStep() {
+    app.innerHTML = '';
+    const card = cardShell('Add your email', 'Add an email address to your account. You can use it later if you ever need to recover access.');
+    const form = document.createElement('form');
+    form.setAttribute('autocomplete', 'off');
+    form.innerHTML = `
+      <label for="email">Email address</label>
+      <input id="email" type="email" autofocus autocomplete="email" />
+      <label for="email2">Confirm email address</label>
+      <input id="email2" type="email" autocomplete="email" />
+      <div class="row">
+        <div class="err" id="err"></div>
+        <button type="submit">Continue &rarr;</button>
+      </div>
+    `;
+    card.appendChild(form);
+    app.appendChild(card);
+
+    const err = form.querySelector('#err');
+    const btn = form.querySelector('button');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = form.querySelector('#email').value.trim();
+      const email2 = form.querySelector('#email2').value.trim();
+      if (!email || !email2) { err.textContent = 'Enter your email twice to confirm it.'; return; }
+      if (email.toLowerCase() !== email2.toLowerCase()) { err.textContent = 'Those emails don’t match.'; return; }
+      err.textContent = '';
+      btn.disabled = true;
+      try {
+        await apiPost('/account/email', { email });
+        session.needsEmail = false;
+        setSession(session);
+        if (session.needsPasswordChange) renderPasswordStep();
+        else finishAndGo();
+      } catch (ex) {
+        err.textContent = ex.message;
+        btn.disabled = false;
+      }
+    });
+  }
+
+  function renderPasswordStep() {
+    app.innerHTML = '';
+    const card = cardShell('Set a new password', 'You’re signed in with a temporary password. Choose a new one to continue — at least 6 characters.');
+    const form = document.createElement('form');
+    form.setAttribute('autocomplete', 'off');
+    form.innerHTML = `
+      <label for="pw1">New password</label>
+      <input id="pw1" type="password" autofocus autocomplete="new-password" />
+      <label for="pw2">Confirm new password</label>
+      <input id="pw2" type="password" autocomplete="new-password" />
+      <div class="row">
+        <div class="err" id="err"></div>
+        <button type="submit">Finish &rarr;</button>
+      </div>
+    `;
+    card.appendChild(form);
+    app.appendChild(card);
+
+    const err = form.querySelector('#err');
+    const btn = form.querySelector('button');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw1 = form.querySelector('#pw1').value;
+      const pw2 = form.querySelector('#pw2').value;
+      if (pw1.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
+      if (pw1 !== pw2) { err.textContent = 'Those passwords don’t match.'; return; }
+      err.textContent = '';
+      btn.disabled = true;
+      try {
+        await apiPost('/account/password', { newPassword: pw1 });
+        session.needsPasswordChange = false;
+        setSession(session);
+        finishAndGo();
+      } catch (ex) {
+        err.textContent = ex.message;
+        btn.disabled = false;
+      }
+    });
+  }
+
+  function renderSettings() {
+    app.innerHTML = '';
+
+    // Email card
+    const emailCard = cardShell('Email address', 'Add or update the email on your account.');
+    const emailForm = document.createElement('form');
+    emailForm.setAttribute('autocomplete', 'off');
+    emailForm.innerHTML = `
+      <label for="email">Email address</label>
+      <input id="email" type="email" autocomplete="email" />
+      <label for="email2">Confirm email address</label>
+      <input id="email2" type="email" autocomplete="email" />
+      <div class="row">
+        <div class="err" id="emailErr"></div>
+        <button type="submit">Save email</button>
+      </div>
+    `;
+    emailCard.appendChild(emailForm);
+    app.appendChild(emailCard);
+
+    const emailErr = emailForm.querySelector('#emailErr');
+    const emailBtn = emailForm.querySelector('button');
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailForm.querySelector('#email').value.trim();
+      const email2 = emailForm.querySelector('#email2').value.trim();
+      if (!email || !email2) { emailErr.textContent = 'Enter your email twice to confirm it.'; return; }
+      if (email.toLowerCase() !== email2.toLowerCase()) { emailErr.textContent = 'Those emails don’t match.'; return; }
+      emailErr.textContent = '';
+      emailBtn.disabled = true;
+      try {
+        await apiPost('/account/email', { email });
+        session.needsEmail = false;
+        setSession(session);
+        emailErr.className = 'ok';
+        emailErr.textContent = 'Email saved.';
+      } catch (ex) {
+        emailErr.textContent = ex.message;
+      } finally {
+        emailBtn.disabled = false;
+      }
+    });
+
+    // Password card
+    const pwCard = cardShell('Change password', 'Update your password at any time.');
+    const pwForm = document.createElement('form');
+    pwForm.setAttribute('autocomplete', 'off');
+    pwForm.innerHTML = `
+      <label for="pw1">New password</label>
+      <input id="pw1" type="password" autocomplete="new-password" />
+      <label for="pw2">Confirm new password</label>
+      <input id="pw2" type="password" autocomplete="new-password" />
+      <div class="row">
+        <div class="err" id="pwErr"></div>
+        <button type="submit">Save password</button>
+      </div>
+    `;
+    pwCard.appendChild(pwForm);
+    app.appendChild(pwCard);
+
+    const pwErr = pwForm.querySelector('#pwErr');
+    const pwBtn = pwForm.querySelector('button');
+    pwForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pw1 = pwForm.querySelector('#pw1').value;
+      const pw2 = pwForm.querySelector('#pw2').value;
+      if (pw1.length < 6) { pwErr.textContent = 'Password must be at least 6 characters.'; return; }
+      if (pw1 !== pw2) { pwErr.textContent = 'Those passwords don’t match.'; return; }
+      pwErr.textContent = '';
+      pwBtn.disabled = true;
+      try {
+        await apiPost('/account/password', { newPassword: pw1 });
+        session.needsPasswordChange = false;
+        setSession(session);
+        pwErr.className = 'ok';
+        pwErr.textContent = 'Password updated.';
+        pwForm.reset();
+      } catch (ex) {
+        pwErr.textContent = ex.message;
+      } finally {
+        pwBtn.disabled = false;
+      }
+    });
+
+    // Back link
+    const back = document.createElement('div');
+    back.style.textAlign = 'center';
+    back.innerHTML = `<button class="link" id="backBtn" type="button">&larr; Back to dashboard</button>`;
+    app.appendChild(back);
+    back.querySelector('#backBtn').addEventListener('click', finishAndGo);
+  }
+
+  if (session && session.token) {
+    if (session.needsEmail) renderEmailStep();
+    else if (session.needsPasswordChange) renderPasswordStep();
+    else renderSettings();
+  }
+</script>
+
+</body>
+</html>

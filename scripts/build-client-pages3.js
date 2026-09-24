@@ -14,6 +14,7 @@ function viewHTML(c) {
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="../assets/auth.js"></script>
 <script src="../assets/reports-store.js"></script>
+<script src="../../assets/glossary.js"></script>
 <script>window.${c.NS}Auth.ensureAuth();</script>
 <style>
   :root {
@@ -146,6 +147,32 @@ function viewHTML(c) {
     <h3 class="text-lg font-medium text-gray-900 mt-1">What the data shows</h3>
     <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
     <ul id="insights-list" class="text-sm text-gray-800 space-y-2 list-disc ml-5"></ul>
+  </section>
+
+  <section id="se-ranking-section" class="card p-6" style="display:none;">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-2">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">SEO</p>
+        <h3 class="text-lg font-medium text-gray-900 mt-1">Search engine rankings</h3>
+      </div>
+      <p id="se-ranking-updated" class="text-xs text-gray-500"></p>
+    </div>
+    <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 text-xs uppercase tracking-wide">
+            <th class="py-2 pr-4">Keyword</th>
+            <th class="py-2 pr-4">Position<button class="tw-glossary-btn" type="button" data-term="Position">?</button></th>
+            <th class="py-2 pr-4">Change</th>
+            <th class="py-2 pr-4">Search volume<button class="tw-glossary-btn" type="button" data-term="Search volume">?</button></th>
+            <th class="py-2">URL</th>
+          </tr>
+        </thead>
+        <tbody id="se-ranking-list"></tbody>
+      </table>
+    </div>
+    <p class="text-xs text-gray-500 mt-3">Added manually by the account manager — not pulled automatically.</p>
   </section>
 
   <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -301,6 +328,34 @@ function viewHTML(c) {
       insightsList.innerHTML = '';
     }
 
+    const seSection = document.getElementById('se-ranking-section');
+    const seList = document.getElementById('se-ranking-list');
+    const seUpdated = document.getElementById('se-ranking-updated');
+    const seRows = (report.seRankings && report.seRankings.rows) || [];
+    if (seRows.length) {
+      seSection.style.display = 'block';
+      seList.innerHTML = seRows.map(r => {
+        const change = (r.change || '').trim();
+        const changeColor = change.indexOf('+') === 0 ? '#059669' : (change.indexOf('-') === 0 ? '#dc2626' : '#6b7280');
+        return \`
+          <tr class="border-t border-gray-100">
+            <td class="py-2 pr-4 text-gray-900">\${esc(r.keyword)}</td>
+            <td class="py-2 pr-4">\${esc(r.position) || '\u2014'}</td>
+            <td class="py-2 pr-4" style="color:\${changeColor};">\${esc(change) || '\u2014'}</td>
+            <td class="py-2 pr-4">\${esc(r.volume) || '\u2014'}</td>
+            <td class="py-2 text-gray-500">\${esc(r.url) || '\u2014'}</td>
+          </tr>\`;
+      }).join('');
+      if (report.seRankings.updatedAt) {
+        seUpdated.textContent = \`Updated \${new Date(report.seRankings.updatedAt).toLocaleDateString('en-GB')}\`;
+      } else {
+        seUpdated.textContent = '';
+      }
+    } else {
+      seSection.style.display = 'none';
+      seList.innerHTML = '';
+    }
+
     const banner = document.getElementById('draft-banner');
     if (isAdmin && report.status === 'draft') banner.style.display = 'block';
 
@@ -314,23 +369,23 @@ function viewHTML(c) {
     if (m) {
       grid.innerHTML = \`
         <div class="stat-pill p-4">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Impressions</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Impressions<button class="tw-glossary-btn" type="button" data-term="Impressions">?</button></p>
           <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(m.impressions)}</p>
         </div>
         <div class="stat-pill p-4">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks<button class="tw-glossary-btn" type="button" data-term="Clicks">?</button></p>
           <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(m.clicks)}</p>
         </div>
         <div class="stat-pill p-4">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions<button class="tw-glossary-btn" type="button" data-term="Conversions">?</button></p>
           <p class="font-bold text-2xl mt-1" style="color:var(--cl-1);">\${m.conversions}</p>
         </div>
         <div class="stat-pill p-4">
-          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p>
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend<button class="tw-glossary-btn" type="button" data-term="Spend">?</button></p>
           <p class="font-bold text-gray-900 text-2xl mt-1">\${gbp.format(m.cost)}</p>
         </div>
       \`;
-      document.getElementById('metrics-source').textContent = \`Google Ads · CTR \${m.ctr}% · CPC \${gbp.format(m.cpc)}\`;
+      document.getElementById('metrics-source').innerHTML = \`Google Ads · CTR \${m.ctr}%<button class="tw-glossary-btn" type="button" data-term="CTR">?</button> · CPC \${gbp.format(m.cpc)}<button class="tw-glossary-btn" type="button" data-term="CPC">?</button>\`;
     } else {
       grid.innerHTML = \`<p class="text-sm text-gray-500 italic col-span-4">No Google Ads data available for this period.</p>\`;
     }
@@ -431,6 +486,8 @@ function viewHTML(c) {
         document.getElementById('revision-notes-section').style.display = 'none';
       }
     }
+
+    if (window.TweakGlossary) window.TweakGlossary.init();
   }
 
   document.getElementById('approve-btn').addEventListener('click', () => {

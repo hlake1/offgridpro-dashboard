@@ -318,6 +318,41 @@ function builderHTML(c) {
       <p class="hint mt-3">CTR &amp; CPC per campaign are auto-calculated from the figures above.</p>
     </section>
 
+    <section class="card p-6 mt-6" id="se-ranking-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">SE Ranking data</h2>
+          <p class="hint mt-1">Not automated — upload a CSV export from your rank tracker, or add rows by hand. CSV columns recognised: Keyword, Position, URL, Search volume, Change (any order, extra columns ignored).</p>
+        </div>
+        <span class="admin-badge">Manual entry</span>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap mt-4">
+        <label class="btn btn-ghost text-sm" style="cursor:pointer;">
+          Upload CSV
+          <input id="se-csv-input" type="file" accept=".csv,text/csv" style="display:none;" />
+        </label>
+        <button id="add-se-row" type="button" class="btn btn-ghost text-sm">+ Add keyword</button>
+      </div>
+      <p id="se-csv-status" class="hint mt-2" style="display:none;"></p>
+
+      <div class="overflow-x-auto mt-5">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th style="min-width:180px;">Keyword</th>
+              <th class="col-num" style="min-width:80px;">Position</th>
+              <th style="min-width:180px;">URL</th>
+              <th class="col-num" style="min-width:100px;">Search vol.</th>
+              <th class="col-num" style="min-width:80px;">Change</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="se-ranking-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
       <div class="flex items-center gap-3">
         <button id="back-step-1" type="button" class="btn btn-ghost">← Back to questions</button>
@@ -354,6 +389,7 @@ function builderHTML(c) {
   const step2El = document.getElementById('step-2');
   const heroSub = document.getElementById('hero-sub');
   const campaignRows = document.getElementById('campaign-rows');
+  const seRankingRows = document.getElementById('se-ranking-rows');
 
   const CHANNELS = ['SEARCH', 'PERFORMANCE_MAX', 'DISPLAY', 'SHOPPING', 'VIDEO', 'DEMAND_GEN'];
   const STATUSES = ['ENABLED', 'PAUSED', 'REMOVED'];
@@ -430,6 +466,99 @@ function builderHTML(c) {
     campaignRows.insertAdjacentHTML('beforeend', campaignRowHTML(c2));
     const row = campaignRows.lastElementChild;
     row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function seRowHTML(r2) {
+    r2 = r2 || {};
+    return \`
+      <tr>
+        <td><input type="text" class="se-keyword" value="\${(r2.keyword||'').replace(/"/g,'&quot;')}" placeholder="e.g. electric gates" /></td>
+        <td class="col-num"><input type="text" class="se-position" value="\${(r2.position||'').replace(/"/g,'&quot;')}" placeholder="e.g. 4" /></td>
+        <td><input type="text" class="se-url" value="\${(r2.url||'').replace(/"/g,'&quot;')}" placeholder="/product-page" /></td>
+        <td class="col-num"><input type="text" class="se-volume" value="\${(r2.volume||'').replace(/"/g,'&quot;')}" placeholder="e.g. 720" /></td>
+        <td class="col-num"><input type="text" class="se-change" value="\${(r2.change||'').replace(/"/g,'&quot;')}" placeholder="e.g. +2" /></td>
+        <td><button type="button" class="row-del" title="Remove">×</button></td>
+      </tr>\`;
+  }
+
+  function addSeRow(r2) {
+    seRankingRows.insertAdjacentHTML('beforeend', seRowHTML(r2));
+    const row = seRankingRows.lastElementChild;
+    row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function readSeRankings() {
+    const rows = Array.from(seRankingRows.querySelectorAll('tr'));
+    if (!rows.length) return null;
+    const out = [];
+    rows.forEach((row) => {
+      const keyword = row.querySelector('.se-keyword').value.trim();
+      const position = row.querySelector('.se-position').value.trim();
+      const url = row.querySelector('.se-url').value.trim();
+      const volume = row.querySelector('.se-volume').value.trim();
+      const change = row.querySelector('.se-change').value.trim();
+      if (!keyword && !position && !url && !volume && !change) return;
+      out.push({ keyword, position, url, volume, change });
+    });
+    if (!out.length) return null;
+    return { rows: out, updatedAt: new Date().toISOString() };
+  }
+
+  function loadSeRankings(sr) {
+    seRankingRows.innerHTML = '';
+    ((sr && sr.rows) || []).forEach(addSeRow);
+    if (!sr || !(sr.rows || []).length) addSeRow({});
+  }
+
+  function parseCSV(text) {
+    const CR = String.fromCharCode(13);
+    const LF = String.fromCharCode(10);
+    const rows = [];
+    let i = 0, field = '', row = [], inQuotes = false;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ''; i++; continue; }
+      if (ch === CR) { i++; continue; }
+      if (ch === LF) { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+      field += ch; i++;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ''));
+  }
+
+  function csvToSeRankingRows(text) {
+    const table = parseCSV(text);
+    if (!table.length) return [];
+    const header = table[0].map(h => h.trim().toLowerCase());
+    const findCol = (names) => header.findIndex(h => names.includes(h));
+    const kwIdx = findCol(['keyword', 'term', 'search term', 'query']);
+    const posIdx = findCol(['position', 'rank', 'ranking']);
+    const urlIdx = findCol(['url', 'page', 'landing page']);
+    const volIdx = findCol(['search volume', 'volume', 'searches', 'monthly searches']);
+    const chgIdx = findCol(['change', 'movement', 'delta']);
+    const hasHeader = kwIdx !== -1 || posIdx !== -1;
+    const dataRows = hasHeader ? table.slice(1) : table;
+    const out = [];
+    dataRows.forEach((r2) => {
+      const keyword = (kwIdx !== -1 ? r2[kwIdx] : r2[0]) || '';
+      if (!keyword.trim()) return;
+      out.push({
+        keyword: keyword.trim(),
+        position: ((posIdx !== -1 ? r2[posIdx] : r2[1]) || '').trim(),
+        url: ((urlIdx !== -1 ? r2[urlIdx] : (hasHeader ? '' : r2[2])) || '').trim(),
+        volume: ((volIdx !== -1 ? r2[volIdx] : (hasHeader ? '' : r2[3])) || '').trim(),
+        change: ((chgIdx !== -1 ? r2[chgIdx] : (hasHeader ? '' : r2[4])) || '').trim(),
+      });
+    });
+    return out;
   }
 
   function readTotals() {
@@ -837,6 +966,7 @@ function builderHTML(c) {
       title: window.${c.NS}Reports.monthLabel(month),
       author: authorEl.value.trim(),
       answers,
+      seRankings: readSeRankings(),
       status: status || (existing ? existing.status : 'draft'),
       revisionNotes: existing?.revisionNotes || [],
     };
@@ -937,6 +1067,7 @@ function builderHTML(c) {
       monthEl.value = defaultMonth();
       renderQuestions({});
       addCampaignRow({});
+      addSeRow({});
       return;
     }
     const r = window.${c.NS}Reports.get(editingId);
@@ -944,6 +1075,7 @@ function builderHTML(c) {
       monthEl.value = defaultMonth();
       renderQuestions({});
       addCampaignRow({});
+      addSeRow({});
       return;
     }
     monthEl.value = r.month || defaultMonth();
@@ -954,11 +1086,43 @@ function builderHTML(c) {
     } else {
       addCampaignRow({});
     }
+    if (r.seRankings && (r.seRankings.rows || []).length) {
+      loadSeRankings(r.seRankings);
+    } else {
+      addSeRow({});
+    }
   }
 
   document.getElementById('to-step-2').addEventListener('click', () => setStep(2));
   document.getElementById('back-step-1').addEventListener('click', () => setStep(1));
   document.getElementById('add-campaign').addEventListener('click', () => addCampaignRow({}));
+  document.getElementById('add-se-row').addEventListener('click', () => addSeRow({}));
+  document.getElementById('se-csv-input').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('se-csv-status');
+    try {
+      const text = await file.text();
+      const rows = csvToSeRankingRows(text);
+      if (!rows.length) {
+        status.textContent = 'Could not find any rows in that file — check it has a Keyword column.';
+        status.style.color = '#b91c1c';
+        status.style.display = 'block';
+        return;
+      }
+      seRankingRows.innerHTML = '';
+      rows.forEach(addSeRow);
+      status.textContent = \`Loaded \${rows.length} row\${rows.length === 1 ? '' : 's'} from \${file.name}.\`;
+      status.style.color = '#059669';
+      status.style.display = 'block';
+    } catch (err) {
+      status.textContent = 'Could not read that file: ' + (err.message || err);
+      status.style.color = '#b91c1c';
+      status.style.display = 'block';
+    } finally {
+      e.target.value = '';
+    }
+  });
 
   document.getElementById('save-draft-1').addEventListener('click', async () => {
     const r = await saveReport('draft', false);
