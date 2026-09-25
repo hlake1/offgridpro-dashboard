@@ -275,7 +275,7 @@ function viewHTML(c) {
 </div>
 
 <script>
-(function () {
+(async function () {
   const qs = new URLSearchParams(location.search);
   const id = qs.get('id');
   const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 });
@@ -283,16 +283,23 @@ function viewHTML(c) {
 
   function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>\\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\\"':'&quot;',"'":'&#39;'}[c])); }
 
-  function applyRole(role) {
+  async function applyRole(role) {
     const isAdmin = role === 'admin';
     document.documentElement.classList.toggle('${c.adminClass}', isAdmin);
     const badge = document.getElementById('role-indicator');
     if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
-    render();
+    await render();
   }
 
-  function render() {
-    const report = id ? window.${c.NS}Reports.get(id) : null;
+  async function render() {
+    let report = null;
+    try {
+      report = id ? await window.${c.NS}Reports.get(id) : null;
+    } catch (loadErr) {
+      document.getElementById('report-title').textContent = 'Could not load this report';
+      document.getElementById('report-headline').textContent = 'There was a problem reaching the server — check your connection and try reloading the page.';
+      return;
+    }
 
     if (!report) {
       document.getElementById('report-title').textContent = 'Report not found';
@@ -490,18 +497,18 @@ function viewHTML(c) {
     if (window.TweakGlossary) window.TweakGlossary.init();
   }
 
-  document.getElementById('approve-btn').addEventListener('click', () => {
+  document.getElementById('approve-btn').addEventListener('click', async () => {
     if (!id) return;
     if (!confirm('Approve and publish this report to the client view?')) return;
-    window.${c.NS}Reports.publish(id);
-    render();
+    await window.${c.NS}Reports.publish(id);
+    await render();
   });
 
-  document.getElementById('unpublish-btn').addEventListener('click', () => {
+  document.getElementById('unpublish-btn').addEventListener('click', async () => {
     if (!id) return;
     if (!confirm('Move this report back to draft? It will be hidden from the client view.')) return;
-    window.${c.NS}Reports.unpublish(id);
-    render();
+    await window.${c.NS}Reports.unpublish(id);
+    await render();
   });
 
   const modal = document.getElementById('revise-modal');
@@ -510,12 +517,12 @@ function viewHTML(c) {
     modal.classList.add('on');
   });
   document.getElementById('revise-cancel').addEventListener('click', () => modal.classList.remove('on'));
-  document.getElementById('revise-save').addEventListener('click', () => {
+  document.getElementById('revise-save').addEventListener('click', async () => {
     const note = document.getElementById('revise-text').value.trim();
     if (!note) { modal.classList.remove('on'); return; }
-    window.${c.NS}Reports.addRevisionNote(id, note);
+    await window.${c.NS}Reports.addRevisionNote(id, note);
     modal.classList.remove('on');
-    render();
+    await render();
   });
 
   document.getElementById('logout-btn').addEventListener('click', () => window.${c.NS}Auth.logout('../'));

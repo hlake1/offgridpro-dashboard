@@ -367,7 +367,7 @@
 </main>
 
 <script>
-(function () {
+(async function () {
   const qs = new URLSearchParams(location.search);
   const editingId = qs.get('id');
 
@@ -951,12 +951,12 @@
     return { data: null, source: null, matched: false };
   }
 
-  function buildBase(status) {
+  async function buildBase(status) {
     const month = monthEl.value;
     if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
     const answers = readAnswers();
     const id = month;
-    const existing = window.SCLReports.get(id);
+    const existing = await window.SCLReports.get(id);
     return {
       id, month,
       title: window.SCLReports.monthLabel(month),
@@ -1003,7 +1003,7 @@
   }
 
   async function saveReport(status, redirectToView, useAI) {
-    const report = buildBase(status);
+    const report = await buildBase(status);
     if (!report) return;
     const res = await resolveData(report);
     const baseline = window.SCLReports.generateSummary(report.answers, res.data);
@@ -1051,14 +1051,19 @@
       }
     }
 
-    window.SCLReports.upsert(report);
+    try {
+      await window.SCLReports.upsert(report);
+    } catch (saveErr) {
+      alert('Could not save this report — check your connection and try again.\n\n' + (saveErr.message || saveErr));
+      return null;
+    }
     if (redirectToView) {
       location.href = `./view.html?id=${encodeURIComponent(report.id)}`;
     }
     return report;
   }
 
-  function loadExisting() {
+  async function loadExisting() {
     if (!editingId) {
       monthEl.value = defaultMonth();
       renderQuestions({});
@@ -1066,7 +1071,7 @@
       addSeRow({});
       return;
     }
-    const r = window.SCLReports.get(editingId);
+    const r = await window.SCLReports.get(editingId);
     if (!r) {
       monthEl.value = defaultMonth();
       renderQuestions({});
@@ -1132,7 +1137,7 @@
 
   document.getElementById('logout-btn').addEventListener('click', () => window.SCLAuth.logout('../'));
 
-  loadExisting();
+  await loadExisting();
   refreshMetaStatus();
   refreshGoogleStatus();
   setStep(1);

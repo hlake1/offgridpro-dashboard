@@ -371,7 +371,7 @@ function builderHTML(c) {
 </main>
 
 <script>
-(function () {
+(async function () {
   const qs = new URLSearchParams(location.search);
   const editingId = qs.get('id');
 
@@ -955,12 +955,12 @@ function builderHTML(c) {
     return { data: null, source: null, matched: false };
   }
 
-  function buildBase(status) {
+  async function buildBase(status) {
     const month = monthEl.value;
     if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
     const answers = readAnswers();
     const id = month;
-    const existing = window.${c.NS}Reports.get(id);
+    const existing = await window.${c.NS}Reports.get(id);
     return {
       id, month,
       title: window.${c.NS}Reports.monthLabel(month),
@@ -1007,7 +1007,7 @@ function builderHTML(c) {
   }
 
   async function saveReport(status, redirectToView, useAI) {
-    const report = buildBase(status);
+    const report = await buildBase(status);
     if (!report) return;
     const res = await resolveData(report);
     const baseline = window.${c.NS}Reports.generateSummary(report.answers, res.data);
@@ -1055,14 +1055,19 @@ function builderHTML(c) {
       }
     }
 
-    window.${c.NS}Reports.upsert(report);
+    try {
+      await window.${c.NS}Reports.upsert(report);
+    } catch (saveErr) {
+      alert('Could not save this report — check your connection and try again.\\n\\n' + (saveErr.message || saveErr));
+      return null;
+    }
     if (redirectToView) {
       location.href = \`./view.html?id=\${encodeURIComponent(report.id)}\`;
     }
     return report;
   }
 
-  function loadExisting() {
+  async function loadExisting() {
     if (!editingId) {
       monthEl.value = defaultMonth();
       renderQuestions({});
@@ -1070,7 +1075,7 @@ function builderHTML(c) {
       addSeRow({});
       return;
     }
-    const r = window.${c.NS}Reports.get(editingId);
+    const r = await window.${c.NS}Reports.get(editingId);
     if (!r) {
       monthEl.value = defaultMonth();
       renderQuestions({});
@@ -1136,7 +1141,7 @@ function builderHTML(c) {
 
   document.getElementById('logout-btn').addEventListener('click', () => window.${c.NS}Auth.logout('../'));
 
-  loadExisting();
+  await loadExisting();
   refreshMetaStatus();
   refreshGoogleStatus();
   setStep(1);

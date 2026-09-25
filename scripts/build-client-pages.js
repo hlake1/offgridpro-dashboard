@@ -255,14 +255,14 @@ function indexHTML(c) {
 </footer>
 
 <script>
-  (function () {
+  (async function () {
     function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-    function renderPublished() {
+    async function renderPublished() {
       const section = document.getElementById('published-reports-section');
       const wrap = document.getElementById('published-reports-list');
       if (!wrap || !window.${c.NS}Reports) return;
-      const items = window.${c.NS}Reports.listPublished();
+      const items = await window.${c.NS}Reports.listPublished();
       if (!items.length) { section.style.display = 'none'; return; }
       section.style.display = 'block';
       wrap.innerHTML = items.map(r => {
@@ -285,11 +285,11 @@ function indexHTML(c) {
       }).join('');
     }
 
-    function renderAdminDrafts() {
+    async function renderAdminDrafts() {
       const list = document.getElementById('admin-drafts-list');
       const empty = document.getElementById('admin-drafts-empty');
       if (!list || !window.${c.NS}Reports) return;
-      const items = window.${c.NS}Reports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      const items = (await window.${c.NS}Reports.list()).sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
       if (!items.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
       empty.style.display = 'none';
       list.innerHTML = items.map(r => {
@@ -314,13 +314,13 @@ function indexHTML(c) {
       }).join('');
     }
 
-    function apply(role) {
+    async function apply(role) {
       const isAdmin = role === 'admin';
       document.documentElement.classList.toggle('${c.adminClass}', isAdmin);
       const badge = document.getElementById('role-indicator');
       if (badge) badge.textContent = isAdmin ? 'Admin · Tweak' : 'Client view';
-      renderPublished();
-      if (isAdmin) renderAdminDrafts();
+      await renderPublished();
+      if (isAdmin) await renderAdminDrafts();
     }
 
     const role = window.${c.NS}Auth.getRole();

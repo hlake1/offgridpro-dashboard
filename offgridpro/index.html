@@ -354,7 +354,7 @@
     })();
 
     // ---- Auth-aware rendering ------------------------------------------------
-    function applyRole(role) {
+    async function applyRole(role) {
       const isAdmin = role === 'admin';
       document.documentElement.classList.toggle('ogp-admin', isAdmin);
       const badge = document.getElementById('role-indicator');
@@ -372,16 +372,16 @@
           }
         }
       }
-      renderPublished();
-      if (isAdmin) renderAdminDrafts();
+      await renderPublished();
+      if (isAdmin) await renderAdminDrafts();
     }
 
     function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-    function renderPublished() {
+    async function renderPublished() {
       const wrap = document.getElementById('published-reports-list');
       if (!wrap || !window.OGPReports) return;
-      const items = window.OGPReports.listPublished();
+      const items = await window.OGPReports.listPublished();
       wrap.innerHTML = items.map(r => {
         const label = window.OGPReports.monthLabel(r.month);
         const headline = esc(r.summary?.headline || '');
@@ -402,11 +402,11 @@
       }).join('');
     }
 
-    function renderAdminDrafts() {
+    async function renderAdminDrafts() {
       const list = document.getElementById('admin-drafts-list');
       const empty = document.getElementById('admin-drafts-empty');
       if (!list || !window.OGPReports) return;
-      const items = window.OGPReports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      const items = (await window.OGPReports.list()).sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
       if (items.length === 0) {
         list.innerHTML = '';
         empty.style.display = 'block';

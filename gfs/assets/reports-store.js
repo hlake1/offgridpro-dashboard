@@ -1,24 +1,17 @@
 /*!
  * GFS Dashboard — Reports store
  *
- * Manages monthly reports created via the admin builder.
- * State is persisted to localStorage (prototype). Each report has:
- *   {
- *     id: "2026-07",
- *     month: "2026-07",
- *     title: "July 2026",
- *     status: "draft" | "published",
- *     createdAt, updatedAt, publishedAt,
- *     answers: { q1: "...", q2: "...", ... },
- *     revisionNotes: [{ ts, note }],
- *     summary: { ... auto-generated }
- *   }
+ * Manages monthly reports created via the admin builder. Reports are
+ * stored centrally via the Tweak Reports Worker (Cloudflare Worker +
+ * Supabase), so a published report is visible from any device or
+ * browser — not just the one that created it.
  *
- * We also expose the list of *published* reports for the client-facing
- * index page to render alongside the pre-built June 2026 report.
+ * Every method here is async (returns a Promise) and needs an
+ * Authorization session (tw_session, set by the root login page).
  */
 (function () {
-  const KEY = 'gfs_reports_v1';
+  const WORKER_URL = 'https://tweak-reports.herbielakeai.workers.dev';
+  const CLIENT_SLUG = 'gfs';
 
   const QUESTIONS = [
     { id: 'q1', label: 'What was your biggest win this month?', hint: 'The headline result — the thing you\'d lead with in a meeting.' },
@@ -32,84 +25,107 @@
     { id: 'q9', label: 'Anything else to highlight?', hint: 'Optional. Notes, credits, footnotes, upcoming launches.' },
   ];
 
-  function load() {
+  function getToken() {
     try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return { reports: [] };
-      const data = JSON.parse(raw);
-      if (!data || !Array.isArray(data.reports)) return { reports: [] };
-      return data;
-    } catch { return { reports: [] }; }
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return (s && s.token) || null;
+    } catch { return null; }
   }
 
-  function save(state) {
-    localStorage.setItem(KEY, JSON.stringify(state));
+  async function apiFetch(path, opts) {
+    opts = opts || {};
+    const token = getToken();
+    const headers = Object.assign({}, opts.headers || {});
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (opts.body) headers['Content-Type'] = 'application/json';
+    const res = await fetch(WORKER_URL + path, {
+      method: opts.method || 'GET',
+      headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    let json = null;
+    try { json = await res.json(); } catch { /* ignore */ }
+    if (!res.ok) throw new Error((json && json.error) || ('Request failed (' + res.status + ')'));
+    return json;
   }
 
-  function list() { return load().reports.slice(); }
-  function listPublished() { return load().reports.filter(r => r.status === 'published'); }
-  function listDrafts()    { return load().reports.filter(r => r.status === 'draft'); }
-  function get(id) { return load().reports.find(r => r.id === id) || null; }
-
-  function upsert(report) {
-    const state = load();
-    const now = new Date().toISOString();
-    report.updatedAt = now;
-    const idx = state.reports.findIndex(r => r.id === report.id);
-    if (idx >= 0) {
-      state.reports[idx] = { ...state.reports[idx], ...report };
-    } else {
-      report.createdAt = now;
-      state.reports.unshift(report);
-    }
-    save(state);
-    return report;
+  function fromRow(row) {
+    if (!row) return null;
+    return {
+      id: row.period,
+      month: row.period,
+      title: row.title || '',
+      author: row.author || '',
+      status: row.status,
+      answers: row.answers || {},
+      seRankings: row.se_rankings || null,
+      manualData: row.manual_data || null,
+      summary: row.generated || null,
+      revisionNotes: row.revision_notes || [],
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      publishedAt: row.published_at,
+    };
   }
 
-  function remove(id) {
-    const state = load();
-    state.reports = state.reports.filter(r => r.id !== id);
-    save(state);
+  function toRow(report) {
+    return {
+      client: CLIENT_SLUG,
+      period: report.id || report.month,
+      title: report.title || null,
+      author: report.author || null,
+      status: report.status || 'draft',
+      answers: report.answers || {},
+      seRankings: report.seRankings || null,
+      manualData: report.manualData || null,
+      generated: report.summary || null,
+      revisionNotes: report.revisionNotes || [],
+    };
   }
 
-  function publish(id) {
-    const state = load();
-    const r = state.reports.find(r => r.id === id);
+  async function list() {
+    const { reports } = await apiFetch('/reports/list?client=' + encodeURIComponent(CLIENT_SLUG));
+    return (reports || []).map(fromRow);
+  }
+  async function listPublished() { return (await list()).filter(r => r.status === 'published'); }
+  async function listDrafts()    { return (await list()).filter(r => r.status === 'draft'); }
+
+  async function get(id) {
+    if (!id) return null;
+    const { report } = await apiFetch('/reports/one?client=' + encodeURIComponent(CLIENT_SLUG) + '&period=' + encodeURIComponent(id));
+    return fromRow(report);
+  }
+
+  async function upsert(report) {
+    const { report: saved } = await apiFetch('/reports/save', { method: 'POST', body: toRow(report) });
+    return fromRow(saved);
+  }
+
+  async function publish(id) {
+    const r = await get(id);
     if (!r) return null;
     r.status = 'published';
-    r.publishedAt = new Date().toISOString();
-    r.updatedAt = r.publishedAt;
-    save(state);
-    return r;
+    return upsert(r);
   }
 
-  function unpublish(id) {
-    const state = load();
-    const r = state.reports.find(r => r.id === id);
+  async function unpublish(id) {
+    const r = await get(id);
     if (!r) return null;
     r.status = 'draft';
-    r.updatedAt = new Date().toISOString();
-    save(state);
-    return r;
+    return upsert(r);
   }
 
-  function addRevisionNote(id, note) {
-    const state = load();
-    const r = state.reports.find(r => r.id === id);
+  async function addRevisionNote(id, note) {
+    const r = await get(id);
     if (!r) return null;
     r.revisionNotes = r.revisionNotes || [];
     r.revisionNotes.push({ ts: new Date().toISOString(), note });
-    r.updatedAt = new Date().toISOString();
-    // Sending back to draft when edits are suggested
     if (r.status === 'published') r.status = 'draft';
-    save(state);
-    return r;
+    return upsert(r);
   }
 
-  /**
-   * Build a "summary" object from form answers + live Google Ads data.
-   * This is what powers the auto-generated draft report view.
-   */
   function generateSummary(answers, adsData) {
     const totals = adsData?.totals || null;
     const campaigns = (adsData?.campaigns || []).slice().sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
@@ -132,15 +148,8 @@
     const extras = (answers.q9 || '').trim();
 
     return {
-      headline,
-      overperformer,
-      feedback,
-      focus,
-      rationale,
-      challenges,
-      priorities,
-      budget,
-      extras,
+      headline, overperformer, feedback, focus, rationale, challenges,
+      priorities, budget, extras,
       metrics: totals,
       topCampaign,
       activeCampaigns: activeCampaigns.map(c => c.name),
@@ -149,36 +158,14 @@
   }
 
   function monthLabel(month) {
-    // month is "YYYY-MM"
     if (!month || !/^\d{4}-\d{2}$/.test(month)) return month || '';
     const [y, m] = month.split('-').map(Number);
     const d = new Date(Date.UTC(y, m - 1, 1));
     return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
   }
 
-  function exportAll() {
-    return load();
-  }
-
-  function importAll(data) {
-    if (!data || !Array.isArray(data.reports)) throw new Error('Invalid data');
-    save(data);
-  }
-
   window.GFSReports = {
-    QUESTIONS,
-    list,
-    listPublished,
-    listDrafts,
-    get,
-    upsert,
-    remove,
-    publish,
-    unpublish,
-    addRevisionNote,
-    generateSummary,
-    monthLabel,
-    exportAll,
-    importAll,
+    QUESTIONS, list, listPublished, listDrafts, get, upsert,
+    publish, unpublish, addRevisionNote, generateSummary, monthLabel,
   };
 })();

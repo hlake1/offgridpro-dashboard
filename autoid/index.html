@@ -244,14 +244,14 @@
 </footer>
 
 <script>
-  (function () {
+  (async function () {
     function esc(s){ return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-    function renderPublished() {
+    async function renderPublished() {
       const section = document.getElementById('published-reports-section');
       const wrap = document.getElementById('published-reports-list');
       if (!wrap || !window.AUTOIDReports) return;
-      const items = window.AUTOIDReports.listPublished();
+      const items = await window.AUTOIDReports.listPublished();
       if (!items.length) { section.style.display = 'none'; return; }
       section.style.display = 'block';
       wrap.innerHTML = items.map(r => {
@@ -274,11 +274,11 @@
       }).join('');
     }
 
-    function renderAdminDrafts() {
+    async function renderAdminDrafts() {
       const list = document.getElementById('admin-drafts-list');
       const empty = document.getElementById('admin-drafts-empty');
       if (!list || !window.AUTOIDReports) return;
-      const items = window.AUTOIDReports.list().sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
+      const items = (await window.AUTOIDReports.list()).sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||''));
       if (!items.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
       empty.style.display = 'none';
       list.innerHTML = items.map(r => {
@@ -303,7 +303,7 @@
       }).join('');
     }
 
-    function apply(role) {
+    async function apply(role) {
       const isAdmin = role === 'admin';
       document.documentElement.classList.toggle('autoid-admin', isAdmin);
       const badge = document.getElementById('role-indicator');
@@ -321,8 +321,8 @@
           }
         }
       }
-      renderPublished();
-      if (isAdmin) renderAdminDrafts();
+      await renderPublished();
+      if (isAdmin) await renderAdminDrafts();
     }
 
     const role = window.AUTOIDAuth.getRole();
