@@ -10,10 +10,12 @@
  *   - each team member's long-lived refresh token (stored in Workers KV,
  *     never sent back to the client)
  *
- * What this file does NOT do yet: actually call the GA4 / Search Console /
- * Google Ads APIs. That's the next increment — it'll live in this same
- * Worker as new routes that call getFreshAccessToken() below, so a report
- * page never sees a raw Google token, only the finished data.
+ * This file also pulls actual Google Ads metrics for clients whose team
+ * member has connected their account (see CLIENTS_CONFIG + /metrics below),
+ * so a client's Live Metrics page never sees a raw Google token — only the
+ * finished numbers. A Cron Trigger (see wrangler.toml [triggers]) refreshes
+ * every configured client once a day; /metrics just serves that cached
+ * result so the page loads instantly.
  *
  * Flow:
  *   1. Front end sends someone to  /start?member=<slug>
@@ -125,6 +127,195 @@ async function getFreshAccessToken(env, member) {
   const record = JSON.parse(raw);
   const { access_token } = await refreshAccessToken(env, record.refreshToken);
   return access_token;
+}
+
+// ---------------------------------------------------------------------------
+// Live Metrics — daily Google Ads pull per client
+// ---------------------------------------------------------------------------
+// Maps each Tweak Reporting client slug to which connected team member's
+// Google account to pull through, and that client's real Google Ads
+// Customer ID (10 digits, no dashes). Fill in customerId once you have it —
+// until then /metrics reports that client as "not configured yet" instead
+// of erroring, and the live page shows a friendly message.
+//
+// managerCustomerId is only needed if the connected account reaches this
+// customer THROUGH a manager (MCC) account rather than being added
+// directly to the client's own Google Ads account — set it to that
+// manager account's id if Google Ads comes back with a permission error
+// that mentions "login-customer-id".
+//
+// offgridpro is intentionally not listed here — it already has its own
+// working Live Metrics page powered by Maton (see /offgridpro/live and
+// scripts/pull-google-ads.js at the repo root). Don't add it here too.
+const CLIENTS_CONFIG = {
+  gfs:          { member: 'imogen',  customerId: null, managerCustomerId: null },
+  scl:          { member: 'daniela', customerId: null, managerCustomerId: null },
+  autowatch:    { member: 'louise',  customerId: null, managerCustomerId: null },
+  autoid:       { member: 'louise',  customerId: null, managerCustomerId: null },
+  stjarnagloss: { member: 'daniela', customerId: null, managerCustomerId: null },
+  aslotel:      { member: 'daniela', customerId: null, managerCustomerId: null },
+};
+
+const GOOGLE_ADS_API_VERSION = 'v19';
+
+async function googleAdsSearch(accessToken, customerId, managerCustomerId, developerToken, query) {
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  };
+  if (developerToken) headers['developer-token'] = developerToken;
+  if (managerCustomerId) headers['login-customer-id'] = managerCustomerId;
+  const res = await fetch(
+    `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers/${customerId}/googleAds:search`,
+    { method: 'POST', headers, body: JSON.stringify({ query, pageSize: 200 }) }
+  );
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data.error?.message || (Array.isArray(data) && data[0]?.error?.message) || `Google Ads API error (${res.status})`;
+    throw new Error(msg);
+  }
+  return data.results || [];
+}
+
+function round2(n) { return Math.round((n || 0) * 100) / 100; }
+
+// Pulls last-28-days campaign performance for one client and shapes it the
+// same way scripts/pull-google-ads.js shapes OffGrid Pro's data.json, so
+// both Live Metrics page templates can share the same rendering logic.
+async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId, developerToken) {
+  const [customerRows, campaignRows] = await Promise.all([
+    googleAdsSearch(
+      accessToken, customerId, managerCustomerId, developerToken,
+      'SELECT customer.descriptive_name, customer.currency_code, customer.time_zone FROM customer LIMIT 1'
+    ),
+    googleAdsSearch(
+      accessToken, customerId, managerCustomerId, developerToken,
+      `SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type,
+              metrics.impressions, metrics.clicks, metrics.conversions, metrics.cost_micros,
+              metrics.ctr, metrics.average_cpc
+       FROM campaign
+       WHERE segments.date DURING LAST_28_DAYS
+       ORDER BY metrics.clicks DESC`
+    ),
+  ]);
+
+  const customer = customerRows[0]?.customer || {};
+  const campaigns = campaignRows.map((r) => ({
+    id: r.campaign.id,
+    name: r.campaign.name,
+    status: r.campaign.status,
+    channelType: r.campaign.advertisingChannelType,
+    impressions: Number(r.metrics.impressions || 0),
+    clicks: Number(r.metrics.clicks || 0),
+    conversions: Number(r.metrics.conversions || 0),
+    cost: round2(Number(r.metrics.costMicros || 0) / 1e6),
+    ctr: round2(Number(r.metrics.ctr || 0) * 100),
+    cpc: round2(Number(r.metrics.averageCpc || 0) / 1e6),
+  }));
+
+  const totals = campaigns.reduce(
+    (acc, c) => {
+      acc.impressions += c.impressions;
+      acc.clicks += c.clicks;
+      acc.conversions += c.conversions;
+      acc.cost += c.cost;
+      return acc;
+    },
+    { impressions: 0, clicks: 0, conversions: 0, cost: 0 }
+  );
+  totals.cost = round2(totals.cost);
+  totals.ctr = totals.impressions ? round2((totals.clicks / totals.impressions) * 100) : 0;
+  totals.cpc = totals.clicks ? round2(totals.cost / totals.clicks) : 0;
+
+  const now = new Date();
+  const start = new Date(now.getTime() - 28 * 86400000);
+  const iso = (d) => d.toISOString().slice(0, 10);
+
+  return {
+    meta: {
+      pulledAt: now.toISOString(),
+      source: 'Google Ads API (connected via Tweak Reporting)',
+      period: { mode: 'rolling', label: 'Last 28 days', start: iso(start), end: iso(now), days: 28 },
+      customer: {
+        id: customerId,
+        name: customer.descriptiveName || null,
+        currency: customer.currencyCode || null,
+        timezone: customer.timeZone || null,
+      },
+      readOnly: true,
+    },
+    totals,
+    campaigns,
+  };
+}
+
+async function computeMetricsForClient(env, slug) {
+  const cfg = CLIENTS_CONFIG[slug];
+  if (!cfg) return { configured: false, reason: `Unknown client "${slug}"` };
+  if (!cfg.customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet' };
+
+  const statusRaw = await env.OAUTH_TOKENS.get(`member:${cfg.member}`);
+  if (!statusRaw) return { configured: false, reason: `${cfg.member} hasn't connected a Google account yet` };
+
+  const accessToken = await getFreshAccessToken(env, cfg.member);
+  const data = await fetchGoogleAdsMetrics(accessToken, cfg.customerId, cfg.managerCustomerId, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+  return { configured: true, data };
+}
+
+// Called once a day by the Cron Trigger (see the scheduled() export below).
+// Refreshes every configured client and caches each result in KV — a
+// broken/unconnected client is logged and skipped, it never blocks the rest.
+async function refreshAllClientMetrics(env) {
+  const slugs = Object.keys(CLIENTS_CONFIG);
+  await Promise.all(slugs.map(async (slug) => {
+    try {
+      const result = await computeMetricsForClient(env, slug);
+      await env.OAUTH_TOKENS.put(`metrics:${slug}`, JSON.stringify({ ...result, cachedAt: new Date().toISOString() }));
+    } catch (err) {
+      await env.OAUTH_TOKENS.put(`metrics:${slug}`, JSON.stringify({
+        configured: false,
+        reason: String(err.message || err),
+        cachedAt: new Date().toISOString(),
+      }));
+    }
+  }));
+}
+
+async function handleMetrics(url, env, origin) {
+  const slug = url.searchParams.get('client');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!slug || !CLIENTS_CONFIG[slug]) {
+    return jsonResponse({ configured: false, reason: 'Unknown or missing "client"' }, 200, headers);
+  }
+  const cached = await env.OAUTH_TOKENS.get(`metrics:${slug}`);
+  if (cached) return jsonResponse(JSON.parse(cached), 200, headers);
+
+  // No cached result yet (e.g. right after connecting, before the next
+  // daily cron run) — pull live once and cache it so the next load is instant.
+  try {
+    const result = await computeMetricsForClient(env, slug);
+    const withTimestamp = { ...result, cachedAt: new Date().toISOString() };
+    await env.OAUTH_TOKENS.put(`metrics:${slug}`, JSON.stringify(withTimestamp));
+    return jsonResponse(withTimestamp, 200, headers);
+  } catch (err) {
+    return jsonResponse({ configured: false, reason: String(err.message || err) }, 200, headers);
+  }
+}
+
+async function handleMetricsRefresh(url, env, origin) {
+  const slug = url.searchParams.get('client');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!slug || !CLIENTS_CONFIG[slug]) {
+    return jsonResponse({ configured: false, reason: 'Unknown or missing "client"' }, 400, headers);
+  }
+  try {
+    const result = await computeMetricsForClient(env, slug);
+    const withTimestamp = { ...result, cachedAt: new Date().toISOString() };
+    await env.OAUTH_TOKENS.put(`metrics:${slug}`, JSON.stringify(withTimestamp));
+    return jsonResponse(withTimestamp, 200, headers);
+  } catch (err) {
+    return jsonResponse({ configured: false, reason: String(err.message || err) }, 502, headers);
+  }
 }
 
 function buildAuthorizeUrl(env, nonce) {
@@ -326,9 +517,18 @@ export default {
     if (url.pathname === '/callback') return handleCallback(url, env);
     if (url.pathname === '/status') return handleStatus(url, env, origin);
     if (url.pathname === '/preview') return handlePreview(url, env, origin);
+    if (url.pathname === '/metrics') return handleMetrics(url, env, origin);
+    if (url.pathname === '/metrics/refresh') return handleMetricsRefresh(url, env, origin);
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
-  // Exported for the data-pull routes we'll add next.
-  _internal: { getFreshAccessToken },
+
+  // Cloudflare Cron Trigger (see wrangler.toml [triggers]) — refreshes every
+  // configured client's Live Metrics once a day so /metrics always serves
+  // an instant cached result instead of calling Google Ads on every page load.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(refreshAllClientMetrics(env));
+  },
+
+  _internal: { getFreshAccessToken, computeMetricsForClient, refreshAllClientMetrics },
 };

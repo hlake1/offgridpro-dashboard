@@ -19,3 +19,14 @@ ALLOWED_ORIGIN = "https://tweakreporting.com"
 [[kv_namespaces]]
 binding = "OAUTH_TOKENS"
 id = "5d3f80276ae9426f9ad9e049d1f6041e"
+
+# Runs the daily Live Metrics refresh (refreshAllClientMetrics in
+# src/worker.js) for every client listed in CLIENTS_CONFIG there.
+# 06:00 UTC to line up with the existing offgridpro Maton refresh.
+[triggers]
+crons = ["0 6 * * *"]
+
+# Optional. Only needed if Google Ads ever asks this project for a
+# developer token again (see the comment above fetchGoogleAdsAccounts in
+# src/worker.js) — leave unset otherwise:
+#   wrangler secret put GOOGLE_ADS_DEVELOPER_TOKEN
