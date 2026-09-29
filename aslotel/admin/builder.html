@@ -246,28 +246,6 @@
       </div>
     </section>
 
-    <section class="card p-6 mt-6" id="google-live-metrics-card">
-      <div class="flex items-start justify-between flex-wrap gap-3">
-        <div>
-          <h2 class="text-xl font-medium">Live Metrics</h2>
-          <p class="hint mt-1" id="google-live-status-text">Connect a Google account above to set this up.</p>
-        </div>
-        <span class="admin-badge" id="google-live-badge">Not set up</span>
-      </div>
-
-      <div id="google-live-picker-row" class="mt-4 flex items-end gap-3 flex-wrap" style="display:none;">
-        <div class="qbox" style="min-width:320px;">
-          <label for="google-live-customer-select">Which Google Ads account is this client?</label>
-          <select id="google-live-customer-select"></select>
-          <p class="hint mt-1">Lists every account <span id="google-live-member-name"></span>'s connected Google login can see &mdash; pick the one that's actually this client's, not another client they also manage.</p>
-        </div>
-        <button id="google-live-save" type="button" class="btn btn-primary">Save for this client</button>
-        <span id="google-live-save-flash" class="save-flash">Saved</span>
-      </div>
-      <p id="google-live-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
-      <p class="hint mt-3"><a href="../live/" target="_blank" rel="noopener">View this client's Live Metrics page &rarr;</a></p>
-    </section>
-
     <section class="card p-6 mt-6">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
@@ -696,7 +674,6 @@
       localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
       refreshMetaStatus();
       refreshGoogleStatus();
-      refreshGoogleLiveMetrics();
     });
   }
 
@@ -958,114 +935,6 @@
     }
   });
 
-  // ---------------------------------------------------------------------
-  // Live Metrics account picker — persists WHICH of the connected member's
-  // Google Ads accounts belongs to THIS client, server-side (not just this
-  // browser), because the daily automated pull has no browser or
-  // localStorage to read from. One member (e.g. Daniela) can stay
-  // connected once and still be used correctly for several different
-  // clients, as long as each client's own Customer ID is saved here.
-  // ---------------------------------------------------------------------
-  const LIVE_METRICS_CLIENT_SLUG = 'aslotel';
-  const LIVE_METRICS_CLIENT_NAME = 'Aslotel';
-  const liveBadge = document.getElementById('google-live-badge');
-  const liveStatusText = document.getElementById('google-live-status-text');
-  const livePickerRow = document.getElementById('google-live-picker-row');
-  const liveCustomerSelect = document.getElementById('google-live-customer-select');
-  const liveMemberName = document.getElementById('google-live-member-name');
-  const liveSaveBtn = document.getElementById('google-live-save');
-  const liveSaveFlash = document.getElementById('google-live-save-flash');
-  const liveError = document.getElementById('google-live-error');
-
-  function showLiveError(msg) {
-    liveError.textContent = msg || '';
-    liveError.style.display = msg ? 'block' : 'none';
-  }
-
-  async function refreshGoogleLiveMetrics() {
-    showLiveError('');
-    if (liveMemberName) liveMemberName.textContent = currentMember;
-    try {
-      const statusRes = await fetch(`${GOOGLE_WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
-      const status = await statusRes.json();
-      if (!status.connected) {
-        liveBadge.textContent = 'Not set up';
-        liveStatusText.textContent = `${currentMember} hasn't connected a Google account yet — connect above first.`;
-        livePickerRow.style.display = 'none';
-        return;
-      }
-
-      const [accountsRes, savedRes] = await Promise.all([
-        fetch(`${GOOGLE_WORKER_URL}/google-ads-accounts?member=${encodeURIComponent(currentMember)}`),
-        fetch(`${GOOGLE_WORKER_URL}/customer-id?client=${encodeURIComponent(LIVE_METRICS_CLIENT_SLUG)}`),
-      ]);
-      const accountsData = await accountsRes.json();
-      const saved = await savedRes.json();
-
-      if (!accountsRes.ok) {
-        liveBadge.textContent = 'Unavailable';
-        liveStatusText.textContent = `Couldn't list ${currentMember}'s Google Ads accounts: ${accountsData.error || 'unknown error'}`;
-        livePickerRow.style.display = 'none';
-        return;
-      }
-
-      const accounts = accountsData.accounts || [];
-      if (!accounts.length) {
-        liveBadge.textContent = 'No accounts found';
-        liveStatusText.textContent = `${currentMember}'s connected Google login can't see any Google Ads accounts.`;
-        livePickerRow.style.display = 'none';
-        return;
-      }
-
-      liveCustomerSelect.innerHTML = accounts.map((a) =>
-        `<option value="${a.id}">${a.name ? a.name.replace(/</g, '&lt;') + ' (' + a.id + ')' : 'Customer ID ' + a.id}</option>`
-      ).join('');
-      if (saved && saved.customerId && accounts.some((a) => a.id === saved.customerId)) {
-        liveCustomerSelect.value = saved.customerId;
-      }
-
-      if (saved && saved.customerId) {
-        liveBadge.textContent = 'Live';
-        liveStatusText.textContent = `Pulling from Customer ID ${saved.customerId} once a day. Pick a different one below if that's wrong.`;
-      } else {
-        liveBadge.textContent = 'Pick an account';
-        liveStatusText.textContent = `Connected as ${currentMember} — choose which of these accounts is ${LIVE_METRICS_CLIENT_NAME} below.`;
-      }
-      livePickerRow.style.display = 'flex';
-    } catch (err) {
-      liveBadge.textContent = 'Unavailable';
-      liveStatusText.textContent = 'Could not check Live Metrics setup right now.';
-      livePickerRow.style.display = 'none';
-    }
-  }
-
-  liveSaveBtn?.addEventListener('click', async () => {
-    const customerId = liveCustomerSelect.value;
-    if (!customerId) { showLiveError('Pick an account first.'); return; }
-    showLiveError('');
-    const original = liveSaveBtn.textContent;
-    liveSaveBtn.disabled = true;
-    liveSaveBtn.textContent = 'Saving…';
-    try {
-      const res = await fetch(`${GOOGLE_WORKER_URL}/customer-id`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client: LIVE_METRICS_CLIENT_SLUG, customerId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `Save failed (${res.status})`);
-      liveSaveFlash.classList.add('on');
-      clearTimeout(liveSaveFlash._t);
-      liveSaveFlash._t = setTimeout(() => liveSaveFlash.classList.remove('on'), 1500);
-      await refreshGoogleLiveMetrics();
-    } catch (err) {
-      showLiveError(`Couldn't save: ${String(err.message || err)}`);
-    } finally {
-      liveSaveBtn.disabled = false;
-      liveSaveBtn.textContent = original;
-    }
-  });
-
   const MONTH_DATA_FOLDERS = {};
 
   async function fetchAdsData(month) {
@@ -1271,7 +1140,6 @@
   await loadExisting();
   refreshMetaStatus();
   refreshGoogleStatus();
-  refreshGoogleLiveMetrics();
   setStep(1);
 })();
 </script>

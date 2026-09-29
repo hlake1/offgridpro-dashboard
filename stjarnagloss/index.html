@@ -140,6 +140,46 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <!-- Live Metrics -->
+      <a href="./live/" class="report-card block bg-white p-8 group relative overflow-hidden">
+        <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--cl-1), var(--cl-2), var(--cl-3));"></div>
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--cl-2);">Live &middot; Real-time</p>
+            </div>
+            <h3 class="text-2xl font-medium text-gray-900">Live metrics</h3>
+            <p class="text-sm text-gray-500 mt-1" id="live-metrics-card-sub">Auto-refreshed daily</p>
+          </div>
+        </div>
+
+        <div class="cl-accent-bar w-full mb-6"></div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="clicks">&mdash;</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--cl-1);" data-live-card="conversions">&mdash;</p>
+          </div>
+          <div class="stat-pill p-3">
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="cost">&mdash;</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-600">Google Ads &middot; Updated daily</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--cl-dark);">View live &rarr;</span>
+        </div>
+      </a>
+
       <!-- June 2026 Report (placeholder / coming soon) -->
       <div class="report-card block bg-white p-8 group relative overflow-hidden opacity-95">
         <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--cl-1), var(--cl-2), var(--cl-3));"></div>
@@ -315,6 +355,26 @@
     if (role) apply(role);
     document.addEventListener('stjarnagloss:auth', (e) => apply(e.detail.role));
     window.StjarnaglossAuthReady = apply;
+  })();
+</script>
+
+<script>
+  (async () => {
+    try {
+      const res = await fetch('https://tweak-google-oauth.herbielakeai.workers.dev/metrics?client=stjarnagloss', { cache: 'no-store' });
+      const payload = await res.json();
+      const sub = document.getElementById('live-metrics-card-sub');
+      if (!payload.configured) {
+        if (sub) sub.textContent = 'Not set up yet';
+        return;
+      }
+      const t = payload.data.totals;
+      const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 });
+      const numFmt = new Intl.NumberFormat('en-GB');
+      document.querySelectorAll('[data-live-card="clicks"]').forEach(el => el.textContent = numFmt.format(t.clicks));
+      document.querySelectorAll('[data-live-card="conversions"]').forEach(el => el.textContent = t.conversions);
+      document.querySelectorAll('[data-live-card="cost"]').forEach(el => el.textContent = gbp.format(t.cost));
+    } catch (e) { /* silent — placeholders stay */ }
   })();
 </script>
 
