@@ -272,7 +272,7 @@ async function computeMetricsForClient(env, slug) {
   if (!cfg) return { configured: false, reason: `Unknown client "${slug}"` };
 
   const { customerId, managerCustomerId } = await getClientCustomerConfig(env, slug);
-  if (!customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet — set it from the admin page\'s Live Metrics panel' };
+  if (!customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet — connect and pick an account in the panel above' };
 
   const statusRaw = await env.OAUTH_TOKENS.get(`member:${cfg.member}`);
   if (!statusRaw) return { configured: false, reason: `${cfg.member} hasn't connected a Google account yet` };
