@@ -148,13 +148,31 @@ async function getFreshAccessToken(env, member) {
 // working Live Metrics page powered by Maton (see /offgridpro/live and
 // scripts/pull-google-ads.js at the repo root). Don't add it here too.
 const CLIENTS_CONFIG = {
-  gfs:          { member: 'imogen',  customerId: null, managerCustomerId: null },
-  scl:          { member: 'daniela', customerId: null, managerCustomerId: null },
-  autowatch:    { member: 'louise',  customerId: null, managerCustomerId: null },
-  autoid:       { member: 'louise',  customerId: null, managerCustomerId: null },
-  stjarnagloss: { member: 'daniela', customerId: null, managerCustomerId: null },
-  aslotel:      { member: 'daniela', customerId: null, managerCustomerId: null },
+  gfs:          { member: 'imogen' },
+  scl:          { member: 'daniela' },
+  autowatch:    { member: 'louise' },
+  autoid:       { member: 'louise' },
+  stjarnagloss: { member: 'daniela' },
+  aslotel:      { member: 'daniela' },
 };
+
+// The Google Ads Customer ID (and, if needed, the manager/MCC account id
+// used to reach it) is looked up here instead of hardcoded above, because
+// one connected Google login can see MULTIPLE clients' ad accounts — e.g.
+// Daniela connects once, but SCL, Stjärnagloss and Aslotel each need their
+// OWN customer id so the daily pull never mixes up whose numbers are
+// whose. Set from the admin page's "Live Metrics" panel (POST
+// /customer-id), which lists the connected login's accessible accounts
+// via /google-ads-accounts so a person picks the right one per client.
+async function getClientCustomerConfig(env, slug) {
+  const raw = await env.OAUTH_TOKENS.get(`customerid:${slug}`);
+  if (!raw) return { customerId: null, managerCustomerId: null };
+  return JSON.parse(raw);
+}
+
+function isValidCustomerId(s) {
+  return typeof s === 'string' && /^\d{6,12}$/.test(s);
+}
 
 const GOOGLE_ADS_API_VERSION = 'v19';
 
@@ -252,14 +270,90 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
 async function computeMetricsForClient(env, slug) {
   const cfg = CLIENTS_CONFIG[slug];
   if (!cfg) return { configured: false, reason: `Unknown client "${slug}"` };
-  if (!cfg.customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet' };
+
+  const { customerId, managerCustomerId } = await getClientCustomerConfig(env, slug);
+  if (!customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet — set it from the admin page\'s Live Metrics panel' };
 
   const statusRaw = await env.OAUTH_TOKENS.get(`member:${cfg.member}`);
   if (!statusRaw) return { configured: false, reason: `${cfg.member} hasn't connected a Google account yet` };
 
   const accessToken = await getFreshAccessToken(env, cfg.member);
-  const data = await fetchGoogleAdsMetrics(accessToken, cfg.customerId, cfg.managerCustomerId, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+  const data = await fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId, env.GOOGLE_ADS_DEVELOPER_TOKEN);
   return { configured: true, data };
+}
+
+// Lists the Google Ads accounts visible to a connected member's login, with
+// a best-effort descriptive name for each — so the admin page can show
+// "OffGrid Pro Ltd (1540152294)" instead of a bare number, making it much
+// harder to pick the wrong client's account by mistake. A name lookup that
+// fails (e.g. an account only reachable through a manager/MCC login this
+// Worker isn't told about) still lists the id, just without a name.
+async function listGoogleAdsAccountsForMember(env, member) {
+  const accessToken = await getFreshAccessToken(env, member);
+  const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+  const accounts = await Promise.all(ids.map(async (id) => {
+    try {
+      const rows = await googleAdsSearch(accessToken, id, null, env.GOOGLE_ADS_DEVELOPER_TOKEN, 'SELECT customer.descriptive_name FROM customer LIMIT 1');
+      return { id, name: rows[0]?.customer?.descriptiveName || null };
+    } catch {
+      return { id, name: null };
+    }
+  }));
+  return accounts;
+}
+
+async function handleGoogleAdsAccounts(url, env, origin) {
+  const member = url.searchParams.get('member');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+  try {
+    const accounts = await listGoogleAdsAccountsForMember(env, member);
+    return jsonResponse({ accounts }, 200, headers);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+}
+
+async function handleGetCustomerId(url, env, origin) {
+  const slug = url.searchParams.get('client');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!slug || !CLIENTS_CONFIG[slug]) {
+    return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
+  }
+  const cfg = await getClientCustomerConfig(env, slug);
+  return jsonResponse(cfg, 200, headers);
+}
+
+async function handleSetCustomerId(request, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid JSON body' }, 400, headers);
+  }
+  const { client, customerId, managerCustomerId } = body || {};
+  if (!client || !CLIENTS_CONFIG[client]) {
+    return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
+  }
+  if (!isValidCustomerId(customerId)) {
+    return jsonResponse({ error: 'customerId must be 6-12 digits, no dashes' }, 400, headers);
+  }
+  if (managerCustomerId != null && managerCustomerId !== '' && !isValidCustomerId(managerCustomerId)) {
+    return jsonResponse({ error: 'managerCustomerId must be 6-12 digits, no dashes' }, 400, headers);
+  }
+  await env.OAUTH_TOKENS.put(`customerid:${client}`, JSON.stringify({
+    customerId,
+    managerCustomerId: managerCustomerId || null,
+    setAt: new Date().toISOString(),
+  }));
+  // Invalidate any cached metrics so the very next /metrics call for this
+  // client re-pulls with the newly-set account instead of serving a stale
+  // "not configured" (or, worse, a previous client's) cached result.
+  await env.OAUTH_TOKENS.delete(`metrics:${client}`);
+  return jsonResponse({ ok: true }, 200, headers);
 }
 
 // Called once a day by the Cron Trigger (see the scheduled() export below).
@@ -519,6 +613,9 @@ export default {
     if (url.pathname === '/preview') return handlePreview(url, env, origin);
     if (url.pathname === '/metrics') return handleMetrics(url, env, origin);
     if (url.pathname === '/metrics/refresh') return handleMetricsRefresh(url, env, origin);
+    if (url.pathname === '/google-ads-accounts') return handleGoogleAdsAccounts(url, env, origin);
+    if (url.pathname === '/customer-id' && request.method === 'GET') return handleGetCustomerId(url, env, origin);
+    if (url.pathname === '/customer-id' && request.method === 'POST') return handleSetCustomerId(request, env, origin);
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
