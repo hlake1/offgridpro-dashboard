@@ -125,7 +125,7 @@
       </div>
       <div>
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Account Manager</p>
-        <p class="font-medium text-gray-900 mt-1.5">Daniela · Tweak</p>
+        <p id="account-manager-value" class="font-medium text-gray-900 mt-1.5">Daniela · Tweak</p>
       </div>
     </div>
   </section>
@@ -378,5 +378,32 @@
   })();
 </script>
 
+
+<script>
+(function () {
+  function getToken() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return (s && s.token) || null;
+    } catch { return null; }
+  }
+  const token = getToken();
+  if (!token) return;
+  fetch('https://tweak-reports.herbielakeai.workers.dev/clients/one?client=stjarnagloss', {
+    headers: { Authorization: 'Bearer ' + token },
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((data) => {
+      const am = data && data.client && data.client.accountManager;
+      if (am) {
+        const el = document.getElementById('account-manager-value');
+        if (el) el.textContent = am + ' · Tweak';
+      }
+    })
+    .catch(() => {});
+})();
+</script>
 </body>
 </html>

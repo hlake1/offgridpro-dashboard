@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tweak Reporting — Account Managers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --tw-dark: #0f172a;
+    --tw-text: #1a1a1a;
+    --tw-muted: #666;
+    --tw-light: #f7f8f4;
+    --tw-accent-1: #a3c94a;
+    --tw-accent-2: #4bc7bf;
+    --tw-accent-3: #5aa5d8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--tw-text);
+    background: #ffffff;
+    font-weight: 400;
+  }
+  h1, h2, h3, h4 { font-weight: 500; letter-spacing: -0.01em; color: var(--tw-dark); }
+  .tw-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--tw-accent-1) 0%, var(--tw-accent-2) 50%, var(--tw-accent-3) 100%);
+    border-radius: 2px;
+  }
+  .tw-hero {
+    background:
+      linear-gradient(rgba(15,23,42,0.85) 0%, rgba(10,10,10,0.92) 100%),
+      linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  .am-row { border-bottom: 1px solid #e5e7eb; }
+  .am-row:last-child { border-bottom: none; }
+  .am-select {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fff;
+    min-width: 160px;
+  }
+  .am-select:disabled { opacity: 0.6; }
+  .am-status { font-size: 0.75rem; min-width: 90px; text-align: right; }
+  .am-status.saving { color: #6b7280; }
+  .am-status.saved { color: #15803d; }
+  .am-status.error { color: #dc2626; }
+</style>
+</head>
+<body>
+
+<header class="tw-hero px-6 py-14">
+  <div class="max-w-6xl mx-auto">
+    <a href="./" class="text-white/70 text-sm hover:text-white transition-colors">← Back to Manager Overview</a>
+    <h1 class="text-3xl md:text-4xl font-medium text-white leading-tight mt-4">Account Managers</h1>
+    <div class="tw-accent-bar w-32 mt-6"></div>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
+      Reassign which team member manages each client. Changes save immediately and show up everywhere — the client's own dashboard, the team portal, and this manager overview — without anyone needing to touch code.
+    </p>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-6 py-16">
+  <div id="status-banner" class="hidden mb-6 px-4 py-3 rounded-sm text-sm"></div>
+
+  <div id="loading" class="text-gray-500 text-sm">Loading clients…</div>
+
+  <div id="client-list" class="hidden border border-gray-200 rounded-sm divide-y divide-gray-200"></div>
+</main>
+
+<script>
+  const WORKER_URL = 'https://tweak-reports.herbielakeai.workers.dev';
+
+  // Kept in sync with TEAM_MEMBERS in scripts/build-client-profiles.js.
+  const TEAM_MEMBER_NAMES = ['Daniela', 'Imogen', 'Louise', 'Herbie', 'Rob', 'Jeremy', 'Bethanie', 'Georgia'];
+
+  // Friendly display names — shown while the live list loads / as a label fallback.
+  const CLIENT_LABELS = {
+    'offgridpro':     'OffGrid Pro',
+    'gfs':            'GFS',
+    'scl':            'SCL',
+    'autowatch':      'Autowatch',
+    'autoid':         'AUTOID',
+    'stjarnagloss':   'Stjärnagloss',
+    'aslotel':        'Aslotel',
+    'bafmotorsport':  'BAF Motorsport',
+    'ipps':           'IPPS',
+  };
+
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch { return null; }
+  }
+
+  function requireManagerSession() {
+    const s = getSession();
+    if (!s || (s.type !== 'manager' && s.type !== 'admin') || !s.token) {
+      window.location.replace('../');
+      return null;
+    }
+    return s;
+  }
+
+  function escapeHtml(s) {
+    return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+    ));
+  }
+
+  function showBanner(message, kind) {
+    const el = document.getElementById('status-banner');
+    el.textContent = message;
+    el.className = 'mb-6 px-4 py-3 rounded-sm text-sm ' + (
+      kind === 'error'
+        ? 'bg-red-50 text-red-700 border border-red-200'
+        : 'bg-amber-50 text-amber-800 border border-amber-200'
+    );
+  }
+
+  async function loadClients(session) {
+    const res = await fetch(`${WORKER_URL}/clients/list`, {
+      headers: { Authorization: 'Bearer ' + session.token },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `Failed to load clients (${res.status})`);
+    }
+    const data = await res.json();
+    return data.clients || [];
+  }
+
+  async function saveAccountManager(session, slug, accountManager) {
+    const res = await fetch(`${WORKER_URL}/clients/account-manager`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + session.token,
+      },
+      body: JSON.stringify({ slug, accountManager }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Failed to save (${res.status})`);
+    return body.client;
+  }
+
+  function renderClients(session, clients) {
+    const listEl = document.getElementById('client-list');
+    const sorted = [...clients].sort((a, b) => {
+      const la = CLIENT_LABELS[a.slug] || a.slug;
+      const lb = CLIENT_LABELS[b.slug] || b.slug;
+      return la.localeCompare(lb);
+    });
+
+    listEl.innerHTML = sorted.map((c) => {
+      const label = CLIENT_LABELS[c.slug] || c.slug;
+      const options = TEAM_MEMBER_NAMES.map((name) => {
+        const selected = name === c.accountManager ? 'selected' : '';
+        return `<option value="${escapeHtml(name)}" ${selected}>${escapeHtml(name)}</option>`;
+      }).join('');
+      const unassigned = !c.accountManager
+        ? `<option value="" selected disabled>Unassigned</option>`
+        : '';
+      return `
+        <div class="am-row flex items-center justify-between gap-4 px-5 py-4" data-slug="${escapeHtml(c.slug)}">
+          <div>
+            <p class="font-medium text-gray-900">${escapeHtml(label)}</p>
+            <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(c.slug)}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="am-status" data-role="status"></span>
+            <select class="am-select" data-role="select">
+              ${unassigned}
+              ${options}
+            </select>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    listEl.querySelectorAll('.am-row').forEach((row) => {
+      const slug = row.getAttribute('data-slug');
+      const select = row.querySelector('[data-role="select"]');
+      const status = row.querySelector('[data-role="status"]');
+
+      select.addEventListener('change', async () => {
+        const newManager = select.value;
+        const previous = select.getAttribute('data-previous') || '';
+        select.disabled = true;
+        status.textContent = 'Saving…';
+        status.className = 'am-status saving';
+        try {
+          await saveAccountManager(session, slug, newManager);
+          select.setAttribute('data-previous', newManager);
+          status.textContent = 'Saved';
+          status.className = 'am-status saved';
+          setTimeout(() => { status.textContent = ''; }, 2500);
+        } catch (err) {
+          select.value = previous;
+          status.textContent = err.message || 'Failed to save';
+          status.className = 'am-status error';
+        } finally {
+          select.disabled = false;
+        }
+      });
+
+      select.setAttribute('data-previous', select.value);
+    });
+
+    document.getElementById('loading').classList.add('hidden');
+    listEl.classList.remove('hidden');
+  }
+
+  (async function init() {
+    const session = requireManagerSession();
+    if (!session) return;
+    try {
+      const clients = await loadClients(session);
+      if (!clients.length) {
+        showBanner('No clients found — if this is unexpected, the worker may need the /clients/list endpoint deployed and the "clients" table may be missing its account_manager column.', 'error');
+      }
+      renderClients(session, clients);
+    } catch (err) {
+      document.getElementById('loading').classList.add('hidden');
+      showBanner(err.message || 'Could not load the client list.', 'error');
+    }
+  })();
+</script>
+
+<script src="../assets/account-widget.js" data-setup="../account-setup.html"></script>
+</body>
+</html>

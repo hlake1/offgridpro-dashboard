@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Innovative Paint Protection — Monthly Report Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/reports-store.js"></script>
+<script>
+  window.IPPSAuth.ensureAuth();
+  document.addEventListener('ipps:auth', (e) => {
+    if (e.detail.role !== 'admin') location.replace('../');
+  });
+  if (window.IPPSAuth.isAuthed() && !window.IPPSAuth.isAdmin()) location.replace('../');
+</script>
+<style>
+  :root {
+    --cl-text: #333;
+    --cl-muted: #666;
+    --cl-light: #f6f9fc;
+    --cl-1: #0b2545;
+    --cl-2: #13315c;
+    --cl-3: #4f80b8;
+    --cl-dark: #060f1d;
+  }
+  body {
+    font-family: 'Montserrat', Helvetica, Arial, sans-serif;
+    color: var(--cl-text);
+    background: #f6f9fc;
+  }
+  h1, h2, h3 { font-weight: 500; letter-spacing: -0.01em; color: var(--cl-dark); }
+  .cl-accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--cl-1) 0%, var(--cl-2) 55%, var(--cl-3) 100%);
+    border-radius: 2px;
+  }
+  .cl-hero {
+    background:
+      linear-gradient(rgba(0,0,0,0.55) 0%, rgba(10,10,10,0.45) 100%),
+      linear-gradient(135deg, #060f1d 0%, #0b2545 60%, #13315c 100%);
+  }
+  .card { background:#fff; border:1px solid #e5e7eb; }
+  .qbox label { display:block; font-weight:600; color:#1a1a1a; margin-bottom: 0.25rem; }
+  .qbox .hint { color:#6b7280; font-size:0.85rem; margin-bottom: 0.65rem; }
+  .qbox textarea, .qbox input[type="text"], .qbox input[type="month"], .qbox input[type="number"], .qbox select {
+    width:100%; padding: 0.7rem 0.9rem; font-size:0.95rem;
+    border:1px solid #e5e7eb; border-radius:4px; background:#f8faf5;
+    font-family: inherit; outline:none; transition:border 0.15s ease, background 0.15s ease;
+    resize: vertical;
+  }
+  .qbox textarea:focus, .qbox input:focus, .qbox select:focus { border-color:var(--cl-2); background:#fff; }
+  .qnum {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:999px;
+    background:var(--cl-dark); color:#fff; font-size:0.8rem; font-weight:600;
+    margin-right:0.6rem;
+  }
+  .btn { padding: 0.65rem 1.4rem; font-weight:500; letter-spacing:0.02em; border-radius:2px; cursor:pointer; transition: background 0.15s ease; }
+  .btn-primary { background:var(--cl-dark); color:#fff; border:0; }
+  .btn-primary:hover { filter: brightness(1.25); }
+  .btn-ghost { background:transparent; color:#1a1a1a; border:1px solid #e5e7eb; }
+  .btn-ghost:hover { background:#f3f4f6; }
+  .admin-badge {
+    background:var(--cl-dark); color:#fff; font-size:10px; letter-spacing:0.15em;
+    text-transform:uppercase; padding: 3px 8px; border-radius: 2px; font-weight:600;
+  }
+  .save-flash {
+    background:#dcfce7; color:#166534; padding: 6px 12px; border-radius:2px;
+    font-size:0.8rem; font-weight:600;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  .save-flash.on { opacity: 1; }
+
+  .stepper { display:flex; align-items:center; gap:0; }
+  .step-pill {
+    display:inline-flex; align-items:center; gap:0.5rem;
+    font-size:0.8rem; font-weight:600; letter-spacing:0.02em;
+  }
+  .step-dot {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:999px;
+    border:2px solid rgba(255,255,255,0.35); color:rgba(255,255,255,0.7);
+    font-size:0.78rem; font-weight:700;
+  }
+  .step-pill.active .step-dot { background:#fff; border-color:#fff; color:#1a1a1a; }
+  .step-pill.active { color:#fff; }
+  .step-pill.done .step-dot { background:var(--cl-3); border-color:var(--cl-3); color:#060f1d; }
+  .step-pill.done { color:#fff; }
+  .step-line { width:44px; height:2px; background:rgba(255,255,255,0.25); margin:0 0.75rem; }
+  .step-line.done { background:var(--cl-1); }
+
+  .data-grid { width:100%; border-collapse:collapse; }
+  .data-grid th {
+    text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em;
+    color:#6b7280; font-weight:700; padding:0.5rem 0.5rem; border-bottom:1px solid #e5e7eb;
+    white-space:nowrap;
+  }
+  .data-grid td { padding:0.35rem 0.4rem; vertical-align:middle; }
+  .data-grid input, .data-grid select {
+    width:100%; padding:0.5rem 0.55rem; font-size:0.9rem;
+    border:1px solid #e5e7eb; border-radius:4px; background:#f8faf5;
+    font-family:inherit; outline:none;
+  }
+  .data-grid input:focus, .data-grid select:focus { border-color:var(--cl-2); background:#fff; }
+  .data-grid .col-num input { text-align:right; }
+  .row-del {
+    background:transparent; border:0; color:#b91c1c; font-size:1.1rem; line-height:1;
+    cursor:pointer; padding:0.25rem 0.4rem; border-radius:4px;
+  }
+  .row-del:hover { background:#fee2e2; }
+  .field-suffix { position:relative; }
+  .field-suffix .suffix {
+    position:absolute; right:0.9rem; top:50%; transform:translateY(-50%);
+    color:#9ca3af; font-size:0.85rem; pointer-events:none;
+  }
+  .field-suffix input { padding-right:2rem !important; }
+  .auto-note { color:#9ca3af; font-size:0.72rem; margin-top:0.2rem; }
+</style>
+</head>
+<body>
+
+<header class="cl-hero text-white">
+  <div class="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
+    <div class="flex items-center gap-4">
+      <a href="../" class="text-white/70 hover:text-white text-xs uppercase tracking-widest">← Dashboard</a>
+      <span class="text-white/30">·</span>
+      <span class="admin-badge">Admin · Tweak</span>
+    </div>
+    <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
+  </div>
+  <div class="max-w-4xl mx-auto px-6 py-14">
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly report builder · Innovative Paint Protection</p>
+    <h1 class="text-4xl font-medium text-white">Build the next report</h1>
+    <div class="cl-accent-bar w-24 mt-5"></div>
+    <p id="hero-sub" class="text-white/80 mt-5 max-w-2xl">Step 1 — answer the questions below. Next you'll enter the month's metrics, then we assemble a draft you can review, tweak and publish.</p>
+
+    <div class="stepper mt-8">
+      <div id="pill-1" class="step-pill active"><span class="step-dot">1</span><span>Questions</span></div>
+      <div id="line-1" class="step-line"></div>
+      <div id="pill-2" class="step-pill"><span class="step-dot">2</span><span>Data</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto px-6 py-12 space-y-6">
+
+  <div id="step-1">
+    <section class="card p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="qbox">
+          <label for="month">Report month</label>
+          <p class="hint">Which month is this report covering?</p>
+          <input id="month" type="month" required />
+        </div>
+        <div class="qbox">
+          <label for="author">Prepared by</label>
+          <p class="hint">Optional — shown in the report footer.</p>
+          <input id="author" type="text" placeholder="e.g. Bethanie · Tweak Marketing" />
+        </div>
+      </div>
+    </section>
+
+    <form id="q-form" class="space-y-6 mt-6" autocomplete="off"></form>
+
+    <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
+      <div class="flex items-center gap-3">
+        <button id="save-draft-1" type="button" class="btn btn-ghost">Save draft</button>
+        <span id="save-flash-1" class="save-flash">Saved</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="../" class="text-sm text-gray-600 hover:text-gray-900">Cancel</a>
+        <button id="to-step-2" type="button" class="btn btn-primary">Next: Add data →</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="step-2" class="hidden">
+
+    <section class="card p-6" id="team-member-card">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Connecting as</h2>
+          <p class="hint mt-1">Any team member's connected account works for any client — pick whoever's logged in below before connecting or pulling data.</p>
+        </div>
+        <select id="team-member-select" class="qbox" style="min-width:180px;"></select>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6" id="meta-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Meta Ads (Facebook/Instagram)</h2>
+          <p class="hint mt-1" id="meta-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="meta-badge">Checking…</span>
+      </div>
+
+      <div id="meta-connect-row" class="mt-4" style="display:none;">
+        <a id="meta-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Meta Ads</a>
+        <p class="hint mt-2">Opens Meta's sign-in in a new tab. Once approved, come back and click "Refresh".</p>
+        <button id="meta-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+
+      <div id="meta-pull-row" class="mt-4 flex items-end gap-3 flex-wrap" style="display:none;">
+        <div class="qbox" style="min-width:260px;">
+          <label for="meta-account">Ad account</label>
+          <select id="meta-account"></select>
+        </div>
+        <button id="meta-pull" type="button" class="btn btn-primary">Pull Meta data for this month</button>
+        <span id="meta-pull-flash" class="save-flash">Pulled</span>
+      </div>
+      <p id="meta-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+    </section>
+
+    <section class="card p-6 mt-6" id="google-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Google Ads &amp; Analytics</h2>
+          <p class="hint mt-1" id="google-status-text">Checking connection…</p>
+        </div>
+        <span class="admin-badge" id="google-badge">Checking…</span>
+      </div>
+
+      <div id="google-connect-row" class="mt-4" style="display:none;">
+        <a id="google-connect-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Connect Google Account</a>
+        <p class="hint mt-2">This app is still going through Google's review, so you may see an "unverified app" warning — that's expected for now. Connecting now means it's ready the moment that's approved.</p>
+        <button id="google-refresh" type="button" class="btn btn-ghost text-sm mt-2">Refresh connection status</button>
+      </div>
+
+      <div id="google-preview-row" class="mt-4" style="display:none;">
+        <button id="google-preview" type="button" class="btn btn-secondary">Preview connected Google data</button>
+        <span id="google-preview-flash" class="save-flash">Pulled</span>
+        <p id="google-preview-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+        <div id="google-preview-results" class="mt-3" style="display:none;">
+          <p class="hint"><strong>Analytics accounts</strong> (read via <code>analytics.readonly</code>):</p>
+          <ul id="google-preview-analytics" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Search Console sites</strong> (read via <code>webmasters.readonly</code>):</p>
+          <ul id="google-preview-searchconsole" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <p class="hint mt-2"><strong>Google Ads accounts</strong> (read via <code>adwords</code>):</p>
+          <ul id="google-preview-ads" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Google Ads metrics</h2>
+          <p class="hint mt-1">Enter manually, or use the Meta Ads pull above to fill these in — edit anything below before generating.</p>
+        </div>
+        <span class="admin-badge">Manual entry</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+        <div class="qbox">
+          <label for="t_impressions">Impressions</label>
+          <input id="t_impressions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 5408" />
+        </div>
+        <div class="qbox">
+          <label for="t_clicks">Clicks</label>
+          <input id="t_clicks" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 351" />
+        </div>
+        <div class="qbox">
+          <label for="t_conversions">Conversions</label>
+          <input id="t_conversions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 5" />
+        </div>
+        <div class="qbox">
+          <label for="t_cost">Total spend</label>
+          <div class="field-suffix"><span class="suffix">£</span><input id="t_cost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 496.71" style="padding-left:1.6rem !important;" /></div>
+        </div>
+        <div class="qbox">
+          <label for="t_ctr">CTR</label>
+          <div class="field-suffix"><input id="t_ctr" type="number" min="0" step="0.01" inputmode="decimal" placeholder="auto" /><span class="suffix">%</span></div>
+          <p class="auto-note">Leave blank to auto-calc from clicks ÷ impressions.</p>
+        </div>
+        <div class="qbox">
+          <label for="t_cpc">CPC</label>
+          <div class="field-suffix"><span class="suffix">£</span><input id="t_cpc" type="number" min="0" step="0.01" inputmode="decimal" placeholder="auto" style="padding-left:1.6rem !important;" /></div>
+          <p class="auto-note">Leave blank to auto-calc from spend ÷ clicks.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card p-6 mt-6">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 class="text-xl font-medium">Campaigns</h2>
+          <p class="hint mt-1">Break spend down by campaign. The top ENABLED campaign (by clicks) is highlighted in the report.</p>
+        </div>
+        <button id="add-campaign" type="button" class="btn btn-ghost text-sm">+ Add campaign</button>
+      </div>
+
+      <div class="overflow-x-auto mt-5">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th style="min-width:150px;">Name</th>
+              <th style="min-width:110px;">Status</th>
+              <th style="min-width:110px;">Channel</th>
+              <th class="col-num">Impr.</th>
+              <th class="col-num">Clicks</th>
+              <th class="col-num">Conv.</th>
+              <th class="col-num" style="min-width:90px;">Spend £</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="campaign-rows"></tbody>
+        </table>
+      </div>
+      <p class="hint mt-3">CTR &amp; CPC per campaign are auto-calculated from the figures above.</p>
+    </section>
+
+    <section class="card p-6 mt-6" id="se-ranking-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">SE Ranking data</h2>
+          <p class="hint mt-1">Not automated — upload a CSV export from your rank tracker, or add rows by hand. CSV columns recognised: Keyword, Position, URL, Search volume, Change (any order, extra columns ignored).</p>
+        </div>
+        <span class="admin-badge">Manual entry</span>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap mt-4">
+        <label class="btn btn-ghost text-sm" style="cursor:pointer;">
+          Upload CSV
+          <input id="se-csv-input" type="file" accept=".csv,text/csv" style="display:none;" />
+        </label>
+        <button id="add-se-row" type="button" class="btn btn-ghost text-sm">+ Add keyword</button>
+      </div>
+      <p id="se-csv-status" class="hint mt-2" style="display:none;"></p>
+
+      <div class="overflow-x-auto mt-5">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th style="min-width:180px;">Keyword</th>
+              <th class="col-num" style="min-width:80px;">Position</th>
+              <th style="min-width:180px;">URL</th>
+              <th class="col-num" style="min-width:100px;">Search vol.</th>
+              <th class="col-num" style="min-width:80px;">Change</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="se-ranking-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
+      <div class="flex items-center gap-3">
+        <button id="back-step-1" type="button" class="btn btn-ghost">← Back to questions</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="save-draft-2" type="button" class="btn btn-ghost">Save draft</button>
+        <span id="save-flash-2" class="save-flash">Saved</span>
+        <button id="generate" type="button" class="btn btn-primary">Generate draft report →</button>
+      </div>
+    </section>
+
+    <p id="ai-status" class="text-xs text-gray-500 mt-2" style="display:none;"></p>
+
+  </div>
+
+</main>
+
+<script>
+(async function () {
+  const qs = new URLSearchParams(location.search);
+  const editingId = qs.get('id');
+
+  // AI report assistant — see /cloudflare-worker/. Polishes the answers
+  // below into client-ready copy and adds a few data-grounded insights.
+  // Never touches the actual metrics; falls back to the plain
+  // question-to-field mapping if the Worker is unreachable or errors.
+  const AI_WORKER_URL = 'https://tweak-report-ai.herbielakeai.workers.dev';
+
+  const form = document.getElementById('q-form');
+  const monthEl = document.getElementById('month');
+  const authorEl = document.getElementById('author');
+
+  const step1El = document.getElementById('step-1');
+  const step2El = document.getElementById('step-2');
+  const heroSub = document.getElementById('hero-sub');
+  const campaignRows = document.getElementById('campaign-rows');
+  const seRankingRows = document.getElementById('se-ranking-rows');
+
+  const CHANNELS = ['SEARCH', 'PERFORMANCE_MAX', 'DISPLAY', 'SHOPPING', 'VIDEO', 'DEMAND_GEN'];
+  const STATUSES = ['ENABLED', 'PAUSED', 'REMOVED'];
+
+  function setStep(n) {
+    const p1 = document.getElementById('pill-1');
+    const p2 = document.getElementById('pill-2');
+    const line = document.getElementById('line-1');
+    if (n === 1) {
+      step1El.classList.remove('hidden');
+      step2El.classList.add('hidden');
+      p1.className = 'step-pill active'; p2.className = 'step-pill';
+      line.className = 'step-line';
+      heroSub.textContent = "Step 1 — answer the questions below. Next you'll enter the month's metrics, then we assemble a draft you can review, tweak and publish.";
+    } else {
+      step1El.classList.add('hidden');
+      step2El.classList.remove('hidden');
+      p1.className = 'step-pill done'; p2.className = 'step-pill active';
+      line.className = 'step-line done';
+      heroSub.textContent = "Step 2 — enter this month's Google Ads figures. These power the metrics + top-campaign panels in the report.";
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function defaultMonth() {
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const m = now.getUTCMonth();
+    const d = new Date(Date.UTC(y, m - 1, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+  }
+
+  function renderQuestions(values) {
+    values = values || {};
+    form.innerHTML = window.IPPSReports.QUESTIONS.map((q, i) => {
+      const v = values[q.id] || '';
+      return `
+        <section class="card p-6 qbox">
+          <label for="${q.id}"><span class="qnum">${i+1}</span>${q.label}</label>
+          <p class="hint" style="margin-left: 2.15rem;">${q.hint}</p>
+          <textarea id="${q.id}" name="${q.id}" rows="${i === 6 ? 5 : 3}" placeholder="Your answer…">${v.replace(/</g,'&lt;')}</textarea>
+        </section>
+      `;
+    }).join('');
+  }
+
+  function readAnswers() {
+    const answers = {};
+    window.IPPSReports.QUESTIONS.forEach(q => {
+      const el = document.getElementById(q.id);
+      if (el) answers[q.id] = el.value.trim();
+    });
+    return answers;
+  }
+
+  function campaignRowHTML(c2) {
+    c2 = c2 || {};
+    const statusOpts = STATUSES.map(s => `<option value="${s}" ${c2.status===s?'selected':''}>${s.charAt(0)+s.slice(1).toLowerCase()}</option>`).join('');
+    const chanOpts = CHANNELS.map(ch => `<option value="${ch}" ${c2.channelType===ch?'selected':''}>${ch.replace(/_/g,' ')}</option>`).join('');
+    return `
+      <tr>
+        <td><input type="text" class="c-name" value="${(c2.name||'').replace(/"/g,'&quot;')}" placeholder="Campaign name" /></td>
+        <td><select class="c-status">${statusOpts}</select></td>
+        <td><select class="c-channel">${chanOpts}</select></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-impr" value="${c2.impressions ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-clicks" value="${c2.clicks ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="c-conv" value="${c2.conversions ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="0.01" class="c-cost" value="${c2.cost ?? ''}" /></td>
+        <td><button type="button" class="row-del" title="Remove">×</button></td>
+      </tr>`;
+  }
+
+  function addCampaignRow(c2) {
+    campaignRows.insertAdjacentHTML('beforeend', campaignRowHTML(c2));
+    const row = campaignRows.lastElementChild;
+    row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function seRowHTML(r2) {
+    r2 = r2 || {};
+    return `
+      <tr>
+        <td><input type="text" class="se-keyword" value="${(r2.keyword||'').replace(/"/g,'&quot;')}" placeholder="e.g. electric gates" /></td>
+        <td class="col-num"><input type="text" class="se-position" value="${(r2.position||'').replace(/"/g,'&quot;')}" placeholder="e.g. 4" /></td>
+        <td><input type="text" class="se-url" value="${(r2.url||'').replace(/"/g,'&quot;')}" placeholder="/product-page" /></td>
+        <td class="col-num"><input type="text" class="se-volume" value="${(r2.volume||'').replace(/"/g,'&quot;')}" placeholder="e.g. 720" /></td>
+        <td class="col-num"><input type="text" class="se-change" value="${(r2.change||'').replace(/"/g,'&quot;')}" placeholder="e.g. +2" /></td>
+        <td><button type="button" class="row-del" title="Remove">×</button></td>
+      </tr>`;
+  }
+
+  function addSeRow(r2) {
+    seRankingRows.insertAdjacentHTML('beforeend', seRowHTML(r2));
+    const row = seRankingRows.lastElementChild;
+    row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function readSeRankings() {
+    const rows = Array.from(seRankingRows.querySelectorAll('tr'));
+    if (!rows.length) return null;
+    const out = [];
+    rows.forEach((row) => {
+      const keyword = row.querySelector('.se-keyword').value.trim();
+      const position = row.querySelector('.se-position').value.trim();
+      const url = row.querySelector('.se-url').value.trim();
+      const volume = row.querySelector('.se-volume').value.trim();
+      const change = row.querySelector('.se-change').value.trim();
+      if (!keyword && !position && !url && !volume && !change) return;
+      out.push({ keyword, position, url, volume, change });
+    });
+    if (!out.length) return null;
+    return { rows: out, updatedAt: new Date().toISOString() };
+  }
+
+  function loadSeRankings(sr) {
+    seRankingRows.innerHTML = '';
+    ((sr && sr.rows) || []).forEach(addSeRow);
+    if (!sr || !(sr.rows || []).length) addSeRow({});
+  }
+
+  function parseCSV(text) {
+    const CR = String.fromCharCode(13);
+    const LF = String.fromCharCode(10);
+    const rows = [];
+    let i = 0, field = '', row = [], inQuotes = false;
+    while (i < text.length) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+      if (ch === '"') { inQuotes = true; i++; continue; }
+      if (ch === ',') { row.push(field); field = ''; i++; continue; }
+      if (ch === CR) { i++; continue; }
+      if (ch === LF) { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+      field += ch; i++;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ''));
+  }
+
+  function csvToSeRankingRows(text) {
+    const table = parseCSV(text);
+    if (!table.length) return [];
+    const header = table[0].map(h => h.trim().toLowerCase());
+    const findCol = (names) => header.findIndex(h => names.includes(h));
+    const kwIdx = findCol(['keyword', 'term', 'search term', 'query']);
+    const posIdx = findCol(['position', 'rank', 'ranking']);
+    const urlIdx = findCol(['url', 'page', 'landing page']);
+    const volIdx = findCol(['search volume', 'volume', 'searches', 'monthly searches']);
+    const chgIdx = findCol(['change', 'movement', 'delta']);
+    const hasHeader = kwIdx !== -1 || posIdx !== -1;
+    const dataRows = hasHeader ? table.slice(1) : table;
+    const out = [];
+    dataRows.forEach((r2) => {
+      const keyword = (kwIdx !== -1 ? r2[kwIdx] : r2[0]) || '';
+      if (!keyword.trim()) return;
+      out.push({
+        keyword: keyword.trim(),
+        position: ((posIdx !== -1 ? r2[posIdx] : r2[1]) || '').trim(),
+        url: ((urlIdx !== -1 ? r2[urlIdx] : (hasHeader ? '' : r2[2])) || '').trim(),
+        volume: ((volIdx !== -1 ? r2[volIdx] : (hasHeader ? '' : r2[3])) || '').trim(),
+        change: ((chgIdx !== -1 ? r2[chgIdx] : (hasHeader ? '' : r2[4])) || '').trim(),
+      });
+    });
+    return out;
+  }
+
+  function readTotals() {
+    const num = (id) => {
+      const raw = document.getElementById(id).value.trim();
+      return raw === '' ? null : Number(raw);
+    };
+    let impressions = num('t_impressions');
+    let clicks = num('t_clicks');
+    let conversions = num('t_conversions');
+    let cost = num('t_cost');
+    let ctr = num('t_ctr');
+    let cpc = num('t_cpc');
+
+    if (ctr === null && impressions) ctr = +( (clicks || 0) / impressions * 100 ).toFixed(2);
+    if (cpc === null && clicks) cpc = +( (cost || 0) / clicks ).toFixed(2);
+
+    if (impressions === null && clicks === null && conversions === null && cost === null) return null;
+
+    return {
+      impressions: impressions || 0,
+      clicks: clicks || 0,
+      conversions: conversions || 0,
+      cost: cost || 0,
+      ctr: ctr || 0,
+      cpc: cpc || 0,
+    };
+  }
+
+  function readCampaigns() {
+    const rows = Array.from(campaignRows.querySelectorAll('tr'));
+    const out = [];
+    rows.forEach((row, i) => {
+      const name = row.querySelector('.c-name').value.trim();
+      const impr = row.querySelector('.c-impr').value.trim();
+      const clicks = row.querySelector('.c-clicks').value.trim();
+      const conv = row.querySelector('.c-conv').value.trim();
+      const cost = row.querySelector('.c-cost').value.trim();
+      if (!name && !impr && !clicks && !conv && !cost) return;
+      const impressions = impr === '' ? 0 : Number(impr);
+      const clickN = clicks === '' ? 0 : Number(clicks);
+      const costN = cost === '' ? 0 : Number(cost);
+      out.push({
+        id: 'manual-' + (i + 1),
+        name: name || `Campaign ${i + 1}`,
+        status: row.querySelector('.c-status').value,
+        channelType: row.querySelector('.c-channel').value,
+        impressions,
+        clicks: clickN,
+        conversions: conv === '' ? 0 : Number(conv),
+        cost: costN,
+        ctr: impressions ? +((clickN / impressions) * 100).toFixed(2) : 0,
+        cpc: clickN ? +(costN / clickN).toFixed(2) : 0,
+      });
+    });
+    return out;
+  }
+
+  function readManualData() {
+    const totals = readTotals();
+    const campaigns = readCampaigns();
+    if (!totals && campaigns.length === 0) return null;
+    return {
+      meta: { source: 'Manual entry (Tweak)', enteredAt: new Date().toISOString() },
+      totals: totals || null,
+      campaigns,
+    };
+  }
+
+  function loadManualData(md) {
+    if (!md) return;
+    const t = md.totals || {};
+    const setv = (id, v) => { if (v !== undefined && v !== null) document.getElementById(id).value = v; };
+    setv('t_impressions', t.impressions);
+    setv('t_clicks', t.clicks);
+    setv('t_conversions', t.conversions);
+    setv('t_cost', t.cost);
+    setv('t_ctr', t.ctr);
+    setv('t_cpc', t.cpc);
+    campaignRows.innerHTML = '';
+    (md.campaigns || []).forEach(addCampaignRow);
+    if ((md.campaigns || []).length === 0) addCampaignRow({});
+  }
+
+  function showFlash(elId, msg) {
+    const flash = document.getElementById(elId);
+    flash.textContent = msg || 'Saved';
+    flash.classList.add('on');
+    clearTimeout(flash._t);
+    flash._t = setTimeout(() => flash.classList.remove('on'), 1400);
+  }
+
+  // ---------------------------------------------------------------------
+  // "Connecting as" — any team member's Meta/Google connection works for
+  // any client, so this is one shared picker (not a fixed per-client
+  // member) remembered across the whole site via localStorage, not just
+  // this one report.
+  // ---------------------------------------------------------------------
+  const TEAM_MEMBERS = ["Daniela","Imogen","Louise","Herbie","Rob","Jeremy","Bethanie","Georgia"];
+  const TEAM_MEMBER_KEY = 'tweak_connect_member';
+  function slugify(name) { return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
+  let currentMember = localStorage.getItem(TEAM_MEMBER_KEY) || slugify('bethanie');
+  const teamMemberSelect = document.getElementById('team-member-select');
+  if (teamMemberSelect) {
+    teamMemberSelect.innerHTML = TEAM_MEMBERS.map((name) => {
+      const slug = slugify(name);
+      return `<option value="${slug}"${slug === currentMember ? ' selected' : ''}>${name}</option>`;
+    }).join('');
+    // The saved slug might belong to someone no longer in TEAM_MEMBERS, or
+    // no one's chosen yet on this browser — fall back to the first option.
+    if (!TEAM_MEMBERS.some((name) => slugify(name) === currentMember)) {
+      currentMember = slugify(TEAM_MEMBERS[0] || '');
+      teamMemberSelect.value = currentMember;
+    }
+    teamMemberSelect.addEventListener('change', () => {
+      currentMember = teamMemberSelect.value;
+      localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
+      refreshMetaStatus();
+      refreshGoogleStatus();
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Meta Ads pull — see /meta-ads-worker/. Fills the same totals/campaign
+  // fields above that manual entry uses, via loadManualData(), so nothing
+  // downstream (readManualData, generateSummary, the AI assistant call)
+  // needs to know or care whether the numbers came from a click or from
+  // typing. The account manager can still edit anything after pulling.
+  // ---------------------------------------------------------------------
+  const META_WORKER_URL = 'https://tweak-meta-ads.herbielakeai.workers.dev';
+  const META_ACCOUNT_KEY = 'ipps_reports_v1_meta_account';
+
+  const metaBadge = document.getElementById('meta-badge');
+  const metaStatusText = document.getElementById('meta-status-text');
+  const metaConnectRow = document.getElementById('meta-connect-row');
+  const metaConnectLink = document.getElementById('meta-connect-link');
+  const metaPullRow = document.getElementById('meta-pull-row');
+  const metaAccountSel = document.getElementById('meta-account');
+  const metaPullBtn = document.getElementById('meta-pull');
+  const metaPullError = document.getElementById('meta-pull-error');
+
+  function showMetaError(msg) {
+    metaPullError.textContent = msg || '';
+    metaPullError.style.display = msg ? 'block' : 'none';
+  }
+
+  function showMetaConnectRow() {
+    metaConnectLink.href = `${META_WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+    metaConnectRow.style.display = 'block';
+    metaPullRow.style.display = 'none';
+  }
+
+  async function loadMetaAccounts() {
+    try {
+      const res = await fetch(`${META_WORKER_URL}/accounts?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) { showMetaConnectRow(); return; }
+        throw new Error(data.error || 'Could not load ad accounts');
+      }
+      const accounts = data.accounts || [];
+      if (accounts.length === 0) {
+        metaAccountSel.innerHTML = '<option value="">No ad accounts found on this login</option>';
+        return;
+      }
+      const saved = localStorage.getItem(META_ACCOUNT_KEY);
+      metaAccountSel.innerHTML = accounts.map((a) =>
+        `<option value="${a.id}">${(a.name || a.id).replace(/</g, '&lt;')}${a.businessName ? ' — ' + a.businessName.replace(/</g, '&lt;') : ''}</option>`
+      ).join('');
+      if (saved && accounts.some((a) => a.id === saved)) metaAccountSel.value = saved;
+    } catch (err) {
+      showMetaError(String(err.message || err));
+    }
+  }
+
+  async function refreshMetaStatus() {
+    showMetaError('');
+    if (!META_WORKER_URL || !currentMember) {
+      metaBadge.textContent = 'Not set up';
+      metaStatusText.textContent = 'Meta Ads pull has no account manager configured for this client yet.';
+      metaConnectRow.style.display = 'none';
+      metaPullRow.style.display = 'none';
+      return;
+    }
+    metaStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(`${META_WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (data.connected) {
+        metaBadge.textContent = 'Connected';
+        metaStatusText.textContent = `Connected as ${data.name || currentMember}. Pick the ad account for this client, then pull.`;
+        metaConnectRow.style.display = 'none';
+        metaPullRow.style.display = 'flex';
+        await loadMetaAccounts();
+      } else if (data.expired) {
+        metaBadge.textContent = 'Reconnect needed';
+        metaStatusText.textContent = 'This connection expired (Meta connections last ~60 days) — reconnect to keep pulling live data.';
+        showMetaConnectRow();
+      } else {
+        metaBadge.textContent = 'Not connected';
+        metaStatusText.textContent = `${currentMember} hasn't connected a Meta account yet.`;
+        showMetaConnectRow();
+      }
+    } catch (err) {
+      metaBadge.textContent = 'Unavailable';
+      metaStatusText.textContent = 'Could not reach the Meta Ads Worker right now — you can still enter figures manually below.';
+    }
+  }
+
+  function monthToDateRange(month) {
+    const [y, m] = month.split('-').map(Number);
+    const since = `${y}-${String(m).padStart(2, '0')}-01`;
+    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const until = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    return { since, until };
+  }
+
+  metaAccountSel?.addEventListener('change', () => {
+    localStorage.setItem(META_ACCOUNT_KEY, metaAccountSel.value);
+  });
+
+  document.getElementById('meta-refresh')?.addEventListener('click', refreshMetaStatus);
+
+  metaPullBtn?.addEventListener('click', async () => {
+    const month = monthEl.value;
+    const account = metaAccountSel.value;
+    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!account) { showMetaError('Pick an ad account first.'); return; }
+    showMetaError('');
+    const original = metaPullBtn.textContent;
+    metaPullBtn.disabled = true;
+    metaPullBtn.textContent = 'Pulling…';
+    try {
+      const { since, until } = monthToDateRange(month);
+      const url = `${META_WORKER_URL}/insights?member=${encodeURIComponent(currentMember)}&account=${encodeURIComponent(account)}&start=${since}&end=${until}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) showMetaConnectRow();
+        throw new Error(data.error || `Worker responded ${res.status}`);
+      }
+      loadManualData({ meta: data.meta, totals: data.totals, campaigns: data.campaigns });
+      showFlash('meta-pull-flash', 'Pulled');
+    } catch (err) {
+      showMetaError(`Couldn't pull Meta data: ${String(err.message || err)}`);
+    } finally {
+      metaPullBtn.disabled = false;
+      metaPullBtn.textContent = original;
+    }
+  });
+
+  // ---------------------------------------------------------------------
+  // Google connect — see /google-oauth-worker/. Connect-only for now: the
+  // app is still going through Google's verification, and there are no
+  // data-pull routes on that Worker yet (unlike Meta above). This just
+  // gets the account connected and stored ahead of time, so nothing else
+  // needs to change here once the data-pull routes exist.
+  // ---------------------------------------------------------------------
+  const GOOGLE_WORKER_URL = 'https://tweak-google-oauth.herbielakeai.workers.dev';
+
+  const googleBadge = document.getElementById('google-badge');
+  const googleStatusText = document.getElementById('google-status-text');
+  const googleConnectRow = document.getElementById('google-connect-row');
+  const googleConnectLink = document.getElementById('google-connect-link');
+  const googlePreviewRow = document.getElementById('google-preview-row');
+  const googlePreviewBtn = document.getElementById('google-preview');
+  const googlePreviewFlash = document.getElementById('google-preview-flash');
+  const googlePreviewError = document.getElementById('google-preview-error');
+  const googlePreviewResults = document.getElementById('google-preview-results');
+  const googlePreviewAnalyticsList = document.getElementById('google-preview-analytics');
+  const googlePreviewSearchConsoleList = document.getElementById('google-preview-searchconsole');
+  const googlePreviewAdsList = document.getElementById('google-preview-ads');
+
+  function showGooglePreviewError(msg) {
+    googlePreviewError.textContent = msg;
+    googlePreviewError.style.display = 'block';
+  }
+
+  async function refreshGoogleStatus() {
+    if (!GOOGLE_WORKER_URL || !currentMember) {
+      googleBadge.textContent = 'Not set up';
+      googleStatusText.textContent = 'Google connect has no account manager configured for this client yet.';
+      googleConnectRow.style.display = 'none';
+      googlePreviewRow.style.display = 'none';
+      return;
+    }
+    googleConnectLink.href = `${GOOGLE_WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+    googleStatusText.textContent = 'Checking connection…';
+    try {
+      const res = await fetch(`${GOOGLE_WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (data.connected) {
+        googleBadge.textContent = 'Connected';
+        googleStatusText.textContent = `Connected as ${data.email || currentMember}.`;
+        googlePreviewRow.style.display = 'block';
+      } else {
+        googleBadge.textContent = 'Not connected';
+        googleStatusText.textContent = `${currentMember} hasn't connected a Google account yet.`;
+        googlePreviewRow.style.display = 'none';
+      }
+      googleConnectRow.style.display = 'block';
+    } catch (err) {
+      googleBadge.textContent = 'Unavailable';
+      googleStatusText.textContent = 'Could not check the connection status right now, but you can still connect below.';
+      googleConnectRow.style.display = 'block';
+      googlePreviewRow.style.display = 'none';
+    }
+  }
+
+  document.getElementById('google-refresh')?.addEventListener('click', refreshGoogleStatus);
+
+  googlePreviewBtn?.addEventListener('click', async () => {
+    googlePreviewError.style.display = 'none';
+    googlePreviewResults.style.display = 'none';
+    googlePreviewBtn.disabled = true;
+    googlePreviewBtn.textContent = 'Pulling…';
+    try {
+      const res = await fetch(`${GOOGLE_WORKER_URL}/preview?member=${encodeURIComponent(currentMember)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        showGooglePreviewError(data.error || `Preview failed (${res.status})`);
+        return;
+      }
+
+      googlePreviewAnalyticsList.innerHTML = '';
+      if (data.analytics && data.analytics.ok) {
+        if (!data.analytics.accounts.length) {
+          googlePreviewAnalyticsList.innerHTML = '<li>No Analytics accounts visible to this Google account.</li>';
+        } else {
+          for (const acc of data.analytics.accounts) {
+            const li = document.createElement('li');
+            li.textContent = `${acc.account} — ${acc.properties.join(', ') || 'no properties'}`;
+            googlePreviewAnalyticsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAnalyticsList.innerHTML = `<li>Couldn't read Analytics: ${(data.analytics && data.analytics.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewSearchConsoleList.innerHTML = '';
+      if (data.searchConsole && data.searchConsole.ok) {
+        if (!data.searchConsole.sites.length) {
+          googlePreviewSearchConsoleList.innerHTML = '<li>No Search Console sites visible to this Google account.</li>';
+        } else {
+          for (const site of data.searchConsole.sites) {
+            const li = document.createElement('li');
+            li.textContent = `${site.url} (${site.permission})`;
+            googlePreviewSearchConsoleList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewSearchConsoleList.innerHTML = `<li>Couldn't read Search Console: ${(data.searchConsole && data.searchConsole.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewAdsList.innerHTML = '';
+      if (data.ads && data.ads.ok) {
+        if (!data.ads.customerIds.length) {
+          googlePreviewAdsList.innerHTML = '<li>No Google Ads accounts visible to this Google account.</li>';
+        } else {
+          for (const id of data.ads.customerIds) {
+            const li = document.createElement('li');
+            li.textContent = `Customer ID ${id}`;
+            googlePreviewAdsList.appendChild(li);
+          }
+        }
+      } else {
+        googlePreviewAdsList.innerHTML = `<li>Couldn't read Google Ads: ${(data.ads && data.ads.error) || 'unknown error'}</li>`;
+      }
+
+      googlePreviewResults.style.display = 'block';
+      googlePreviewFlash.classList.add('show');
+      setTimeout(() => googlePreviewFlash.classList.remove('show'), 1500);
+    } catch (err) {
+      showGooglePreviewError(String(err.message || err));
+    } finally {
+      googlePreviewBtn.disabled = false;
+      googlePreviewBtn.textContent = 'Preview connected Google data';
+    }
+  });
+
+  const MONTH_DATA_FOLDERS = {};
+
+  async function fetchAdsData(month) {
+    const folder = MONTH_DATA_FOLDERS[month];
+    if (folder) {
+      try {
+        const res = await fetch(`../${folder}/data.json`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          return { data, source: folder, matched: true };
+        }
+      } catch {}
+    }
+    return { data: null, source: null, matched: false };
+  }
+
+  async function buildBase(status) {
+    const month = monthEl.value;
+    if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
+    const answers = readAnswers();
+    const id = month;
+    const existing = await window.IPPSReports.get(id);
+    return {
+      id, month,
+      title: window.IPPSReports.monthLabel(month),
+      author: authorEl.value.trim(),
+      answers,
+      seRankings: readSeRankings(),
+      status: status || (existing ? existing.status : 'draft'),
+      revisionNotes: existing?.revisionNotes || [],
+    };
+  }
+
+  async function resolveData(report) {
+    const manual = readManualData();
+    if (manual) {
+      report.manualData = manual;
+      return { data: manual, source: 'manual', matched: true };
+    }
+    delete report.manualData;
+    const ads = await fetchAdsData(report.month);
+    return ads;
+  }
+
+  async function callAIAssistant(fields) {
+    if (!AI_WORKER_URL || AI_WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      throw new Error('AI Worker not deployed yet');
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const res = await fetch(AI_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client: { name: 'Innovative Paint Protection', sector: 'Automotive Detailing · Paint Protection' }, ...fields }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Worker responded ${res.status}`);
+      }
+      return await res.json();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  async function saveReport(status, redirectToView, useAI) {
+    const report = await buildBase(status);
+    if (!report) return;
+    const res = await resolveData(report);
+    const baseline = window.IPPSReports.generateSummary(report.answers, res.data);
+    report.summary = baseline;
+    report.summary.dataStatus = res.matched
+      ? { available: true, source: res.source }
+      : { available: false, source: null, month: report.month };
+
+    if (useAI) {
+      const aiStatus = document.getElementById('ai-status');
+      const genBtn = document.getElementById('generate');
+      const originalLabel = genBtn.textContent;
+      aiStatus.style.display = 'block';
+      aiStatus.textContent = 'Polishing with AI — this can take a few seconds…';
+      genBtn.disabled = true;
+      genBtn.textContent = 'Generating…';
+      try {
+        const ai = await callAIAssistant({
+          answers: report.answers,
+          metrics: baseline.metrics,
+          topCampaign: baseline.topCampaign,
+          campaigns: (res.data && res.data.campaigns) || [],
+          priorities: baseline.priorities,
+        });
+        Object.assign(report.summary, {
+          headline: ai.headline || baseline.headline,
+          overperformer: ai.overperformer || baseline.overperformer,
+          feedback: ai.feedback || baseline.feedback,
+          focus: ai.focus || baseline.focus,
+          rationale: ai.rationale || baseline.rationale,
+          challenges: ai.challenges || baseline.challenges,
+          budget: ai.budget || baseline.budget,
+          extras: ai.extras || baseline.extras,
+          insights: Array.isArray(ai.insights) ? ai.insights : [],
+          aiEnhanced: true,
+        });
+      } catch (err) {
+        report.summary.aiEnhanced = false;
+        report.summary.insights = [];
+        aiStatus.textContent = 'AI polish unavailable this time — used your answers as written.';
+        console.warn('AI assist failed, falling back to plain summary:', err);
+      } finally {
+        genBtn.disabled = false;
+        genBtn.textContent = originalLabel;
+      }
+    }
+
+    try {
+      await window.IPPSReports.upsert(report);
+    } catch (saveErr) {
+      alert('Could not save this report — check your connection and try again.\n\n' + (saveErr.message || saveErr));
+      return null;
+    }
+    if (redirectToView) {
+      location.href = `./view.html?id=${encodeURIComponent(report.id)}`;
+    }
+    return report;
+  }
+
+  async function loadExisting() {
+    if (!editingId) {
+      monthEl.value = defaultMonth();
+      renderQuestions({});
+      addCampaignRow({});
+      addSeRow({});
+      return;
+    }
+    const r = await window.IPPSReports.get(editingId);
+    if (!r) {
+      monthEl.value = defaultMonth();
+      renderQuestions({});
+      addCampaignRow({});
+      addSeRow({});
+      return;
+    }
+    monthEl.value = r.month || defaultMonth();
+    authorEl.value = r.author || '';
+    renderQuestions(r.answers || {});
+    if (r.manualData) {
+      loadManualData(r.manualData);
+    } else {
+      addCampaignRow({});
+    }
+    if (r.seRankings && (r.seRankings.rows || []).length) {
+      loadSeRankings(r.seRankings);
+    } else {
+      addSeRow({});
+    }
+  }
+
+  document.getElementById('to-step-2').addEventListener('click', () => setStep(2));
+  document.getElementById('back-step-1').addEventListener('click', () => setStep(1));
+  document.getElementById('add-campaign').addEventListener('click', () => addCampaignRow({}));
+  document.getElementById('add-se-row').addEventListener('click', () => addSeRow({}));
+  document.getElementById('se-csv-input').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const status = document.getElementById('se-csv-status');
+    try {
+      const text = await file.text();
+      const rows = csvToSeRankingRows(text);
+      if (!rows.length) {
+        status.textContent = 'Could not find any rows in that file — check it has a Keyword column.';
+        status.style.color = '#b91c1c';
+        status.style.display = 'block';
+        return;
+      }
+      seRankingRows.innerHTML = '';
+      rows.forEach(addSeRow);
+      status.textContent = `Loaded ${rows.length} row${rows.length === 1 ? '' : 's'} from ${file.name}.`;
+      status.style.color = '#059669';
+      status.style.display = 'block';
+    } catch (err) {
+      status.textContent = 'Could not read that file: ' + (err.message || err);
+      status.style.color = '#b91c1c';
+      status.style.display = 'block';
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('save-draft-1').addEventListener('click', async () => {
+    const r = await saveReport('draft', false);
+    if (r) showFlash('save-flash-1', 'Draft saved');
+  });
+  document.getElementById('save-draft-2').addEventListener('click', async () => {
+    const r = await saveReport('draft', false);
+    if (r) showFlash('save-flash-2', 'Draft saved');
+  });
+  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true, true));
+
+  document.getElementById('logout-btn').addEventListener('click', () => window.IPPSAuth.logout('../'));
+
+  await loadExisting();
+  refreshMetaStatus();
+  refreshGoogleStatus();
+  setStep(1);
+})();
+</script>
+</body>
+</html>

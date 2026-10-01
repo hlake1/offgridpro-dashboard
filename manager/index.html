@@ -200,6 +200,17 @@
     </a>
   </section>
 
+  <!-- Quick action: edit account manager assignments -->
+  <section class="flex items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-sm px-5 py-4">
+    <div>
+      <p class="text-[11px] uppercase tracking-[0.15em] text-gray-500 font-semibold">Client reassigned to a new account manager?</p>
+      <p class="text-sm text-gray-700 mt-0.5">Update who manages each client — changes apply everywhere immediately.</p>
+    </div>
+    <a href="./account-managers.html" class="text-sm font-semibold whitespace-nowrap px-4 py-2 rounded-sm border border-gray-300 hover:border-gray-500 transition-colors">
+      Edit account managers →
+    </a>
+  </section>
+
   <!-- Recent Reports -->
   <section class="pt-12">
     <div class="mb-8">
@@ -283,24 +294,58 @@
   // Keep names + roles + client assignments in sync.
   // ------------------------------------------------------------------
   const TEAM_ROSTER = {
-    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl', 'stjarnagloss', 'aslotel'] },
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['scl', 'stjarnagloss', 'aslotel'] },
     'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
-    'Louise':   { name: 'Louise',   role: 'Manager',         clients: ['autowatch', 'autoid'] },
+    'Louise':   { name: 'Louise',   role: 'Manager',         clients: ['offgridpro', 'autowatch', 'autoid'] },
     'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
-    'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: [] },
+    'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: ['bafmotorsport', 'ipps'] },
     'Rob':       { name: 'Rob',       role: 'Team Member',     clients: [] },
     'Jeremy':    { name: 'Jeremy',    role: 'Team Member',     clients: [] },
   };
 
+  // The lists above are the fallback used before the live directory below
+  // loads (or if it's unreachable) — refreshAccountManagers() overwrites
+  // them from Supabase on every page load, so an edit made on the Account
+  // Managers page shows up here without needing a redeploy.
+  async function refreshAccountManagers() {
+    function getToken() {
+      try {
+        const raw = sessionStorage.getItem('tw_session');
+        if (!raw) return null;
+        const s = JSON.parse(raw);
+        return (s && s.token) || null;
+      } catch { return null; }
+    }
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch('https://tweak-reports.herbielakeai.workers.dev/clients/list', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const clients = data.clients || [];
+      if (!clients.length) return;
+      Object.keys(TEAM_ROSTER).forEach((code) => { TEAM_ROSTER[code].clients = []; });
+      clients.forEach((c) => {
+        if (!c.accountManager) return;
+        const code = Object.keys(TEAM_ROSTER).find((k) => TEAM_ROSTER[k].name === c.accountManager);
+        if (code) TEAM_ROSTER[code].clients.push(c.slug);
+      });
+    } catch { /* offline or worker not yet deployed — keep the fallback above */ }
+  }
+
   // Client display names (for member cards)
   const CLIENT_LABELS = {
-    'offgridpro':    'OffGrid Pro',
-    'gfs':           'GFS',
-    'scl':           'SCL',
-    'autowatch':     'Autowatch',
-    'autoid':        'AUTOID',
-    'stjarnagloss':  'Stjärnagloss',
-    'aslotel':       'Aslotel',
+    'offgridpro':     'OffGrid Pro',
+    'gfs':            'GFS',
+    'scl':            'SCL',
+    'autowatch':      'Autowatch',
+    'autoid':         'AUTOID',
+    'stjarnagloss':   'Stjärnagloss',
+    'aslotel':        'Aslotel',
+    'bafmotorsport':  'BAF Motorsport',
+    'ipps':           'IPPS',
   };
 
   // Avatar palette — deterministic per name
@@ -440,7 +485,7 @@
     window.location.replace('../');
   });
 
-  render();
+  refreshAccountManagers().finally(render);
 </script>
 
 <script src="../assets/account-widget.js" data-setup="../account-setup.html"></script>

@@ -19,7 +19,7 @@
 function corsHeaders(origin, allowedOrigin) {
   const headers = {
     'Vary': 'Origin',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
   if (origin === allowedOrigin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
@@ -96,6 +96,22 @@ async function supabaseUpsert(env, table, row, onConflict) {
   const data = await res.json();
   if (!res.ok) throw new Error((data && data.message) || `Supabase upsert on ${table} failed (${res.status})`);
   return data;
+
+async function supabaseUpdate(env, table, filterQuery, patch) {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?${filterQuery}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(patch),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error((data && data.message) || `Supabase update on ${table} failed (${res.status})`);
+  return data;
+}
 }
 
 // ---------------------------------------------------------------------
@@ -291,6 +307,60 @@ async function handleReportSave(request, env, url, headers) {
   return jsonResponse({ report: saved[0] || null }, 200, headers);
 }
 
+// ---------------------------------------------------------------------
+// Clients directory (account manager assignment)
+// ---------------------------------------------------------------------
+
+// Kept in sync with the TEAM_MEMBERS list in scripts/build-client-profiles.js.
+const TEAM_MEMBER_NAMES = ['Daniela', 'Imogen', 'Louise', 'Herbie', 'Rob', 'Jeremy', 'Bethanie', 'Georgia'];
+
+function clientFacing(row) {
+  return {
+    slug: row.slug,
+    accountManager: row.account_manager || null,
+    displayName: row.display_name || null,
+  };
+}
+
+async function handleClientOne(request, env, url, headers) {
+  const { session, error } = await requireSession(request, env, url, headers);
+  if (error) return error;
+  const slug = url.searchParams.get('client');
+  if (!isValidSlug(slug)) return jsonResponse({ error: 'Missing or invalid "client"' }, 400, headers);
+  const rows = await supabaseSelect(env, 'clients', `slug=eq.${encodeURIComponent(slug)}&select=id,slug,account_manager,display_name`);
+  const row = rows[0];
+  if (!row) return jsonResponse({ error: 'Unknown client' }, 404, headers);
+  if (session.role !== 'admin' && session.clientId !== row.id) {
+    return jsonResponse({ error: 'Not allowed to view this client' }, 403, headers);
+  }
+  return jsonResponse({ client: clientFacing(row) }, 200, headers);
+}
+
+async function handleClientsList(request, env, url, headers) {
+  const { session, error } = await requireSession(request, env, url, headers);
+  if (error) return error;
+  if (session.role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403, headers);
+  const rows = await supabaseSelect(env, 'clients', 'select=slug,account_manager,display_name&order=slug.asc');
+  return jsonResponse({ clients: rows.map(clientFacing) }, 200, headers);
+}
+
+async function handleClientAccountManager(request, env, url, headers) {
+  const { session, error } = await requireSession(request, env, url, headers);
+  if (error) return error;
+  if (session.role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403, headers);
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'Invalid JSON body' }, 400, headers); }
+  const slug = String(body.slug || '');
+  const accountManager = String(body.accountManager || '').trim();
+  if (!isValidSlug(slug)) return jsonResponse({ error: 'Missing or invalid "slug"' }, 400, headers);
+  if (!TEAM_MEMBER_NAMES.includes(accountManager)) {
+    return jsonResponse({ error: `accountManager must be one of: ${TEAM_MEMBER_NAMES.join(', ')}` }, 400, headers);
+  }
+  const updated = await supabaseUpdate(env, 'clients', `slug=eq.${encodeURIComponent(slug)}`, { account_manager: accountManager });
+  if (!updated[0]) return jsonResponse({ error: 'Unknown client' }, 404, headers);
+  return jsonResponse({ client: clientFacing(updated[0]) }, 200, headers);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -313,6 +383,9 @@ export default {
       if (url.pathname === '/reports/list') return await handleReportsList(request, env, url, headers);
       if (url.pathname === '/reports/one') return await handleReportGet(request, env, url, headers);
       if (url.pathname === '/reports/save' && request.method === 'POST') return await handleReportSave(request, env, url, headers);
+      if (url.pathname === '/clients/one') return await handleClientOne(request, env, url, headers);
+      if (url.pathname === '/clients/list') return await handleClientsList(request, env, url, headers);
+      if (url.pathname === '/clients/account-manager' && request.method === 'PATCH') return await handleClientAccountManager(request, env, url, headers);
     } catch (err) {
       return jsonResponse({ error: String((err && err.message) || err) }, 500, headers);
     }

@@ -220,6 +220,62 @@ const CLIENTS = [
       { label: 'Site Health', value: '—' },
     ],
   },
+  {
+    slug: 'bafmotorsport',
+    NS: 'BAF',
+    authKey: 'bafmotorsport_dashboard_auth',
+    reportsKey: 'bafmotorsport_reports_v1',
+    adminClass: 'baf-admin',
+    clientCode: 'Baf',
+    name: 'BAF Motorsport',
+    fullName: 'BAF Motorsport',
+    tagline: 'Motorsport Parts & Performance',
+    sector: 'Motorsport · Automotive',
+    location: 'UK',
+    accountManager: 'Bethanie',
+    // Branding: racing red/black with a yellow accent
+    c1: '#1a1a1a',
+    c2: '#c81d25',
+    c3: '#ff4d4d',
+    accent: '#f5c400',
+    dark: '#0d0d0d',
+    heroA: '#0d0d0d',
+    heroB: '#3d0a0a',
+    heroC: '#c81d25',
+    previewStats: [
+      { label: 'Conversions', value: '—' },
+      { label: 'Top Channel', value: '—' },
+      { label: 'Site Health', value: '—' },
+    ],
+  },
+  {
+    slug: 'ipps',
+    NS: 'IPPS',
+    authKey: 'ipps_dashboard_auth',
+    reportsKey: 'ipps_reports_v1',
+    adminClass: 'ipps-admin',
+    clientCode: 'Ipps',
+    name: 'Innovative Paint Protection',
+    fullName: 'Innovative Paint Protection Solutions',
+    tagline: 'Paint Protection & Automotive Detailing',
+    sector: 'Automotive Detailing · Paint Protection',
+    location: 'UK',
+    accountManager: 'Bethanie',
+    // Branding: deep blue / chrome, premium-protective feel
+    c1: '#0b2545',
+    c2: '#13315c',
+    c3: '#4f80b8',
+    accent: '#c9d6e3',
+    dark: '#060f1d',
+    heroA: '#060f1d',
+    heroB: '#0b2545',
+    heroC: '#13315c',
+    previewStats: [
+      { label: 'Conversions', value: '—' },
+      { label: 'Top Channel', value: '—' },
+      { label: 'Site Health', value: '—' },
+    ],
+  },
 ];
 
 // Every client shares the one AI Worker deployment.
@@ -239,7 +295,7 @@ CLIENTS.forEach((c) => { c.aiWorkerUrl = AI_WORKER_URL; });
 // The builder page shows a "Connecting as" picker (built from this list)
 // instead of a fixed per-client member, remembered per browser via
 // localStorage so switching clients doesn't mean re-picking every time.
-const TEAM_MEMBERS = ['Daniela', 'Imogen', 'Louise', 'Herbie'];
+const TEAM_MEMBERS = ['Daniela', 'Imogen', 'Louise', 'Herbie', 'Rob', 'Jeremy', 'Bethanie', 'Georgia'];
 function slugify(name) {
   return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, '');
 }

@@ -353,6 +353,36 @@
       ],
       colorBar: 'linear-gradient(180deg, #1f2937, #374151, #9ca3af)',
     },
+    'bafmotorsport': {
+      path: '../bafmotorsport/',
+      name: 'BAF Motorsport',
+      fullName: 'BAF Motorsport',
+      sector: 'Motorsport · Automotive',
+      location: 'UK',
+      accountManager: 'Bethanie',
+      status: 'Pending',
+      previewStats: [
+        { label: 'Conversions', value: '—' },
+        { label: 'Top Channel', value: '—', accent: true },
+        { label: 'Site Health', value: '—' },
+      ],
+      colorBar: 'linear-gradient(180deg, #1a1a1a, #c81d25, #ff4d4d)',
+    },
+    'ipps': {
+      path: '../ipps/',
+      name: 'Innovative Paint Protection',
+      fullName: 'Innovative Paint Protection Solutions',
+      sector: 'Automotive Detailing · Paint Protection',
+      location: 'UK',
+      accountManager: 'Bethanie',
+      status: 'Pending',
+      previewStats: [
+        { label: 'Conversions', value: '—' },
+        { label: 'Top Channel', value: '—', accent: true },
+        { label: 'Site Health', value: '—' },
+      ],
+      colorBar: 'linear-gradient(180deg, #0b2545, #13315c, #4f80b8)',
+    },
   };
 
   // ------------------------------------------------------------------
@@ -381,14 +411,51 @@
   // Keep the codes here identical to the root file.
   // ------------------------------------------------------------------
   const TEAM_ROSTER = {
-    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: ['offgridpro', 'scl'] },
-    'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: ['gfs'] },
-    'Louise':   { name: 'Louise',   role: 'Manager',         clients: ['autowatch', 'autoid'] },
+    'Daniela':  { name: 'Daniela',  role: 'Account Manager', clients: [] },
+    'Imogen':   { name: 'Imogen',   role: 'Account Manager', clients: [] },
+    'Louise':   { name: 'Louise',   role: 'Manager',         clients: [] },
     'Georgia':  { name: 'Georgia',  role: 'Team Member',     clients: [] },
     'Bethanie': { name: 'Bethanie', role: 'Team Member',     clients: [] },
     'Rob':       { name: 'Rob',       role: 'Team Member',     clients: [] },
     'Jeremy':    { name: 'Jeremy',    role: 'Team Member',     clients: [] },
   };
+
+  // Clients are grouped under their account manager by deriving it from
+  // CLIENTS[slug].accountManager every render — never hand-duplicated here,
+  // so this can't drift out of sync the way separate per-member lists did.
+  function recomputeRosterClients() {
+    Object.keys(TEAM_ROSTER).forEach((code) => { TEAM_ROSTER[code].clients = []; });
+    Object.entries(CLIENTS).forEach(([slug, c]) => {
+      const code = Object.keys(TEAM_ROSTER).find((k) => TEAM_ROSTER[k].name === c.accountManager);
+      if (code) TEAM_ROSTER[code].clients.push(slug);
+    });
+  }
+  recomputeRosterClients();
+
+  function getSessionToken() {
+    try {
+      const raw = sessionStorage.getItem('tw_session');
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      return (s && s.token) || null;
+    } catch { return null; }
+  }
+
+  async function refreshAccountManagers() {
+    const token = getSessionToken();
+    if (!token) return;
+    try {
+      const res = await fetch('https://tweak-reports.herbielakeai.workers.dev/clients/list', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      (data.clients || []).forEach((c) => {
+        if (CLIENTS[c.slug] && c.accountManager) CLIENTS[c.slug].accountManager = c.accountManager;
+      });
+      recomputeRosterClients();
+    } catch { /* offline or worker not yet deployed — keep the baked-in defaults */ }
+  }
 
   function getViewAsMember() {
     const params = new URLSearchParams(window.location.search);
@@ -409,11 +476,15 @@
   // Avatar helpers (mirrors manager portal) for the "View others" cards.
   // ------------------------------------------------------------------
   const CLIENT_LABELS = {
-    'offgridpro': 'OffGrid Pro',
-    'gfs':        'GFS',
-    'scl':        'SCL',
-    'autowatch':  'Autowatch',
-    'autoid':     'AUTOID',
+    'offgridpro':     'OffGrid Pro',
+    'gfs':            'GFS',
+    'scl':            'SCL',
+    'autowatch':      'Autowatch',
+    'autoid':         'AUTOID',
+    'stjarnagloss':   'Stjärnagloss',
+    'aslotel':        'Aslotel',
+    'bafmotorsport':  'BAF Motorsport',
+    'ipps':           'IPPS',
   };
 
   const AVATAR_COLORS = [
@@ -665,7 +736,7 @@
     window.location.replace('../');
   });
 
-  render();
+  refreshAccountManagers().finally(render);
 </script>
 
 <script src="../assets/account-widget.js" data-setup="../account-setup.html"></script>
