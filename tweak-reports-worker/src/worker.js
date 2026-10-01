@@ -318,7 +318,7 @@ function clientFacing(row) {
   return {
     slug: row.slug,
     accountManager: row.account_manager || null,
-    displayName: row.display_name || null,
+    displayName: row.name || null,
   };
 }
 
@@ -327,7 +327,7 @@ async function handleClientOne(request, env, url, headers) {
   if (error) return error;
   const slug = url.searchParams.get('client');
   if (!isValidSlug(slug)) return jsonResponse({ error: 'Missing or invalid "client"' }, 400, headers);
-  const rows = await supabaseSelect(env, 'clients', `slug=eq.${encodeURIComponent(slug)}&select=id,slug,account_manager,display_name`);
+  const rows = await supabaseSelect(env, 'clients', `slug=eq.${encodeURIComponent(slug)}&select=id,slug,account_manager,name`);
   const row = rows[0];
   if (!row) return jsonResponse({ error: 'Unknown client' }, 404, headers);
   if (session.role !== 'admin' && session.clientId !== row.id) {
@@ -340,7 +340,7 @@ async function handleClientsList(request, env, url, headers) {
   const { session, error } = await requireSession(request, env, url, headers);
   if (error) return error;
   if (session.role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403, headers);
-  const rows = await supabaseSelect(env, 'clients', 'select=slug,account_manager,display_name&order=slug.asc');
+  const rows = await supabaseSelect(env, 'clients', 'select=slug,account_manager,name&order=slug.asc');
   return jsonResponse({ clients: rows.map(clientFacing) }, 200, headers);
 }
 
