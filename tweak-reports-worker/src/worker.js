@@ -361,6 +361,83 @@ async function handleClientAccountManager(request, env, url, headers) {
   return jsonResponse({ client: clientFacing(updated[0]) }, 200, headers);
 }
 
+// ---------------------------------------------------------------------
+// SEO screenshots (Supabase Storage — public bucket, admin-only writes)
+// ---------------------------------------------------------------------
+
+const SCREENSHOT_BUCKET = 'report-screenshots';
+const MAX_SCREENSHOT_BYTES = 8 * 1024 * 1024; // 8MB
+const ALLOWED_IMAGE_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
+const SCREENSHOT_PATH_RE = /^[a-z0-9][a-z0-9._-]{1,63}\/\d{4}-\d{2}\/[a-f0-9-]{36}\.(png|jpg|webp)$/i;
+
+async function handleScreenshotUpload(request, env, url, headers) {
+  const { session, error } = await requireSession(request, env, url, headers);
+  if (error) return error;
+  if (session.role !== 'admin') return jsonResponse({ error: 'Only team members can upload screenshots' }, 403, headers);
+
+  const clientSlug = url.searchParams.get('client');
+  const period = url.searchParams.get('period');
+  if (!isValidSlug(clientSlug) || !isValidPeriod(period)) {
+    return jsonResponse({ error: 'Missing or invalid "client"/"period"' }, 400, headers);
+  }
+
+  let form;
+  try { form = await request.formData(); } catch { return jsonResponse({ error: 'Expected multipart/form-data' }, 400, headers); }
+  const file = form.get('file');
+  if (!file || typeof file.arrayBuffer !== 'function') {
+    return jsonResponse({ error: 'Missing "file"' }, 400, headers);
+  }
+  const ext = ALLOWED_IMAGE_TYPES[file.type];
+  if (!ext) return jsonResponse({ error: 'Only PNG, JPEG or WebP images are allowed' }, 400, headers);
+  if (file.size > MAX_SCREENSHOT_BYTES) return jsonResponse({ error: 'Image is too large (max 8MB)' }, 400, headers);
+
+  const bytes = await file.arrayBuffer();
+  const path = `${clientSlug}/${period}/${crypto.randomUUID()}.${ext}`;
+
+  const uploadRes = await fetch(`${env.SUPABASE_URL}/storage/v1/object/${SCREENSHOT_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type,
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      'x-upsert': 'true',
+    },
+    body: bytes,
+  });
+  if (!uploadRes.ok) {
+    const errText = await uploadRes.text().catch(() => '');
+    throw new Error(`Supabase Storage upload failed (${uploadRes.status}): ${errText.slice(0, 300)}`);
+  }
+
+  const publicUrl = `${env.SUPABASE_URL}/storage/v1/object/public/${SCREENSHOT_BUCKET}/${path}`;
+  return jsonResponse({ path, url: publicUrl }, 200, headers);
+}
+
+async function handleScreenshotDelete(request, env, url, headers) {
+  const { session, error } = await requireSession(request, env, url, headers);
+  if (error) return error;
+  if (session.role !== 'admin') return jsonResponse({ error: 'Only team members can delete screenshots' }, 403, headers);
+
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ error: 'Invalid JSON body' }, 400, headers); }
+  const path = String(body.path || '');
+  // Only ever touch paths this same upload endpoint could have produced.
+  if (!SCREENSHOT_PATH_RE.test(path)) return jsonResponse({ error: 'Invalid "path"' }, 400, headers);
+
+  const delRes = await fetch(`${env.SUPABASE_URL}/storage/v1/object/${SCREENSHOT_BUCKET}/${path}`, {
+    method: 'DELETE',
+    headers: {
+      apikey: env.SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+    },
+  });
+  if (!delRes.ok) {
+    const errText = await delRes.text().catch(() => '');
+    throw new Error(`Supabase Storage delete failed (${delRes.status}): ${errText.slice(0, 300)}`);
+  }
+  return jsonResponse({ ok: true }, 200, headers);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -386,6 +463,8 @@ export default {
       if (url.pathname === '/clients/one') return await handleClientOne(request, env, url, headers);
       if (url.pathname === '/clients/list') return await handleClientsList(request, env, url, headers);
       if (url.pathname === '/clients/account-manager' && request.method === 'PATCH') return await handleClientAccountManager(request, env, url, headers);
+      if (url.pathname === '/reports/screenshot' && request.method === 'POST') return await handleScreenshotUpload(request, env, url, headers);
+      if (url.pathname === '/reports/screenshot' && request.method === 'DELETE') return await handleScreenshotDelete(request, env, url, headers);
     } catch (err) {
       return jsonResponse({ error: String((err && err.message) || err) }, 500, headers);
     }
