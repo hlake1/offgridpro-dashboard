@@ -539,6 +539,161 @@ async function fetchGoogleAdsAccounts(accessToken, developerToken) {
   return (data.resourceNames || []).map((rn) => rn.split('/')[1]).filter(Boolean);
 }
 
+// ---------------------------------------------------------------------------
+// Website traffic — GA4 Data API pull for the report builder's "Website
+// traffic" card. Shares the same `analytics.readonly` scope already granted
+// above, so no new consent is needed from anyone already connected.
+// ---------------------------------------------------------------------------
+
+// Lists every GA4 property the connected login can see, across every GA4
+// account it has access to, so the builder can offer a "pick the right
+// property" dropdown — the same reasoning as listGoogleAdsAccountsForMember
+// above: one Google login can see several clients' properties.
+async function listGA4Properties(accessToken) {
+  const res = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || `Analytics Admin API error (${res.status})`);
+  const properties = [];
+  for (const acc of data.accountSummaries || []) {
+    for (const p of acc.propertySummaries || []) {
+      // p.property looks like "properties/123456789" — exactly the resource
+      // name the GA4 Data API's runReport expects, so it's passed through
+      // unchanged rather than extracting the bare numeric id.
+      properties.push({ id: p.property, name: p.displayName, account: acc.displayName });
+    }
+  }
+  return properties;
+}
+
+function isValidGA4Property(s) {
+  return typeof s === 'string' && /^properties\/\d+$/.test(s);
+}
+
+async function runGA4Report(accessToken, propertyId, body) {
+  const res = await fetch(`https://analyticsdata.googleapis.com/v1beta/${propertyId}:runReport`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || `Analytics Data API error (${res.status})`);
+  return data;
+}
+
+function ga4MetricValue(report, index) {
+  const raw = report.rows?.[0]?.metricValues?.[index]?.value;
+  return raw == null ? 0 : Number(raw);
+}
+
+// Pulls this period's headline totals plus a top-10 pages breakdown for one
+// GA4 property, shaped so it drops into the report builder's manual-entry
+// fields and top-pages table the same way Meta's /insights response drops
+// into the ads fields — one pull, one shape, no per-field wiring needed.
+async function fetchGA4Report(accessToken, propertyId, start, end) {
+  const dateRanges = [{ startDate: start, endDate: end }];
+
+  const [totalsReport, pagesReport] = await Promise.all([
+    runGA4Report(accessToken, propertyId, {
+      dateRanges,
+      metrics: [
+        { name: 'sessions' },
+        { name: 'totalUsers' },
+        { name: 'newUsers' },
+        { name: 'screenPageViews' },
+        { name: 'averageSessionDuration' },
+        { name: 'engagementRate' },
+      ],
+    }),
+    runGA4Report(accessToken, propertyId, {
+      dateRanges,
+      dimensions: [{ name: 'pagePath' }],
+      metrics: [{ name: 'sessions' }, { name: 'screenPageViews' }],
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      limit: 10,
+    }),
+  ]);
+
+  const totals = {
+    sessions: Math.round(ga4MetricValue(totalsReport, 0)),
+    users: Math.round(ga4MetricValue(totalsReport, 1)),
+    newUsers: Math.round(ga4MetricValue(totalsReport, 2)),
+    pageviews: Math.round(ga4MetricValue(totalsReport, 3)),
+    avgSessionDuration: Math.round(ga4MetricValue(totalsReport, 4) * 10) / 10,
+    engagementRate: Math.round(ga4MetricValue(totalsReport, 5) * 10000) / 100, // fraction -> %
+  };
+
+  const topPages = (pagesReport.rows || []).map((r) => ({
+    path: r.dimensionValues?.[0]?.value || '/',
+    sessions: Math.round(Number(r.metricValues?.[0]?.value || 0)),
+    pageviews: Math.round(Number(r.metricValues?.[1]?.value || 0)),
+  }));
+
+  return {
+    meta: {
+      source: 'Google Analytics 4 (GA4 Data API)',
+      pulledAt: new Date().toISOString(),
+      property: propertyId,
+      period: { start, end },
+    },
+    totals,
+    topPages,
+  };
+}
+
+async function handleGA4Properties(url, env, origin) {
+  const member = url.searchParams.get('member');
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+  let accessToken;
+  try {
+    accessToken = await getFreshAccessToken(env, member);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+  try {
+    const properties = await listGA4Properties(accessToken);
+    return jsonResponse({ properties }, 200, headers);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err) }, 502, headers);
+  }
+}
+
+async function handleGA4Report(url, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  const member = url.searchParams.get('member');
+  const property = url.searchParams.get('property');
+  const start = url.searchParams.get('start');
+  const end = url.searchParams.get('end');
+
+  if (!isValidMemberSlug(member)) {
+    return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  }
+  if (!isValidGA4Property(property)) {
+    return jsonResponse({ error: 'Missing or invalid "property" — expected e.g. properties/123456789 (from /ga4-properties)' }, 400, headers);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(end || '')) {
+    return jsonResponse({ error: 'Missing or invalid "start"/"end" — expected YYYY-MM-DD' }, 400, headers);
+  }
+
+  let accessToken;
+  try {
+    accessToken = await getFreshAccessToken(env, member);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers);
+  }
+
+  try {
+    const result = await fetchGA4Report(accessToken, property, start, end);
+    return jsonResponse(result, 200, headers);
+  } catch (err) {
+    return jsonResponse({ error: String(err.message || err) }, 502, headers);
+  }
+}
+
 async function fetchSearchConsoleSites(accessToken) {
   const res = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -614,6 +769,8 @@ export default {
     if (url.pathname === '/metrics') return handleMetrics(url, env, origin);
     if (url.pathname === '/metrics/refresh') return handleMetricsRefresh(url, env, origin);
     if (url.pathname === '/google-ads-accounts') return handleGoogleAdsAccounts(url, env, origin);
+    if (url.pathname === '/ga4-properties') return handleGA4Properties(url, env, origin);
+    if (url.pathname === '/ga4-report') return handleGA4Report(url, env, origin);
     if (url.pathname === '/customer-id' && request.method === 'GET') return handleGetCustomerId(url, env, origin);
     if (url.pathname === '/customer-id' && request.method === 'POST') return handleSetCustomerId(request, env, origin);
 
