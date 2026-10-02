@@ -74,6 +74,14 @@
     background:#fff; max-width:520px; width:100%; padding:2rem;
     border-radius:6px; box-shadow: 0 30px 60px rgba(0,0,0,0.35);
   }
+
+  .ss-gallery-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:1rem; }
+  .ss-gallery-thumb {
+    border:1px solid #e5e7eb; border-radius:6px; padding:0; background:#f8faf5; cursor:zoom-in;
+    overflow:hidden; text-align:left; display:flex; flex-direction:column;
+  }
+  .ss-gallery-thumb img { width:100%; height:120px; object-fit:cover; display:block; background:#e5e7eb; }
+  .ss-gallery-thumb .ss-caption { font-size:0.75rem; color:#6b7280; padding:0.5rem 0.6rem; }
 </style>
 </head>
 <body>
@@ -171,6 +179,17 @@
     <p class="text-xs text-gray-500 mt-3">Added manually by the account manager — not pulled automatically.</p>
   </section>
 
+  <section id="screenshots-section" class="card p-6" style="display:none;">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-2">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">SEO</p>
+        <h3 class="text-lg font-medium text-gray-900 mt-1">Screenshots</h3>
+      </div>
+    </div>
+    <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
+    <div id="screenshots-gallery" class="ss-gallery-grid"></div>
+  </section>
+
   <section class="card p-8" style="border-left:4px solid var(--cl-1);">
     <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
     <h2 class="text-2xl font-medium text-gray-900 mt-1">Top win this month</h2>
@@ -250,6 +269,16 @@
       <button id="revise-cancel" class="btn btn-ghost">Cancel</button>
       <button id="revise-save" class="btn btn-primary" style="background:var(--cl-dark);color:#fff;">Add note</button>
     </div>
+  </div>
+</div>
+
+<div id="screenshot-lightbox" class="modal-backdrop">
+  <div class="modal" style="max-width:860px; padding:1rem;">
+    <div class="flex items-center justify-end mb-2">
+      <button id="screenshot-lightbox-close" type="button" class="btn btn-ghost text-xs">Close ✕</button>
+    </div>
+    <img id="screenshot-lightbox-img" src="" alt="" style="width:100%; height:auto; border-radius:4px; display:block;" />
+    <p id="screenshot-lightbox-caption" class="text-sm text-gray-600 mt-3"></p>
   </div>
 </div>
 
@@ -340,6 +369,29 @@
     } else {
       seSection.style.display = 'none';
       seList.innerHTML = '';
+    }
+
+    const ssSection = document.getElementById('screenshots-section');
+    const ssGallery = document.getElementById('screenshots-gallery');
+    const screenshotsArr = (report.seRankings && report.seRankings.screenshots) || [];
+    if (screenshotsArr.length) {
+      ssSection.style.display = 'block';
+      ssGallery.innerHTML = screenshotsArr.map((sshot, idx) => `
+        <button type="button" class="ss-gallery-thumb" data-idx="${idx}">
+          <img src="${sshot.url}" alt="${esc(sshot.caption || '')}" loading="lazy" />
+          ${sshot.caption ? `<span class="ss-caption">${esc(sshot.caption)}</span>` : ''}
+        </button>`).join('');
+      ssGallery.querySelectorAll('.ss-gallery-thumb').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const sshot = screenshotsArr[Number(btn.getAttribute('data-idx'))];
+          document.getElementById('screenshot-lightbox-img').src = sshot.url;
+          document.getElementById('screenshot-lightbox-caption').textContent = sshot.caption || '';
+          document.getElementById('screenshot-lightbox').classList.add('on');
+        });
+      });
+    } else {
+      ssSection.style.display = 'none';
+      ssGallery.innerHTML = '';
     }
 
     const banner = document.getElementById('draft-banner');
@@ -509,6 +561,10 @@
     modal.classList.remove('on');
     await render();
   });
+
+  const lightbox = document.getElementById('screenshot-lightbox');
+  document.getElementById('screenshot-lightbox-close').addEventListener('click', () => lightbox.classList.remove('on'));
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('on'); });
 
   document.getElementById('logout-btn').addEventListener('click', () => window.AUTOIDAuth.logout('../'));
 

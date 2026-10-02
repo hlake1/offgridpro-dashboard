@@ -114,6 +114,25 @@
     return upsert(r);
   }
 
+  async function uploadScreenshot(period, file) {
+    const token = getToken();
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(WORKER_URL + '/reports/screenshot?client=' + encodeURIComponent(CLIENT_SLUG) + '&period=' + encodeURIComponent(period), {
+      method: 'POST',
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      body: form,
+    });
+    let json = null;
+    try { json = await res.json(); } catch { /* ignore */ }
+    if (!res.ok) throw new Error((json && json.error) || ('Upload failed (' + res.status + ')'));
+    return json; // { path, url }
+  }
+
+  async function deleteScreenshot(path) {
+    return apiFetch('/reports/screenshot', { method: 'DELETE', body: { path } });
+  }
+
   async function addRevisionNote(id, note) {
     const r = await get(id);
     if (!r) return null;
@@ -167,5 +186,6 @@
   window.IPPSReports = {
     QUESTIONS, list, listPublished, listDrafts, get, upsert,
     publish, unpublish, addRevisionNote, generateSummary, monthLabel,
+    uploadScreenshot, deleteScreenshot,
   };
 })();

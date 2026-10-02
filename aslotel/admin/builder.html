@@ -119,6 +119,18 @@
   }
   .field-suffix input { padding-right:2rem !important; }
   .auto-note { color:#9ca3af; font-size:0.72rem; margin-top:0.2rem; }
+
+  .screenshot-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:1rem; }
+  .screenshot-thumb { border:1px solid #e5e7eb; border-radius:6px; padding:0.5rem; background:#f8faf5; position:relative; }
+  .screenshot-thumb img { width:100%; height:110px; object-fit:cover; border-radius:4px; display:block; background:#e5e7eb; }
+  .screenshot-caption { width:100%; margin-top:0.5rem; padding:0.4rem 0.5rem; font-size:0.8rem; border:1px solid #e5e7eb; border-radius:4px; background:#fff; font-family:inherit; outline:none; }
+  .screenshot-caption:focus { border-color:var(--cl-2); }
+  .screenshot-remove {
+    position:absolute; top:0.35rem; right:0.35rem; background:rgba(255,255,255,0.92); border:1px solid #e5e7eb;
+    color:#b91c1c; width:24px; height:24px; border-radius:999px; cursor:pointer; font-size:1rem; line-height:1;
+  }
+  .screenshot-remove:hover { background:#fee2e2; }
+  .screenshot-remove:disabled { opacity:0.5; cursor:default; }
 </style>
 </head>
 <body>
@@ -349,6 +361,26 @@
       </div>
     </section>
 
+    <section class="card p-6 mt-6" id="screenshots-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">SEO Screenshots</h2>
+          <p class="hint mt-1">Upload screenshots from your rank tracker, Search Console, GA4, etc. to include in the report. PNG, JPEG or WebP, up to 8MB each. Uploads save immediately.</p>
+        </div>
+        <span class="admin-badge">Manual upload</span>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap mt-4">
+        <label class="btn btn-ghost text-sm" style="cursor:pointer;">
+          Upload screenshot(s)
+          <input id="screenshot-input" type="file" accept="image/png,image/jpeg,image/webp" multiple style="display:none;" />
+        </label>
+      </div>
+      <p id="screenshot-status" class="hint mt-2" style="display:none;"></p>
+
+      <div id="screenshot-grid" class="screenshot-grid mt-5"></div>
+    </section>
+
     <section class="card p-6 flex items-center justify-between flex-wrap gap-3 mt-6">
       <div class="flex items-center gap-3">
         <button id="back-step-1" type="button" class="btn btn-ghost">← Back to questions</button>
@@ -386,6 +418,8 @@
   const heroSub = document.getElementById('hero-sub');
   const campaignRows = document.getElementById('campaign-rows');
   const seRankingRows = document.getElementById('se-ranking-rows');
+  const screenshotGrid = document.getElementById('screenshot-grid');
+  let screenshots = [];
 
   const CHANNELS = ['SEARCH', 'PERFORMANCE_MAX', 'DISPLAY', 'SHOPPING', 'VIDEO', 'DEMAND_GEN'];
   const STATUSES = ['ENABLED', 'PAUSED', 'REMOVED'];
@@ -485,7 +519,6 @@
 
   function readSeRankings() {
     const rows = Array.from(seRankingRows.querySelectorAll('tr'));
-    if (!rows.length) return null;
     const out = [];
     rows.forEach((row) => {
       const keyword = row.querySelector('.se-keyword').value.trim();
@@ -496,14 +529,20 @@
       if (!keyword && !position && !url && !volume && !change) return;
       out.push({ keyword, position, url, volume, change });
     });
-    if (!out.length) return null;
-    return { rows: out, updatedAt: new Date().toISOString() };
+    const shots = readScreenshots();
+    // Screenshots live inside seRankings too — the backend's "se_rankings"
+    // JSONB column is the only free-form SEO-data slot a report row has,
+    // and toRow()/fromRow() only pass known fields through, so a sibling
+    // top-level "screenshots" field would silently never be saved.
+    if (!out.length && !shots.length) return null;
+    return { rows: out, screenshots: shots, updatedAt: new Date().toISOString() };
   }
 
   function loadSeRankings(sr) {
     seRankingRows.innerHTML = '';
     ((sr && sr.rows) || []).forEach(addSeRow);
     if (!sr || !(sr.rows || []).length) addSeRow({});
+    loadScreenshots((sr && sr.screenshots) || []);
   }
 
   function parseCSV(text) {
@@ -555,6 +594,46 @@
       });
     });
     return out;
+  }
+
+  function screenshotThumbHTML(s) {
+    const safeCaption = (s.caption || '').replace(/"/g, '&quot;');
+    const safePath = (s.path || '').replace(/"/g, '&quot;');
+    return `
+      <div class="screenshot-thumb" data-path="${safePath}">
+        <img src="${s.url}" alt="" loading="lazy" />
+        <input type="text" class="screenshot-caption" placeholder="Caption (optional)" value="${safeCaption}" />
+        <button type="button" class="screenshot-remove" title="Remove">×</button>
+      </div>`;
+  }
+
+  function addScreenshotThumb(s) {
+    screenshotGrid.insertAdjacentHTML('beforeend', screenshotThumbHTML(s));
+    const el = screenshotGrid.lastElementChild;
+    el.querySelector('.screenshot-caption').addEventListener('input', (e) => { s.caption = e.target.value; });
+    el.querySelector('.screenshot-remove').addEventListener('click', async () => {
+      const btn = el.querySelector('.screenshot-remove');
+      btn.disabled = true;
+      try {
+        await window.AslotelReports.deleteScreenshot(s.path);
+      } catch (err) {
+        alert('Could not delete that screenshot — check your connection and try again.\n\n' + (err.message || err));
+        btn.disabled = false;
+        return;
+      }
+      screenshots = screenshots.filter((x) => x !== s);
+      el.remove();
+    });
+  }
+
+  function loadScreenshots(list) {
+    screenshotGrid.innerHTML = '';
+    screenshots = [];
+    (list || []).forEach((s) => { screenshots.push(s); addScreenshotThumb(s); });
+  }
+
+  function readScreenshots() {
+    return screenshots.map((s) => ({ path: s.path, url: s.url, caption: (s.caption || '').trim() }));
   }
 
   function readTotals() {
@@ -1068,6 +1147,7 @@
       renderQuestions({});
       addCampaignRow({});
       addSeRow({});
+      loadScreenshots([]);
       return;
     }
     const r = await window.AslotelReports.get(editingId);
@@ -1076,6 +1156,7 @@
       renderQuestions({});
       addCampaignRow({});
       addSeRow({});
+      loadScreenshots([]);
       return;
     }
     monthEl.value = r.month || defaultMonth();
@@ -1086,10 +1167,11 @@
     } else {
       addCampaignRow({});
     }
-    if (r.seRankings && (r.seRankings.rows || []).length) {
+    if (r.seRankings && ((r.seRankings.rows || []).length || (r.seRankings.screenshots || []).length)) {
       loadSeRankings(r.seRankings);
     } else {
       addSeRow({});
+      loadScreenshots([]);
     }
   }
 
@@ -1122,6 +1204,39 @@
     } finally {
       e.target.value = '';
     }
+  });
+
+  document.getElementById('screenshot-input').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const month = monthEl.value;
+    if (!month) {
+      alert('Please choose a report month (Step 1) before uploading screenshots.');
+      e.target.value = '';
+      return;
+    }
+    const status = document.getElementById('screenshot-status');
+    status.style.display = 'block';
+    status.style.color = '#6b7280';
+    let uploaded = 0;
+    for (const file of files) {
+      status.textContent = `Uploading ${file.name}…`;
+      try {
+        const result = await window.AslotelReports.uploadScreenshot(month, file);
+        const s = { path: result.path, url: result.url, caption: '' };
+        screenshots.push(s);
+        addScreenshotThumb(s);
+        uploaded++;
+      } catch (err) {
+        status.textContent = `Could not upload ${file.name}: ` + (err.message || err);
+        status.style.color = '#b91c1c';
+      }
+    }
+    if (uploaded) {
+      status.textContent = `Uploaded ${uploaded} screenshot${uploaded === 1 ? '' : 's'}.`;
+      status.style.color = '#059669';
+    }
+    e.target.value = '';
   });
 
   document.getElementById('save-draft-1').addEventListener('click', async () => {
