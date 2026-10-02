@@ -528,6 +528,7 @@ function reportsStoreJS(c) {
       answers: row.answers || {},
       seRankings: row.se_rankings || null,
       manualData: row.manual_data || null,
+      webTraffic: row.web_traffic || null,
       summary: row.generated || null,
       revisionNotes: row.revision_notes || [],
       createdAt: row.created_at,
@@ -546,6 +547,7 @@ function reportsStoreJS(c) {
       answers: report.answers || {},
       seRankings: report.seRankings || null,
       manualData: report.manualData || null,
+      webTraffic: report.webTraffic || null,
       generated: report.summary || null,
       revisionNotes: report.revisionNotes || [],
     };

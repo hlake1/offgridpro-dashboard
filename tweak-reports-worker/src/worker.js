@@ -239,7 +239,7 @@ async function handleReportsList(request, env, url, headers) {
     return jsonResponse({ error: 'Not allowed to view this client' }, 403, headers);
   }
 
-  let query = `client_id=eq.${encodeURIComponent(clientId)}&select=period,title,author,status,answers,se_rankings,manual_data,generated,revision_notes,created_at,updated_at,published_at&order=period.desc`;
+  let query = `client_id=eq.${encodeURIComponent(clientId)}&select=period,title,author,status,answers,se_rankings,manual_data,web_traffic,generated,revision_notes,created_at,updated_at,published_at&order=period.desc`;
   if (session.role !== 'admin') query += '&status=eq.published';
   const rows = await supabaseSelect(env, 'reports', query);
   return jsonResponse({ reports: rows }, 200, headers);
@@ -297,6 +297,7 @@ async function handleReportSave(request, env, url, headers) {
     answers: body.answers || {},
     se_rankings: body.seRankings || null,
     manual_data: body.manualData || null,
+    web_traffic: body.webTraffic || null,
     generated: body.generated || null,
     revision_notes: body.revisionNotes || [],
     updated_at: new Date().toISOString(),
