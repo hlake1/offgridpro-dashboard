@@ -150,6 +150,32 @@ function viewHTML(c) {
     <div id="campaigns-list" class="mt-6"></div>
   </section>
 
+  <section id="webtraffic-section" class="card p-8" style="display:none;">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
+        <h2 class="text-2xl font-medium text-gray-900 mt-1">Website traffic</h2>
+      </div>
+      <p id="webtraffic-source" class="text-xs text-gray-500"></p>
+    </div>
+    <div id="webtraffic-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <div id="webtraffic-pages-wrap" class="mt-6" style="display:none;">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Top pages</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500 text-xs uppercase tracking-wide">
+              <th class="py-2 pr-4">Path</th>
+              <th class="py-2 pr-4">Sessions</th>
+              <th class="py-2">Pageviews</th>
+            </tr>
+          </thead>
+          <tbody id="webtraffic-pages-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section id="insights-section" class="card p-6 cl-soft-bg" style="display:none; border-left:4px solid var(--cl-2);">
     <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Key insights</p>
     <h3 class="text-lg font-medium text-gray-900 mt-1">What the data shows</h3>
@@ -446,6 +472,58 @@ function viewHTML(c) {
           </div>
         </div>
       \`;
+    }
+
+    const wtSection = document.getElementById('webtraffic-section');
+    const wt = report.webTraffic;
+    const wtTotals = wt && wt.totals;
+    const wtHasTotals = wtTotals && Object.values(wtTotals).some((v) => v !== null && v !== undefined);
+    if (wtHasTotals) {
+      wtSection.style.display = 'block';
+      const fmtDuration = (secs) => {
+        const n = Math.round(Number(secs) || 0);
+        return \`\${Math.floor(n / 60)}m \${String(n % 60).padStart(2, '0')}s\`;
+      };
+      document.getElementById('webtraffic-grid').innerHTML = \`
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Sessions<button class="tw-glossary-btn" type="button" data-term="Sessions">?</button></p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(wtTotals.sessions || 0)}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Users<button class="tw-glossary-btn" type="button" data-term="Users">?</button></p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(wtTotals.users || 0)}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Pageviews<button class="tw-glossary-btn" type="button" data-term="Pageviews">?</button></p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(wtTotals.pageviews || 0)}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Engagement rate<button class="tw-glossary-btn" type="button" data-term="Engagement rate">?</button></p>
+          <p class="font-bold text-2xl mt-1" style="color:var(--cl-1);">\${wtTotals.engagementRate != null ? wtTotals.engagementRate + '%' : '—'}</p>
+        </div>
+      \`;
+      const sourceBits = [];
+      if (wtTotals.newUsers != null) sourceBits.push(\`\${numFmt.format(wtTotals.newUsers)} new users\`);
+      if (wtTotals.avgSessionDuration != null) sourceBits.push(\`avg. \${fmtDuration(wtTotals.avgSessionDuration)} per session<button class="tw-glossary-btn" type="button" data-term="Avg. session duration">?</button>\`);
+      document.getElementById('webtraffic-source').innerHTML = sourceBits.length
+        ? \`Google Analytics · \${sourceBits.join(' · ')}\`
+        : '';
+
+      const pages = (wt.topPages || []).filter((p) => p.path);
+      const pagesWrap = document.getElementById('webtraffic-pages-wrap');
+      if (pages.length) {
+        pagesWrap.style.display = 'block';
+        document.getElementById('webtraffic-pages-list').innerHTML = pages.map((p) => \`
+          <tr class="border-t border-gray-100">
+            <td class="py-2 pr-4 text-gray-900">\${esc(p.path)}</td>
+            <td class="py-2 pr-4">\${numFmt.format(p.sessions || 0)}</td>
+            <td class="py-2">\${numFmt.format(p.pageviews || 0)}</td>
+          </tr>\`).join('');
+      } else {
+        pagesWrap.style.display = 'none';
+      }
+    } else {
+      wtSection.style.display = 'none';
     }
 
     const setText = (elId, text) => {

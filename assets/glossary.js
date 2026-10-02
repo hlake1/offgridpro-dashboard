@@ -26,6 +26,11 @@
     'Engagement rate': 'How often people interact — likes, comments, shares — relative to how many saw the post.',
     'Reach': 'The number of unique people who saw a post or ad, each counted once.',
     'Impression share': 'The percentage of times your ad was eligible to show that it actually did show.',
+    'Sessions': 'A visit to the website — one person can have several sessions in a period.',
+    'Users': 'The number of distinct people who visited the website in the period shown.',
+    'New users': "Users visiting the website for the first time, based on the browser's own history.",
+    'Pageviews': 'The total number of pages loaded, including repeat views of the same page by the same visitor.',
+    'Avg. session duration': 'The average amount of time visitors spent on the site per session.',
   };
 
   function esc(s) {

@@ -301,6 +301,71 @@ function builderHTML(c) {
       </div>
     </section>
 
+    <section class="card p-6 mt-6" id="webtraffic-card">
+      <div class="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h2 class="text-xl font-medium">Website traffic</h2>
+          <p class="hint mt-1" id="webtraffic-status-text">Connect Google above, then pick a property and pull — or enter the figures manually below.</p>
+        </div>
+        <span class="admin-badge" id="webtraffic-badge">Manual entry</span>
+      </div>
+
+      <div id="webtraffic-pull-row" class="mt-4 flex items-end gap-3 flex-wrap" style="display:none;">
+        <div class="qbox" style="min-width:280px;">
+          <label for="webtraffic-property">GA4 property</label>
+          <select id="webtraffic-property"></select>
+        </div>
+        <button id="webtraffic-pull" type="button" class="btn btn-primary">Pull website traffic for this month</button>
+        <span id="webtraffic-pull-flash" class="save-flash">Pulled</span>
+      </div>
+      <p id="webtraffic-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+        <div class="qbox">
+          <label for="wt_sessions">Sessions</label>
+          <input id="wt_sessions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 3204" />
+        </div>
+        <div class="qbox">
+          <label for="wt_users">Users</label>
+          <input id="wt_users" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 2510" />
+        </div>
+        <div class="qbox">
+          <label for="wt_newusers">New users</label>
+          <input id="wt_newusers" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 1840" />
+        </div>
+        <div class="qbox">
+          <label for="wt_pageviews">Pageviews</label>
+          <input id="wt_pageviews" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 8120" />
+        </div>
+        <div class="qbox">
+          <label for="wt_avgduration">Avg. session duration (sec)</label>
+          <input id="wt_avgduration" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 95" />
+        </div>
+        <div class="qbox">
+          <label for="wt_engagement">Engagement rate</label>
+          <div class="field-suffix"><input id="wt_engagement" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 62.4" /><span class="suffix">%</span></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between flex-wrap gap-2 mt-7">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Top pages</h3>
+        <button id="add-webtraffic-page" type="button" class="btn btn-ghost text-sm">+ Add page</button>
+      </div>
+      <div class="overflow-x-auto mt-3">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th style="min-width:220px;">Path</th>
+              <th class="col-num" style="min-width:100px;">Sessions</th>
+              <th class="col-num" style="min-width:100px;">Pageviews</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="webtraffic-page-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card p-6 mt-6">
       <div class="flex items-center justify-between flex-wrap gap-2">
         <div>
@@ -757,6 +822,7 @@ function builderHTML(c) {
       localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
       refreshMetaStatus();
       refreshGoogleStatus();
+      refreshWebTrafficStatus();
     });
   }
 
@@ -1018,6 +1084,176 @@ function builderHTML(c) {
     }
   });
 
+  // ---------------------------------------------------------------------
+  // Website traffic — GA4 Data API pull, via the same Google connection as
+  // above (shares the analytics.readonly scope already granted there, so
+  // whoever's already connected needs no further consent). Falls back to
+  // manual entry — the fields below are always editable regardless of
+  // whether a pull has happened.
+  // ---------------------------------------------------------------------
+  const WEBTRAFFIC_PROPERTY_KEY = '${c.reportsKey}_ga4_property';
+
+  const webtrafficBadge = document.getElementById('webtraffic-badge');
+  const webtrafficStatusText = document.getElementById('webtraffic-status-text');
+  const webtrafficPullRow = document.getElementById('webtraffic-pull-row');
+  const webtrafficPropertySel = document.getElementById('webtraffic-property');
+  const webtrafficPullBtn = document.getElementById('webtraffic-pull');
+  const webtrafficPullError = document.getElementById('webtraffic-pull-error');
+  const webtrafficPageRows = document.getElementById('webtraffic-page-rows');
+
+  function showWebtrafficError(msg) {
+    webtrafficPullError.textContent = msg || '';
+    webtrafficPullError.style.display = msg ? 'block' : 'none';
+  }
+
+  async function loadGA4Properties() {
+    try {
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/ga4-properties?member=\${encodeURIComponent(currentMember)}\`);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) { webtrafficPullRow.style.display = 'none'; return; }
+        throw new Error(data.error || 'Could not load Analytics properties');
+      }
+      const properties = data.properties || [];
+      if (properties.length === 0) {
+        webtrafficPropertySel.innerHTML = '<option value="">No Analytics properties found on this login</option>';
+        return;
+      }
+      const saved = localStorage.getItem(WEBTRAFFIC_PROPERTY_KEY);
+      webtrafficPropertySel.innerHTML = properties.map((p) =>
+        \`<option value="\${p.id}">\${(p.name || p.id).replace(/</g, '&lt;')} — \${(p.account || '').replace(/</g, '&lt;')}</option>\`
+      ).join('');
+      if (saved && properties.some((p) => p.id === saved)) webtrafficPropertySel.value = saved;
+    } catch (err) {
+      showWebtrafficError(String(err.message || err));
+    }
+  }
+
+  // Driven by refreshGoogleStatus() having already checked the connection —
+  // this just mirrors that same connected/not-connected state onto the
+  // Website traffic card's own badge and pull row, then loads properties.
+  async function refreshWebTrafficStatus() {
+    showWebtrafficError('');
+    if (!GOOGLE_WORKER_URL || !currentMember) {
+      webtrafficBadge.textContent = 'Manual entry';
+      webtrafficPullRow.style.display = 'none';
+      return;
+    }
+    try {
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(currentMember)}\`);
+      const data = await res.json();
+      if (data.connected) {
+        webtrafficBadge.textContent = 'Connected';
+        webtrafficStatusText.textContent = \`Connected as \${data.email || currentMember}. Pick the GA4 property for this client, then pull — or enter the figures manually below.\`;
+        webtrafficPullRow.style.display = 'flex';
+        await loadGA4Properties();
+      } else {
+        webtrafficBadge.textContent = 'Manual entry';
+        webtrafficStatusText.textContent = \`Connect Google above to pull this automatically, or enter the figures manually below.\`;
+        webtrafficPullRow.style.display = 'none';
+      }
+    } catch {
+      webtrafficBadge.textContent = 'Manual entry';
+      webtrafficPullRow.style.display = 'none';
+    }
+  }
+
+  webtrafficPropertySel?.addEventListener('change', () => {
+    localStorage.setItem(WEBTRAFFIC_PROPERTY_KEY, webtrafficPropertySel.value);
+  });
+
+  function webtrafficPageRowHTML(p) {
+    p = p || {};
+    return \`
+      <tr>
+        <td><input type="text" class="wt-page-path" value="\${(p.path || '').replace(/"/g, '&quot;')}" placeholder="/example-page" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="wt-page-sessions" value="\${p.sessions ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="wt-page-pageviews" value="\${p.pageviews ?? ''}" /></td>
+        <td><button type="button" class="row-del" title="Remove">×</button></td>
+      </tr>\`;
+  }
+
+  function addWebtrafficPageRow(p) {
+    webtrafficPageRows.insertAdjacentHTML('beforeend', webtrafficPageRowHTML(p));
+    const row = webtrafficPageRows.lastElementChild;
+    row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function readWebTraffic() {
+    const num = (id) => {
+      const raw = document.getElementById(id).value.trim();
+      return raw === '' ? null : Number(raw);
+    };
+    const totals = {
+      sessions: num('wt_sessions'),
+      users: num('wt_users'),
+      newUsers: num('wt_newusers'),
+      pageviews: num('wt_pageviews'),
+      avgSessionDuration: num('wt_avgduration'),
+      engagementRate: num('wt_engagement'),
+    };
+    const hasAnyTotal = Object.values(totals).some((v) => v !== null);
+
+    const topPages = [];
+    Array.from(webtrafficPageRows.querySelectorAll('tr')).forEach((row) => {
+      const path = row.querySelector('.wt-page-path').value.trim();
+      const sessions = row.querySelector('.wt-page-sessions').value.trim();
+      const pageviews = row.querySelector('.wt-page-pageviews').value.trim();
+      if (!path && !sessions && !pageviews) return;
+      topPages.push({
+        path,
+        sessions: sessions === '' ? 0 : Number(sessions),
+        pageviews: pageviews === '' ? 0 : Number(pageviews),
+      });
+    });
+
+    if (!hasAnyTotal && !topPages.length) return null;
+    return { totals, topPages, updatedAt: new Date().toISOString() };
+  }
+
+  function loadWebTraffic(wt) {
+    const t = (wt && wt.totals) || {};
+    document.getElementById('wt_sessions').value = t.sessions ?? '';
+    document.getElementById('wt_users').value = t.users ?? '';
+    document.getElementById('wt_newusers').value = t.newUsers ?? '';
+    document.getElementById('wt_pageviews').value = t.pageviews ?? '';
+    document.getElementById('wt_avgduration').value = t.avgSessionDuration ?? '';
+    document.getElementById('wt_engagement').value = t.engagementRate ?? '';
+    webtrafficPageRows.innerHTML = '';
+    ((wt && wt.topPages) || []).forEach(addWebtrafficPageRow);
+    if (!wt || !(wt.topPages || []).length) addWebtrafficPageRow({});
+  }
+
+  document.getElementById('add-webtraffic-page').addEventListener('click', () => addWebtrafficPageRow({}));
+
+  webtrafficPullBtn?.addEventListener('click', async () => {
+    const month = monthEl.value;
+    const property = webtrafficPropertySel.value;
+    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!property) { showWebtrafficError('Pick an Analytics property first.'); return; }
+    showWebtrafficError('');
+    const original = webtrafficPullBtn.textContent;
+    webtrafficPullBtn.disabled = true;
+    webtrafficPullBtn.textContent = 'Pulling…';
+    try {
+      const { since, until } = monthToDateRange(month);
+      const url = \`\${GOOGLE_WORKER_URL}/ga4-report?member=\${encodeURIComponent(currentMember)}&property=\${encodeURIComponent(property)}&start=\${since}&end=\${until}\`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.reconnectNeeded) showWebtrafficError('This Google connection needs reconnecting — use the Connect button above.');
+        throw new Error(data.error || \`Worker responded \${res.status}\`);
+      }
+      loadWebTraffic({ totals: data.totals, topPages: data.topPages });
+      showFlash('webtraffic-pull-flash', 'Pulled');
+    } catch (err) {
+      showWebtrafficError(\`Couldn't pull website traffic: \${String(err.message || err)}\`);
+    } finally {
+      webtrafficPullBtn.disabled = false;
+      webtrafficPullBtn.textContent = original;
+    }
+  });
+
   const MONTH_DATA_FOLDERS = {};
 
   async function fetchAdsData(month) {
@@ -1046,6 +1282,7 @@ function builderHTML(c) {
       author: authorEl.value.trim(),
       answers,
       seRankings: readSeRankings(),
+      webTraffic: readWebTraffic(),
       status: status || (existing ? existing.status : 'draft'),
       revisionNotes: existing?.revisionNotes || [],
     };
@@ -1152,6 +1389,7 @@ function builderHTML(c) {
       addCampaignRow({});
       addSeRow({});
       loadScreenshots([]);
+      loadWebTraffic(null);
       return;
     }
     const r = await window.${c.NS}Reports.get(editingId);
@@ -1161,6 +1399,7 @@ function builderHTML(c) {
       addCampaignRow({});
       addSeRow({});
       loadScreenshots([]);
+      loadWebTraffic(null);
       return;
     }
     monthEl.value = r.month || defaultMonth();
@@ -1177,6 +1416,7 @@ function builderHTML(c) {
       addSeRow({});
       loadScreenshots([]);
     }
+    loadWebTraffic(r.webTraffic);
   }
 
   document.getElementById('to-step-2').addEventListener('click', () => setStep(2));
@@ -1258,6 +1498,7 @@ function builderHTML(c) {
   await loadExisting();
   refreshMetaStatus();
   refreshGoogleStatus();
+  refreshWebTrafficStatus();
   setStep(1);
 })();
 </script>
