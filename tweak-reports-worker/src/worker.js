@@ -19,7 +19,7 @@
 function corsHeaders(origin, allowedOrigin) {
   const headers = {
     'Vary': 'Origin',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
   if (origin === allowedOrigin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
@@ -96,6 +96,7 @@ async function supabaseUpsert(env, table, row, onConflict) {
   const data = await res.json();
   if (!res.ok) throw new Error((data && data.message) || `Supabase upsert on ${table} failed (${res.status})`);
   return data;
+}
 
 async function supabaseUpdate(env, table, filterQuery, patch) {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${table}?${filterQuery}`, {
@@ -111,7 +112,6 @@ async function supabaseUpdate(env, table, filterQuery, patch) {
   const data = await res.json();
   if (!res.ok) throw new Error((data && data.message) || `Supabase update on ${table} failed (${res.status})`);
   return data;
-}
 }
 
 // ---------------------------------------------------------------------
