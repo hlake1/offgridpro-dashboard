@@ -426,7 +426,7 @@
         <section class="card p-6 qbox">
           <label for="${q.id}"><span class="qnum">${i+1}</span>${q.label}</label>
           <p class="hint" style="margin-left: 2.15rem;">${q.hint}</p>
-          <textarea id="${q.id}" name="${q.id}" rows="${i === 6 ? 5 : 3}" placeholder="Your answer…">${v.replace(/</g,'&lt;')}</textarea>
+          <textarea id="${q.id}" name="${q.id}" rows="${q.rows || 3}" placeholder="Your answer…">${v.replace(/</g,'&lt;')}</textarea>
         </section>
       `;
     }).join('');
@@ -1026,17 +1026,16 @@
           metrics: baseline.metrics,
           topCampaign: baseline.topCampaign,
           campaigns: (res.data && res.data.campaigns) || [],
-          priorities: baseline.priorities,
+          // Already-parsed lists — sent for context only, never rewritten.
+          wentWell: baseline.wentWell,
+          needsWork: baseline.needsWork,
+          neededFromClient: baseline.neededFromClient,
+          nextMonthPlan: baseline.nextMonthPlan,
         });
         Object.assign(report.summary, {
-          headline: ai.headline || baseline.headline,
-          overperformer: ai.overperformer || baseline.overperformer,
-          feedback: ai.feedback || baseline.feedback,
-          focus: ai.focus || baseline.focus,
-          rationale: ai.rationale || baseline.rationale,
-          challenges: ai.challenges || baseline.challenges,
-          budget: ai.budget || baseline.budget,
-          extras: ai.extras || baseline.extras,
+          topWin: ai.topWin || baseline.topWin,
+          headline: ai.topWin || baseline.topWin,
+          workedOn: ai.workedOn || baseline.workedOn,
           insights: Array.isArray(ai.insights) ? ai.insights : [],
           aiEnhanced: true,
         });

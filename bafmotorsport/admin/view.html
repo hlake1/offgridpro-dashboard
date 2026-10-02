@@ -171,74 +171,57 @@
     <p class="text-xs text-gray-500 mt-3">Added manually by the account manager — not pulled automatically.</p>
   </section>
 
+  <section class="card p-8" style="border-left:4px solid var(--cl-1);">
+    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
+    <h2 class="text-2xl font-medium text-gray-900 mt-1">Top win this month</h2>
+    <div class="cl-accent-bar w-16 mt-3 mb-4"></div>
+    <div id="ans-topwin" class="prose-answer"></div>
+  </section>
+
   <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="card p-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Biggest win</p>
-      <h3 class="text-lg font-medium text-gray-900 mt-1">The headline</h3>
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">What went well</h3>
       <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
-      <div id="ans-q1" class="prose-answer"></div>
+      <table class="w-full text-sm">
+        <tbody id="wentwell-rows"></tbody>
+      </table>
+      <p id="wentwell-empty" class="prose-answer" style="display:none;"></p>
     </div>
     <div class="card p-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overperformer</p>
-      <h3 class="text-lg font-medium text-gray-900 mt-1">Channel that exceeded expectations</h3>
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
+      <h3 class="text-lg font-medium text-gray-900 mt-1">What needs to be worked on</h3>
       <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
-      <div id="ans-q2" class="prose-answer"></div>
+      <table class="w-full text-sm">
+        <tbody id="needswork-rows"></tbody>
+      </table>
+      <p id="needswork-empty" class="prose-answer" style="display:none;"></p>
     </div>
   </section>
 
   <section class="card p-8">
-    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Strategy</p>
-    <h2 class="text-2xl font-medium text-gray-900 mt-1">Focus &amp; rationale</h2>
-    <div class="cl-accent-bar w-16 mt-3 mb-6"></div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div>
-        <p class="text-sm font-semibold text-gray-900 mb-2">Main strategic focus</p>
-        <div id="ans-q4" class="prose-answer"></div>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-gray-900 mb-2">Why we prioritised this</p>
-        <div id="ans-q5" class="prose-answer"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="card p-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Feedback</p>
-      <h3 class="text-lg font-medium text-gray-900 mt-1">Client feedback &amp; anecdotes</h3>
-      <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
-      <div id="ans-q3" class="prose-answer"></div>
-    </div>
-    <div class="card p-6">
-      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Challenges</p>
-      <h3 class="text-lg font-medium text-gray-900 mt-1">Pivots &amp; obstacles</h3>
-      <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
-      <div id="ans-q6" class="prose-answer"></div>
-    </div>
+    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Content</p>
+    <h2 class="text-2xl font-medium text-gray-900 mt-1">What we worked on</h2>
+    <div class="cl-accent-bar w-16 mt-3 mb-4"></div>
+    <div id="ans-workedon" class="prose-answer"></div>
   </section>
 
   <section class="card p-8 cl-soft-bg" style="border-left:4px solid var(--cl-1);">
-    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Next month</p>
-    <h2 class="text-2xl font-medium text-gray-900 mt-1">Priorities &amp; plans</h2>
+    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Next steps</p>
+    <h2 class="text-2xl font-medium text-gray-900 mt-1">What's next</h2>
     <div class="cl-accent-bar w-16 mt-3 mb-6"></div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">Top priorities</p>
-        <ol id="priorities-list" class="list-decimal ml-5 text-gray-800 space-y-1"></ol>
-        <div id="ans-q7-fallback" class="prose-answer" style="display:none;"></div>
+        <p class="text-sm font-semibold text-gray-900 mb-3">Needed from BAF Motorsport</p>
+        <ul id="needed-from-client-list" class="list-disc ml-5 text-gray-800 space-y-1"></ul>
+        <p id="needed-from-client-empty" class="prose-answer" style="display:none;"></p>
       </div>
       <div>
-        <p class="text-sm font-semibold text-gray-900 mb-2">Budget &amp; strategy changes</p>
-        <div id="ans-q8" class="prose-answer"></div>
+        <p class="text-sm font-semibold text-gray-900 mb-3">Plan for next month</p>
+        <ol id="next-month-plan-list" class="list-decimal ml-5 text-gray-800 space-y-1"></ol>
+        <p id="next-month-plan-empty" class="prose-answer" style="display:none;"></p>
       </div>
     </div>
-  </section>
-
-  <section id="extras-section" class="card p-6" style="display:none;">
-    <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Additional notes</p>
-    <h3 class="text-lg font-medium text-gray-900 mt-1">Also worth highlighting</h3>
-    <div class="cl-accent-bar w-12 mt-3 mb-4"></div>
-    <div id="ans-q9" class="prose-answer"></div>
   </section>
 
   <section id="revision-notes-section" class="admin-only card p-6" style="border-left:4px solid #f59e0b;">
@@ -426,35 +409,41 @@
     // Falling back to the raw answer only covers the unlikely case of a
     // summary object missing a field entirely (e.g. hand-edited data).
     const a = report.answers || {};
-    setText('ans-q1', s.headline || a.q1);
-    setText('ans-q2', s.overperformer || a.q2);
-    setText('ans-q3', s.feedback || a.q3);
-    setText('ans-q4', s.focus || a.q4);
-    setText('ans-q5', s.rationale || a.q5);
-    setText('ans-q6', s.challenges || a.q6);
-    setText('ans-q8', s.budget || a.q8);
+    setText('ans-topwin', s.topWin || a.topWin);
+    setText('ans-workedon', s.workedOn || a.workedOn);
 
-    const list = document.getElementById('priorities-list');
-    const fallback = document.getElementById('ans-q7-fallback');
-    const priorities = (s.priorities && s.priorities.length) ? s.priorities : [];
-    if (priorities.length) {
-      list.innerHTML = priorities.map(p => `<li>${esc(p)}</li>`).join('');
-      fallback.style.display = 'none';
-    } else if ((a.q7 || '').trim()) {
-      list.style.display = 'none';
-      fallback.style.display = 'block';
-      fallback.textContent = a.q7;
-    } else {
-      list.innerHTML = '<li class="italic text-gray-400">To be defined.</li>';
-      list.style.listStyle = 'none';
-      list.style.marginLeft = '0';
+    function renderRows(tbodyId, emptyId, items, emptyMessage) {
+      const tbody = document.getElementById(tbodyId);
+      const empty = document.getElementById(emptyId);
+      const table = tbody.closest('table');
+      if (items && items.length) {
+        table.style.display = '';
+        empty.style.display = 'none';
+        tbody.innerHTML = items.map(item => `<tr class="border-t border-gray-100"><td class="py-2 text-gray-800">${esc(item)}</td></tr>`).join('');
+      } else {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        empty.textContent = emptyMessage;
+      }
     }
+    renderRows('wentwell-rows', 'wentwell-empty', s.wentWell, 'Nothing logged yet.');
+    renderRows('needswork-rows', 'needswork-empty', s.needsWork, 'Nothing logged yet.');
 
-    const extrasText = (s.extras || a.q9 || '').trim();
-    if (extrasText) {
-      document.getElementById('extras-section').style.display = 'block';
-      setText('ans-q9', extrasText);
+    function renderList(listId, emptyId, items, emptyMessage) {
+      const list = document.getElementById(listId);
+      const empty = document.getElementById(emptyId);
+      if (items && items.length) {
+        list.style.display = '';
+        empty.style.display = 'none';
+        list.innerHTML = items.map(item => `<li>${esc(item)}</li>`).join('');
+      } else {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+        empty.textContent = emptyMessage;
+      }
     }
+    renderList('needed-from-client-list', 'needed-from-client-empty', s.neededFromClient, 'Nothing outstanding.');
+    renderList('next-month-plan-list', 'next-month-plan-empty', s.nextMonthPlan, 'To be defined.');
 
     document.getElementById('footer-author').textContent =
       report.author ? `Prepared by ${report.author}` : 'Reporting dashboard by Tweak Marketing';

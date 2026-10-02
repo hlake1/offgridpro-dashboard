@@ -33,15 +33,9 @@ Rules — follow all of these exactly:
 
 Schema:
 {
-  "headline": string,       // rewritten answer to "biggest win this month"
-  "overperformer": string,  // rewritten answer to "channel that exceeded expectations"
-  "feedback": string,       // rewritten answer to "client feedback / anecdotes"
-  "focus": string,          // rewritten answer to "main strategic focus"
-  "rationale": string,      // rewritten answer to "why these changes were prioritised"
-  "challenges": string,     // rewritten answer to "pivots or challenges"
-  "budget": string,         // rewritten answer to "budget or strategy changes planned"
-  "extras": string,         // rewritten answer to "anything else to highlight"
-  "insights": string[]      // 0-4 short, data-grounded observations (max ~20 words each)
+  "topWin": string,    // rewritten answer to "what's the top win this month"
+  "workedOn": string,  // rewritten answer to "what did you work on this month"
+  "insights": string[] // 0-4 short, data-grounded observations (max ~20 words each)
 }`;
 
 function corsHeaders(origin, allowedOrigin) {
@@ -62,21 +56,20 @@ function jsonResponse(body, status, extraHeaders) {
 }
 
 function buildUserMessage(payload) {
-  const { client, answers, metrics, topCampaign, campaigns, priorities } = payload;
+  const { client, answers, metrics, topCampaign, campaigns, wentWell, needsWork, neededFromClient, nextMonthPlan } = payload;
   return `CLIENT CONTEXT
 Name: ${client?.name || 'the client'}
 Sector: ${client?.sector || 'unknown'}
 
 ACCOUNT MANAGER'S RAW NOTES (rewrite these — do not add facts not present here)
-1. Biggest win this month: ${answers?.q1 || '(blank)'}
-2. Channel/campaign that exceeded expectations: ${answers?.q2 || '(blank)'}
-3. Client feedback or anecdotes: ${answers?.q3 || '(blank)'}
-4. Main strategic focus: ${answers?.q4 || '(blank)'}
-5. Why these changes were prioritised: ${answers?.q5 || '(blank)'}
-6. Pivots or challenges: ${answers?.q6 || '(blank)'}
-7. Top priorities next month (already parsed, do not rewrite): ${JSON.stringify(priorities || [])}
-8. Budget or strategy changes planned: ${answers?.q8 || '(blank)'}
-9. Anything else to highlight: ${answers?.q9 || '(blank)'}
+1. Top win this month: ${answers?.topWin || '(blank)'}
+2. What was worked on this month: ${answers?.workedOn || '(blank)'}
+
+ALREADY-PARSED LISTS (context only — do not rewrite, do not include in your output)
+What went well: ${JSON.stringify(wentWell || [])}
+What needs to be worked on: ${JSON.stringify(needsWork || [])}
+Needed from the client: ${JSON.stringify(neededFromClient || [])}
+Plan for next month: ${JSON.stringify(nextMonthPlan || [])}
 
 DATA (ground truth — the only numbers you may reference in "insights")
 Totals: ${metrics ? JSON.stringify(metrics) : 'not available this month'}
@@ -128,10 +121,7 @@ async function callClaude(env, payload) {
   return extractJson(textBlock.text);
 }
 
-const REQUIRED_FIELDS = [
-  'headline', 'overperformer', 'feedback', 'focus',
-  'rationale', 'challenges', 'budget', 'extras', 'insights',
-];
+const REQUIRED_FIELDS = ['topWin', 'workedOn', 'insights'];
 
 function validateShape(obj) {
   if (!obj || typeof obj !== 'object') return false;

@@ -14,15 +14,12 @@
   const CLIENT_SLUG = 'ipps';
 
   const QUESTIONS = [
-    { id: 'q1', label: 'What was your biggest win this month?', hint: 'The headline result — the thing you\'d lead with in a meeting.' },
-    { id: 'q2', label: 'Which campaign or channel exceeded expectations?', hint: 'Name it and say why it outperformed.' },
-    { id: 'q3', label: 'Any client feedback or anecdotes worth capturing?', hint: 'Quotes, calls, positive/negative signals from Innovative Paint Protection.' },
-    { id: 'q4', label: 'What was the main strategic focus this month?', hint: 'The theme you were working towards.' },
-    { id: 'q5', label: 'Why did you prioritise these changes?', hint: 'The reasoning behind the pivots or new tests.' },
-    { id: 'q6', label: 'Any pivots or challenges?', hint: 'What didn\'t work, what you paused, what you had to work around.' },
-    { id: 'q7', label: 'Top 3 priorities for next month?', hint: 'List them clearly — these become the "Next Steps" section.' },
-    { id: 'q8', label: 'Budget or strategy changes planned?', hint: 'Reallocations, new tests, paused campaigns.' },
-    { id: 'q9', label: 'Anything else to highlight?', hint: 'Optional. Notes, credits, footnotes, upcoming launches.' },
+    { id: 'wentWell', label: 'What went well this month?', hint: 'One item per line — these appear as a table on the Overview.', rows: 4 },
+    { id: 'needsWork', label: 'What needs to be worked on?', hint: 'One item per line — these appear as a table on the Overview.', rows: 4 },
+    { id: 'topWin', label: 'What\'s the top win this month?', hint: 'The single headline result — this leads the report.', rows: 3 },
+    { id: 'workedOn', label: 'What did you work on this month?', hint: 'Summarise the work carried out — this appears on the Content page.', rows: 4 },
+    { id: 'neededFromClient', label: 'Do you need anything from Innovative Paint Protection?', hint: 'Outstanding approvals, assets, access, or anything else you\'re waiting on. One per line — leave blank if nothing.', rows: 4 },
+    { id: 'nextMonthPlan', label: 'What\'s the plan for next month?', hint: 'The priorities for next month, one per line — these appear in Next Steps.', rows: 4 },
   ];
 
   function getToken() {
@@ -126,30 +123,33 @@
     return upsert(r);
   }
 
+  function splitList(text, max) {
+    return (text || '')
+      .split(/\r?\n|·|•|;|,\s*(?=\d\.)/)
+      .map(s => s.replace(/^\s*[-*]\s*/, '').replace(/^\s*\d+\.\s*/, '').trim())
+      .filter(Boolean)
+      .slice(0, max || 8);
+  }
+
   function generateSummary(answers, adsData) {
     const totals = adsData?.totals || null;
     const campaigns = (adsData?.campaigns || []).slice().sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
     const topCampaign = campaigns.find(c => c.status === 'ENABLED') || campaigns[0] || null;
     const activeCampaigns = campaigns.filter(c => c.status === 'ENABLED');
 
-    const priorities = (answers.q7 || '')
-      .split(/\r?\n|·|•|;|,\s*(?=\d\.)/)
-      .map(s => s.replace(/^\s*\d+\.\s*/, '').trim())
-      .filter(Boolean)
-      .slice(0, 5);
+    const wentWell = splitList(answers.wentWell);
+    const needsWork = splitList(answers.needsWork);
+    const neededFromClient = splitList(answers.neededFromClient);
+    const nextMonthPlan = splitList(answers.nextMonthPlan, 5);
 
-    const headline = (answers.q1 || '').trim() || 'Solid month of steady growth across active campaigns.';
-    const focus = (answers.q4 || '').trim();
-    const rationale = (answers.q5 || '').trim();
-    const challenges = (answers.q6 || '').trim();
-    const feedback = (answers.q3 || '').trim();
-    const budget = (answers.q8 || '').trim();
-    const overperformer = (answers.q2 || '').trim();
-    const extras = (answers.q9 || '').trim();
+    const topWin = (answers.topWin || '').trim() || 'Solid month of steady growth across active campaigns.';
+    const workedOn = (answers.workedOn || '').trim();
 
     return {
-      headline, overperformer, feedback, focus, rationale, challenges,
-      priorities, budget, extras,
+      // "headline" is kept as an alias of topWin — the hero banner and the
+      // dashboard's report-card preview both read summary.headline.
+      headline: topWin,
+      topWin, workedOn, wentWell, needsWork, neededFromClient, nextMonthPlan,
       metrics: totals,
       topCampaign,
       activeCampaigns: activeCampaigns.map(c => c.name),
