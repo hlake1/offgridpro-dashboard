@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-02T12:00:20.035Z",
+    "pulledAt": "2026-10-03T11:13:34.993Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-05",
-      "end": "2026-10-02",
+      "start": "2026-09-06",
+      "end": "2026-10-03",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 2068,
-    "clicks": 133,
+    "impressions": 1981,
+    "clicks": 131,
     "conversions": 1,
-    "cost": 260.94,
-    "ctr": 6.43,
-    "cpc": 1.96
+    "cost": 264.46,
+    "ctr": 6.61,
+    "cpc": 2.02
   },
   "campaigns": [
     {
@@ -32,24 +32,24 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1977,
-      "clicks": 120,
+      "impressions": 1922,
+      "clicks": 119,
       "conversions": 1,
-      "cost": 226.05,
-      "ctr": 6.07,
-      "cpc": 1.88
+      "cost": 230.68,
+      "ctr": 6.19,
+      "cpc": 1.94
     },
     {
       "id": "23851985894",
       "name": "Victron",
       "status": "PAUSED",
       "channelType": "SEARCH",
-      "impressions": 91,
-      "clicks": 13,
+      "impressions": 59,
+      "clicks": 12,
       "conversions": 0,
-      "cost": 34.89,
-      "ctr": 14.29,
-      "cpc": 2.68
+      "cost": 33.78,
+      "ctr": 20.34,
+      "cpc": 2.81
     },
     {
       "id": "23758381168",
@@ -94,42 +94,42 @@
       {
         "keyword": "victron energy uk",
         "matchType": "PHRASE",
-        "impressions": 25,
+        "impressions": 16,
         "clicks": 4,
         "conversions": 0,
         "cost": 22.27,
-        "ctr": 16,
+        "ctr": 25,
         "cpc": 5.57
       },
       {
         "keyword": "victron installer",
         "matchType": "PHRASE",
-        "impressions": 6,
+        "impressions": 5,
         "clicks": 4,
         "conversions": 0,
         "cost": 4,
-        "ctr": 66.67,
+        "ctr": 80,
         "cpc": 1
-      },
-      {
-        "keyword": "victron installer near me",
-        "matchType": "PHRASE",
-        "impressions": 9,
-        "clicks": 3,
-        "conversions": 0,
-        "cost": 2.73,
-        "ctr": 33.33,
-        "cpc": 0.91
       },
       {
         "keyword": "victron solar",
         "matchType": "PHRASE",
-        "impressions": 20,
+        "impressions": 14,
         "clicks": 2,
         "conversions": 0,
         "cost": 5.89,
-        "ctr": 10,
+        "ctr": 14.29,
         "cpc": 2.95
+      },
+      {
+        "keyword": "victron installer near me",
+        "matchType": "PHRASE",
+        "impressions": 4,
+        "clicks": 2,
+        "conversions": 0,
+        "cost": 1.62,
+        "ctr": 50,
+        "cpc": 0.81
       }
     ]
   },
@@ -214,7 +214,7 @@
     {
       "term": "cheapest home battery storage uk",
       "campaign": "Energy Storage",
-      "impressions": 10,
+      "impressions": 9,
       "clicks": 1,
       "conversions": 0
     },
@@ -338,9 +338,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 983,
-      "clicks": 60,
-      "ctr": 6.1
+      "impressions": 950,
+      "clicks": 58,
+      "ctr": 6.11
     },
     {
       "id": "823436679571",
@@ -369,9 +369,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 731,
+      "impressions": 718,
       "clicks": 38,
-      "ctr": 5.2
+      "ctr": 5.29
     },
     {
       "id": "819096374767",
@@ -401,8 +401,8 @@
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
       "impressions": 145,
-      "clicks": 14,
-      "ctr": 9.66
+      "clicks": 15,
+      "ctr": 10.34
     },
     {
       "id": "823514840114",
@@ -431,9 +431,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 111,
+      "impressions": 102,
       "clicks": 7,
-      "ctr": 6.31
+      "ctr": 6.86
     },
     {
       "id": "809035951826",
@@ -462,9 +462,9 @@
         "Trusted UK Victron installers for off-grid and hybrid energy systems",
         "Reliable energy security solutions using Victron Energy technology"
       ],
-      "impressions": 91,
-      "clicks": 13,
-      "ctr": 14.29
+      "impressions": 59,
+      "clicks": 12,
+      "ctr": 20.34
     },
     {
       "id": "821669539822",
