@@ -174,7 +174,15 @@ function isValidCustomerId(s) {
   return typeof s === 'string' && /^\d{6,12}$/.test(s);
 }
 
-const GOOGLE_ADS_API_VERSION = 'v19';
+const GOOGLE_ADS_API_VERSION = 'v24'; // v19 was retired by Google in Feb 2026; v24 is supported until ~May 2027
+
+// Google returns an HTML page (not JSON) when an API version is retired or an
+// API isn't enabled; surface that as a readable error instead of a JSON parse failure.
+async function readGoogleJson(res, label) {
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { throw new Error(`${label} returned a non-JSON response (HTTP ${res.status}) — the API version may be retired or the API not enabled for this Cloud project`); }
+}
 
 async function googleAdsSearch(accessToken, customerId, managerCustomerId, developerToken, query) {
   const headers = {
@@ -187,7 +195,7 @@ async function googleAdsSearch(accessToken, customerId, managerCustomerId, devel
     `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers/${customerId}/googleAds:search`,
     { method: 'POST', headers, body: JSON.stringify({ query, pageSize: 200 }) }
   );
-  const data = await res.json();
+  const data = await readGoogleJson(res, 'Google Ads API');
   if (!res.ok) {
     const msg = data.error?.message || (Array.isArray(data) && data[0]?.error?.message) || `Google Ads API error (${res.status})`;
     throw new Error(msg);
@@ -527,10 +535,10 @@ async function fetchAnalyticsAccounts(accessToken) {
 async function fetchGoogleAdsAccounts(accessToken, developerToken) {
   const headers = { Authorization: `Bearer ${accessToken}` };
   if (developerToken) headers['developer-token'] = developerToken;
-  const res = await fetch('https://googleads.googleapis.com/v19/customers:listAccessibleCustomers', {
+  const res = await fetch(`https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers:listAccessibleCustomers`, {
     headers,
   });
-  const data = await res.json();
+  const data = await readGoogleJson(res, 'Google Ads API');
   if (!res.ok) {
     const msg = data.error?.message || (Array.isArray(data) && data[0]?.error?.message) || `Google Ads API error (${res.status})`;
     throw new Error(msg);
