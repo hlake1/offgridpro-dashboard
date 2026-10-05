@@ -221,6 +221,10 @@ function round2(n) { return Math.round((n || 0) * 100) / 100; }
 // same way scripts/pull-google-ads.js shapes OffGrid Pro's data.json, so
 // both Live Metrics page templates can share the same rendering logic.
 async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId, developerToken) {
+  // GAQL has no LAST_28_DAYS literal, so use an explicit rolling window.
+  const now = new Date();
+  const start = new Date(now.getTime() - 28 * 86400000);
+  const iso = (d) => d.toISOString().slice(0, 10);
   const [customerRows, campaignRows] = await Promise.all([
     googleAdsSearch(
       accessToken, customerId, managerCustomerId, developerToken,
@@ -232,7 +236,7 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
               metrics.impressions, metrics.clicks, metrics.conversions, metrics.cost_micros,
               metrics.ctr, metrics.average_cpc
        FROM campaign
-       WHERE segments.date DURING LAST_28_DAYS
+       WHERE segments.date BETWEEN '${iso(start)}' AND '${iso(now)}'
        ORDER BY metrics.clicks DESC`
     ),
   ]);
@@ -264,10 +268,6 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
   totals.cost = round2(totals.cost);
   totals.ctr = totals.impressions ? round2((totals.clicks / totals.impressions) * 100) : 0;
   totals.cpc = totals.clicks ? round2(totals.cost / totals.clicks) : 0;
-
-  const now = new Date();
-  const start = new Date(now.getTime() - 28 * 86400000);
-  const iso = (d) => d.toISOString().slice(0, 10);
 
   return {
     meta: {
