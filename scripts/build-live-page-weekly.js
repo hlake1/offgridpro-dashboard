@@ -1,22 +1,33 @@
-<!DOCTYPE html>
+/*
+ * Weekly "Live Metrics" page for clients flagged `weekly: true` (currently
+ * SCL). Replaces the Google Ads live page for clients that don't run ads:
+ * shows the chosen Monday–Sunday week of website traffic (Google Analytics)
+ * and search visibility (Search Console), with a comparison to the week
+ * before. The GA4 property / Search Console site are matched automatically
+ * per client by the google-oauth-worker (/web-config).
+ */
+const WORKER_URL = 'https://tweak-google-oauth.herbielakeai.workers.dev';
+
+function weeklyLiveHTML(c) {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCL — Weekly Metrics</title>
+<title>${c.name} — Weekly Metrics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="../assets/auth.js"></script>
-<script>window.SCLAuth.ensureAuth();</script>
+<script>window.${c.NS}Auth.ensureAuth();</script>
 <style>
-  :root { --lm-text:#444; --lm-accent-1:#0f766e; --lm-accent-2:#17a697; --lm-accent-3:#2dd4bf; --lm-dark:#0b2e2b; }
+  :root { --lm-text:#444; --lm-accent-1:${c.c1}; --lm-accent-2:${c.c2}; --lm-accent-3:${c.c3}; --lm-dark:${c.dark}; }
   body { font-family:'Montserrat',Helvetica,Arial,sans-serif; color:var(--lm-text); background:#fff; font-weight:400; }
   h1,h2,h3,h4 { font-weight:500; letter-spacing:-0.01em; color:var(--lm-dark); }
   .heading-bold { font-weight:700; }
   .lm-accent-bar { height:4px; background:linear-gradient(90deg,var(--lm-accent-1) 0%,var(--lm-accent-2) 50%,var(--lm-accent-3) 100%); border-radius:2px; }
-  .lm-hero { background:linear-gradient(rgba(0,0,0,0.65) 0%,rgba(10,10,10,0.55) 100%),linear-gradient(135deg,#07201d 0%,#0b3d38 100%); }
+  .lm-hero { background:linear-gradient(rgba(0,0,0,0.65) 0%,rgba(10,10,10,0.55) 100%),linear-gradient(135deg,${c.heroA} 0%,${c.heroB} 100%); }
   .stat-card { background:#fff; border:1px solid #e5e7eb; transition:transform .2s ease, box-shadow .2s ease; }
   .stat-card:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(0,0,0,0.06); }
   .metric-value { font-variant-numeric:tabular-nums; }
@@ -26,7 +37,7 @@
   .wk-btn:disabled { opacity:.4; cursor:default; }
   .delta-up { color:#059669; } .delta-down { color:#dc2626; } .delta-flat { color:#6b7280; }
   .admin-only { display:none; }
-  html.scl-admin .admin-only { display:block; }
+  html.${c.adminClass} .admin-only { display:block; }
   .admin-badge { background:var(--lm-dark); color:#fff; font-size:10px; letter-spacing:.15em; text-transform:uppercase; padding:3px 8px; border-radius:2px; font-weight:600; }
   .admin-panel { background:#f6f9fc; border:1px solid #e5e7eb; border-left:4px solid var(--lm-dark); border-radius:4px; }
   table.lm-table th { text-align:left; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#6b7280; font-weight:600; padding:8px 12px; border-bottom:1px solid #e5e7eb; }
@@ -39,9 +50,9 @@
 <header class="lm-hero text-white relative overflow-hidden">
   <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between border-b border-white/10">
     <div class="flex flex-col">
-      <span class="text-white text-xl font-bold tracking-tight">SCL</span>
+      <span class="text-white text-xl font-bold tracking-tight">${c.name}</span>
       <div class="lm-accent-bar w-full mt-1"></div>
-      <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Weekly performance reports</p>
+      <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">${c.tagline}</p>
     </div>
     <div class="flex items-center gap-3">
       <a href="../" class="text-xs text-white/70 hover:text-white uppercase tracking-widest">&larr; Home</a>
@@ -52,7 +63,7 @@
     <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-4">Website &middot; Search &middot; Week by week</p>
     <h1 class="text-4xl md:text-5xl font-medium text-white leading-tight max-w-3xl"><span class="heading-bold">Weekly</span> performance</h1>
     <div class="lm-accent-bar w-32 mt-6"></div>
-    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">How people found and used the SCL website, week by week. Weeks run Monday to Sunday and are compared with the week before.</p>
+    <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">How people found and used the ${c.name} website, week by week. Weeks run Monday to Sunday and are compared with the week before.</p>
     <div class="mt-8 flex items-center gap-3 flex-wrap">
       <button id="prev-week" class="wk-btn">&larr; Previous week</button>
       <span id="week-label" class="text-white text-sm font-semibold min-w-[220px] text-center">Loading&hellip;</span>
@@ -103,13 +114,13 @@
 </main>
 
 <footer class="border-t border-gray-100 mt-8 py-8 text-center text-xs text-gray-400 tracking-wide">
-  Tweak Marketing &middot; Client Reporting &middot; <a href="../" class="hover:text-gray-600">&larr; Back to SCL</a>
+  Tweak Marketing &middot; Client Reporting &middot; <a href="../" class="hover:text-gray-600">&larr; Back to ${c.name}</a>
 </footer>
 
 <script>
 (function () {
-  const WORKER = 'https://tweak-google-oauth.herbielakeai.workers.dev';
-  const SLUG = 'scl';
+  const WORKER = '${WORKER_URL}';
+  const SLUG = '${c.slug}';
   const num = new Intl.NumberFormat('en-GB');
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -176,7 +187,7 @@
     $('search-section').classList.add('hidden');
     if (!cfg) return;
     if (!cfg.ga4Property && !cfg.gscSite) {
-      showMsg('<h3 class="text-lg font-medium text-gray-900">Weekly metrics aren&rsquo;t connected yet for SCL</h3><p class="text-sm text-gray-600 mt-2">Your Tweak Marketing team is linking the website&rsquo;s Google Analytics and Search Console. Weekly figures will appear here as soon as that is done.</p>');
+      showMsg('<h3 class="text-lg font-medium text-gray-900">Weekly metrics aren&rsquo;t connected yet for ${c.name}</h3><p class="text-sm text-gray-600 mt-2">Your Tweak Marketing team is linking the website&rsquo;s Google Analytics and Search Console. Weekly figures will appear here as soon as that is done.</p>');
       return;
     }
     const prev = new Date(monday.getTime() - 7 * DAY);
@@ -231,3 +242,7 @@
 </script>
 </body>
 </html>
+`;
+}
+
+module.exports = { weeklyLiveHTML };

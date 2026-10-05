@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* builder.html + view.html + june placeholder templates */
 
-function builderHTML(c) {
+function builderHTMLBase(c) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1627,6 +1627,11 @@ function builderHTML(c) {
 </body>
 </html>
 `;
+}
+
+function builderHTML(c) {
+  const html = builderHTMLBase(c);
+  return c.weekly ? require('./weekly-variant.js').weeklyBuilder(html, c) : html;
 }
 
 module.exports = { builderHTML };

@@ -82,10 +82,10 @@
       <div class="flex flex-col">
         <div class="flex items-baseline gap-1.5">
           <span class="text-white text-xl font-bold tracking-tight">SCL</span>
-          <span class="text-white/70 text-[10px] uppercase tracking-widest">Secure Communications & Logistics</span>
+          <span class="text-white/70 text-[10px] uppercase tracking-widest">Weekly performance reports</span>
         </div>
         <div class="cl-accent-bar w-full mt-1"></div>
-        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Security · Technology</p>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mt-1">Children’s activities</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -102,7 +102,7 @@
     </h1>
     <div class="cl-accent-bar w-32 mt-6"></div>
     <p class="text-white/80 mt-6 max-w-2xl leading-relaxed">
-      Monthly deep-dive reports covering website analytics, SEO, conversions, social media, and content performance. Live metrics coming once data access is set up.
+      A short weekly report on how the website is performing — visits, search visibility and what we have been working on — plus live weekly figures straight from Google Analytics and Search Console.
     </p>
   </div>
 </header>
@@ -118,11 +118,11 @@
       </div>
       <div>
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Sector</p>
-        <p class="font-medium text-gray-900 mt-1.5">Security · Technology</p>
+        <p class="font-medium text-gray-900 mt-1.5">Children’s activities</p>
       </div>
       <div>
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Reporting Cycle</p>
-        <p class="font-medium text-gray-900 mt-1.5">Monthly</p>
+        <p class="font-medium text-gray-900 mt-1.5">Weekly</p>
       </div>
       <div>
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Account Manager</p>
@@ -131,17 +131,17 @@
     </div>
   </section>
 
-  <!-- Monthly report entry -->
+  <!-- Weekly report entry -->
   <section>
     <div class="mb-8">
       <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Your reports</p>
-      <h2 class="text-3xl font-medium text-gray-900">Monthly performance reports</h2>
+      <h2 class="text-3xl font-medium text-gray-900">Weekly performance reports</h2>
       <div class="cl-accent-bar w-24 mt-4"></div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- Live Metrics -->
+      <!-- Live weekly metrics -->
       <a href="./live/" class="report-card block bg-white p-8 group relative overflow-hidden">
         <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--cl-1), var(--cl-2), var(--cl-3));"></div>
         <div class="flex items-start justify-between mb-6">
@@ -151,10 +151,10 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--cl-2);">Live &middot; Real-time</p>
+              <p class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--cl-2);">Live &middot; Weekly</p>
             </div>
-            <h3 class="text-2xl font-medium text-gray-900">Live metrics</h3>
-            <p class="text-sm text-gray-500 mt-1" id="live-metrics-card-sub">Auto-refreshed daily</p>
+            <h3 class="text-2xl font-medium text-gray-900">Weekly metrics</h3>
+            <p class="text-sm text-gray-500 mt-1" id="live-metrics-card-sub">Latest full week (Mon&ndash;Sun)</p>
           </div>
         </div>
 
@@ -162,43 +162,24 @@
 
         <div class="grid grid-cols-3 gap-4 mb-6">
           <div class="stat-pill p-3">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Clicks</p>
-            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="clicks">&mdash;</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Visits</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="sessions">&mdash;</p>
           </div>
           <div class="stat-pill p-3">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Conversions</p>
-            <p class="font-bold text-xl mt-1" style="color: var(--cl-1);" data-live-card="conversions">&mdash;</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Visitors</p>
+            <p class="font-bold text-xl mt-1" style="color: var(--cl-1);" data-live-card="users">&mdash;</p>
           </div>
           <div class="stat-pill p-3">
-            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Spend</p>
-            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="cost">&mdash;</p>
+            <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Pages viewed</p>
+            <p class="font-bold text-gray-900 text-xl mt-1" data-live-card="pageviews">&mdash;</p>
           </div>
         </div>
 
         <div class="flex items-center justify-between">
-          <p class="text-sm text-gray-600">Google Ads &middot; Updated daily</p>
-          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--cl-dark);">View live &rarr;</span>
+          <p class="text-sm text-gray-600">Google Analytics &middot; Search Console</p>
+          <span class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--cl-dark);">View weekly metrics &rarr;</span>
         </div>
       </a>
-
-      <!-- June 2026 Report (placeholder / coming soon) -->
-      <div class="report-card block bg-white p-8 group relative overflow-hidden opacity-95">
-        <div class="absolute top-0 right-0 bottom-0 w-1" style="background: linear-gradient(180deg, var(--cl-1), var(--cl-2), var(--cl-3));"></div>
-        <div class="flex items-start justify-between mb-6">
-          <div>
-            <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--cl-2);">First monthly report</p>
-            <h3 class="text-2xl font-medium text-gray-900 mt-2">June 2026</h3>
-            <p class="text-sm text-gray-500 mt-1">Being prepared</p>
-          </div>
-          <span class="status-pill status-pending">◐ In progress</span>
-        </div>
-        <div class="cl-accent-bar w-full mb-6"></div>
-        <p class="text-sm text-gray-700 leading-relaxed mb-6">Your first report is being set up. It will cover website analytics, SEO, conversions, social media, and content performance. Once your Daniela completes onboarding it will appear here.</p>
-        <div class="flex items-center justify-between">
-          <p class="text-sm text-gray-600">Analytics · SEO · Conversions · Social · Content</p>
-          <a href="./june-2026/" class="text-sm font-semibold group-hover:translate-x-1 transition-transform inline-block" style="color: var(--cl-dark);">Preview →</a>
-        </div>
-      </div>
 
       <!-- Onboarding info card -->
       <div class="report-card block bg-white p-8 group relative overflow-hidden">
@@ -206,15 +187,14 @@
           <div>
             <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--cl-2);">Onboarding</p>
             <h3 class="text-2xl font-medium text-gray-900 mt-2">Getting set up</h3>
-            <p class="text-sm text-gray-500 mt-1">What we need to unlock live metrics</p>
+            <p class="text-sm text-gray-500 mt-1">What we need for weekly reporting</p>
           </div>
           <span class="status-pill status-pending">◐ In progress</span>
         </div>
         <div class="cl-accent-bar w-full mb-6"></div>
         <ul class="text-sm text-gray-700 space-y-2 mb-6">
-          <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Google Ads · Search Console · Analytics access</span></li>
-          <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Conversion tracking integration</span></li>
-          <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Priority KPIs &amp; reporting frequency</span></li>
+          <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Google Analytics &amp; Search Console access</span></li>
+          <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Priority KPIs for the weekly report</span></li>
           <li class="flex items-start gap-2"><span class="text-gray-400 mt-0.5">□</span><span>Stakeholder access &amp; approvals</span></li>
         </ul>
         <div class="flex items-center justify-between">
@@ -223,34 +203,20 @@
       </div>
 
     </div>
-
-    <!-- Next month placeholder -->
-    <div class="mt-6 report-card block bg-white p-5 opacity-70">
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <div class="flex items-center gap-4">
-          <div class="text-2xl">🗓️</div>
-          <div>
-            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">Coming next</p>
-            <p class="font-medium text-gray-600">July 2026 report</p>
-          </div>
-        </div>
-        <p class="text-xs text-gray-500 italic">Will be published in early August once data access is confirmed.</p>
-      </div>
-    </div>
   </section>
 
   <!-- Published reports (visible to everyone once published) — placeholder, none yet -->
   <section id="published-reports-section" class="mt-12" style="display:none;">
     <div class="mb-6">
       <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Published</p>
-      <h2 class="text-3xl font-medium text-gray-900">Monthly reports</h2>
+      <h2 class="text-3xl font-medium text-gray-900">Weekly reports</h2>
       <div class="cl-accent-bar w-24 mt-4"></div>
     </div>
     <div id="published-reports-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
   </section>
 
   <!-- =============================================================== -->
-  <!-- ADMIN ONLY: Monthly Report Builder Panel                        -->
+  <!-- ADMIN ONLY: Weekly Report Builder Panel                         -->
   <!-- =============================================================== -->
   <section class="admin-only mt-12">
     <div class="admin-panel p-8">
@@ -260,19 +226,19 @@
             <span class="admin-badge">Admin · Tweak</span>
             <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">Report builder</p>
           </div>
-          <h2 class="text-3xl font-medium text-gray-900">Monthly Report</h2>
+          <h2 class="text-3xl font-medium text-gray-900">Weekly Report</h2>
           <div class="cl-accent-bar w-24 mt-4"></div>
-          <p class="text-gray-600 mt-4 max-w-2xl">Build the next monthly report by answering a short set of questions, then entering the month's metrics. We'll assemble a draft you can review, tweak and publish.</p>
+          <p class="text-gray-600 mt-4 max-w-2xl">Build the next weekly report by answering a short set of questions, then adding the week's website figures. We'll assemble a draft you can review, tweak and publish.</p>
         </div>
         <a href="./admin/builder.html" class="btn-primary rounded-sm no-underline whitespace-nowrap">
-          + New monthly report
+          + New weekly report
         </a>
       </div>
 
       <div id="admin-drafts-wrap">
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Drafts &amp; recent</p>
         <div id="admin-drafts-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        <p id="admin-drafts-empty" class="text-sm text-gray-500 italic mt-2" style="display:none;">No drafts yet. Click “New monthly report” to start one.</p>
+        <p id="admin-drafts-empty" class="text-sm text-gray-500 italic mt-2" style="display:none;">No drafts yet. Click “New weekly report” to start one.</p>
       </div>
     </div>
   </section>
@@ -301,7 +267,7 @@
           <a href="./admin/view.html?id=${encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
             <div class="flex items-start justify-between mb-4">
               <div>
-                <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--cl-2);">Monthly report</p>
+                <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--cl-2);">Weekly report</p>
                 <h3 class="text-2xl font-medium text-gray-900 mt-2">${esc(label)}</h3>
                 <p class="text-sm text-gray-500 mt-1">Published</p>
               </div>
@@ -375,19 +341,29 @@
 <script>
   (async () => {
     try {
-      const res = await fetch('https://tweak-google-oauth.herbielakeai.workers.dev/metrics?client=scl', { cache: 'no-store' });
-      const payload = await res.json();
+      const W = 'https://tweak-google-oauth.herbielakeai.workers.dev';
       const sub = document.getElementById('live-metrics-card-sub');
-      if (!payload.configured) {
+      const cfgRes = await fetch(W + '/web-config?client=scl', { cache: 'no-store' });
+      const cfg = await cfgRes.json();
+      if (!cfgRes.ok || !cfg.ga4Property) {
         if (sub) sub.textContent = 'Not set up yet';
         return;
       }
-      const t = payload.data.totals;
-      const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 });
+      // Latest full Monday–Sunday week (UTC)
+      const now = new Date();
+      const mon = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      mon.setUTCDate(mon.getUTCDate() - ((mon.getUTCDay() + 6) % 7) - 7);
+      const sun = new Date(mon.getTime() + 6 * 86400000);
+      const iso = (d) => d.toISOString().slice(0, 10);
+      const res = await fetch(W + '/ga4-report?member=' + encodeURIComponent(cfg.member) + '&property=' + encodeURIComponent(cfg.ga4Property) + '&start=' + iso(mon) + '&end=' + iso(sun), { cache: 'no-store' });
+      const payload = await res.json();
+      if (!res.ok) { if (sub) sub.textContent = 'Not available right now'; return; }
+      const t = payload.totals;
       const numFmt = new Intl.NumberFormat('en-GB');
-      document.querySelectorAll('[data-live-card="clicks"]').forEach(el => el.textContent = numFmt.format(t.clicks));
-      document.querySelectorAll('[data-live-card="conversions"]').forEach(el => el.textContent = t.conversions);
-      document.querySelectorAll('[data-live-card="cost"]').forEach(el => el.textContent = gbp.format(t.cost));
+      document.querySelectorAll('[data-live-card="sessions"]').forEach(el => el.textContent = numFmt.format(t.sessions));
+      document.querySelectorAll('[data-live-card="users"]').forEach(el => el.textContent = numFmt.format(t.users));
+      document.querySelectorAll('[data-live-card="pageviews"]').forEach(el => el.textContent = numFmt.format(t.pageviews));
+      if (sub) sub.textContent = 'Week of ' + mon.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }) + ' – ' + sun.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
     } catch (e) { /* silent — placeholders stay */ }
   })();
 </script>

@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const { CLIENTS, ROOT } = require('./build-client-profiles.js');
 const { liveHTML } = require('./build-live-page-template.js');
+const { weeklyLiveHTML } = require('./build-live-page-weekly.js');
 
 const args = process.argv.slice(2);
 const targetSlugs = args.length ? args : CLIENTS.map((c) => c.slug).filter((s) => s !== 'offgridpro');
@@ -32,6 +33,7 @@ for (const slug of targetSlugs) {
   const dir = path.join(ROOT, c.slug, 'live');
   fs.mkdirSync(dir, { recursive: true });
   const outPath = path.join(dir, 'index.html');
-  fs.writeFileSync(outPath, liveHTML(c));
+  // Weekly (no-Ads) clients get the weekly Analytics/Search Console page.
+  fs.writeFileSync(outPath, c.weekly ? weeklyLiveHTML(c) : liveHTML(c));
   console.log('wrote', path.relative(ROOT, outPath));
 }

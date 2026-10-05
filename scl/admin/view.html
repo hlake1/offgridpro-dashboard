@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCL — Monthly Report</title>
+<title>SCL — Weekly Report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -97,7 +97,7 @@
     </div>
   </div>
   <div class="max-w-5xl mx-auto px-6 py-14">
-    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly performance report · SCL</p>
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Weekly performance report · SCL</p>
     <div class="flex items-center gap-4 flex-wrap">
       <h1 id="report-title" class="text-4xl md:text-5xl font-medium text-white leading-tight">—</h1>
       <span id="status-badge"></span>
@@ -134,7 +134,7 @@
     </p>
   </div>
 
-  <section id="metrics-section" class="card p-8">
+  <section id="metrics-section" class="card p-8" style="display:none;">
     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
       <div>
         <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
@@ -244,7 +244,7 @@
 
   <section class="card p-8" style="border-left:4px solid var(--cl-1);">
     <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Overview</p>
-    <h2 class="text-2xl font-medium text-gray-900 mt-1">Top win this month</h2>
+    <h2 class="text-2xl font-medium text-gray-900 mt-1">Top win this week</h2>
     <div class="cl-accent-bar w-16 mt-3 mb-4"></div>
     <div id="ans-topwin" class="prose-answer"></div>
   </section>
@@ -288,7 +288,7 @@
         <p id="needed-from-client-empty" class="prose-answer" style="display:none;"></p>
       </div>
       <div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">Plan for next month</p>
+        <p class="text-sm font-semibold text-gray-900 mb-3">Plan for next week</p>
         <ol id="next-month-plan-list" class="list-decimal ml-5 text-gray-800 space-y-1"></ol>
         <p id="next-month-plan-empty" class="prose-answer" style="display:none;"></p>
       </div>
@@ -450,7 +450,7 @@
     if (isAdmin && report.status === 'draft') banner.style.display = 'block';
 
     const dataBanner = document.getElementById('data-banner');
-    if (s.dataStatus && s.dataStatus.available === false) {
+    if (false) {
       dataBanner.style.display = 'block';
     }
 

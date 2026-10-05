@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCL — Monthly Report Builder</title>
+<title>SCL — Weekly Report Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@
   .card { background:#fff; border:1px solid #e5e7eb; }
   .qbox label { display:block; font-weight:600; color:#1a1a1a; margin-bottom: 0.25rem; }
   .qbox .hint { color:#6b7280; font-size:0.85rem; margin-bottom: 0.65rem; }
-  .qbox textarea, .qbox input[type="text"], .qbox input[type="month"], .qbox input[type="number"], .qbox select {
+  .qbox textarea, .qbox input[type="text"], .qbox input[type="month"], .qbox input[type="week"], .qbox input[type="number"], .qbox select {
     width:100%; padding: 0.7rem 0.9rem; font-size:0.95rem;
     border:1px solid #e5e7eb; border-radius:4px; background:#f8faf5;
     font-family: inherit; outline:none; transition:border 0.15s ease, background 0.15s ease;
@@ -145,10 +145,10 @@
     <button id="logout-btn" class="text-white/60 hover:text-white text-[11px] uppercase tracking-widest">Sign out</button>
   </div>
   <div class="max-w-4xl mx-auto px-6 py-14">
-    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Monthly report builder · SCL</p>
+    <p class="text-white/70 text-sm uppercase tracking-[0.2em] mb-3">Weekly report builder · SCL</p>
     <h1 class="text-4xl font-medium text-white">Build the next report</h1>
     <div class="cl-accent-bar w-24 mt-5"></div>
-    <p id="hero-sub" class="text-white/80 mt-5 max-w-2xl">Step 1 — answer the questions below. Next you'll enter the month's metrics, then we assemble a draft you can review, tweak and publish.</p>
+    <p id="hero-sub" class="text-white/80 mt-5 max-w-2xl">Step 1 — answer the questions below. Next you'll add this week's website figures, then we assemble a draft you can review, tweak and publish.</p>
 
     <div class="stepper mt-8">
       <div id="pill-1" class="step-pill active"><span class="step-dot">1</span><span>Questions</span></div>
@@ -164,9 +164,10 @@
     <section class="card p-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="qbox">
-          <label for="month">Report month</label>
-          <p class="hint">Which month is this report covering?</p>
-          <input id="month" type="month" required />
+          <label for="month">Report week</label>
+          <p class="hint">Which week is this report covering? (Monday–Sunday)</p>
+          <input id="month" type="week" placeholder="2026-W41" required />
+          <p class="hint" id="week-hint" style="margin-top:6px;"></p>
         </div>
         <div class="qbox">
           <label for="author">Prepared by</label>
@@ -202,7 +203,7 @@
       </div>
     </section>
 
-    <section class="card p-6 mt-6" id="meta-card">
+    <section class="card p-6 mt-6" id="meta-card" style="display:none;">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h2 class="text-xl font-medium">Meta Ads (Facebook/Instagram)</h2>
@@ -231,7 +232,7 @@
     <section class="card p-6 mt-6" id="google-card">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h2 class="text-xl font-medium">Google Ads &amp; Analytics</h2>
+          <h2 class="text-xl font-medium">Google Analytics &amp; Search Console</h2>
           <p class="hint mt-1" id="google-status-text">Checking connection…</p>
         </div>
         <span class="admin-badge" id="google-badge">Checking…</span>
@@ -252,13 +253,12 @@
           <ul id="google-preview-analytics" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
           <p class="hint mt-2"><strong>Search Console sites</strong> (read via <code>webmasters.readonly</code>):</p>
           <ul id="google-preview-searchconsole" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
-          <p class="hint mt-2"><strong>Google Ads accounts</strong> (read via <code>adwords</code>):</p>
-          <ul id="google-preview-ads" class="hint" style="margin-left:1.25rem; list-style:disc;"></ul>
+          <ul id="google-preview-ads" class="hint" style="display:none;"></ul>
         </div>
       </div>
     </section>
 
-    <section class="card p-6 mt-6">
+    <section class="card p-6 mt-6" id="ads-metrics-card" style="display:none;">
       <div class="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h2 class="text-xl font-medium">Google Ads metrics</h2>
@@ -311,7 +311,7 @@
           <label for="webtraffic-property">GA4 property</label>
           <select id="webtraffic-property"></select>
         </div>
-        <button id="webtraffic-pull" type="button" class="btn btn-primary">Pull website traffic for this month</button>
+        <button id="webtraffic-pull" type="button" class="btn btn-primary">Pull website traffic for this week</button>
         <span id="webtraffic-pull-flash" class="save-flash">Pulled</span>
       </div>
       <p id="webtraffic-pull-error" class="hint mt-2" style="display:none; color:#b91c1c;"></p>
@@ -402,7 +402,7 @@
       </div>
     </section>
 
-    <section class="card p-6 mt-6">
+    <section class="card p-6 mt-6" id="campaigns-card" style="display:none;">
       <div class="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 class="text-xl font-medium">Campaigns</h2>
@@ -516,6 +516,25 @@
 
   const form = document.getElementById('q-form');
   const monthEl = document.getElementById('month');
+  // Weekly reports: the input holds an ISO week (2026-W41); the stored period id is 2026-41.
+  const WEEK_NATIVE = monthEl.type === 'week';
+  function getPeriod() {
+    const m = /^(\d{4})-?W?(\d{1,2})$/i.exec((monthEl.value || '').trim());
+    return m ? m[1] + '-' + String(m[2]).padStart(2, '0') : '';
+  }
+  function updateWeekHint() {
+    const el = document.getElementById('week-hint');
+    if (!el) return;
+    const R = window.SCLReports.weekRange(getPeriod());
+    el.textContent = R ? 'Covers ' + R.since + ' to ' + R.until + '.' : (WEEK_NATIVE ? '' : 'Type the week like 2026-W41.');
+  }
+  function setPeriod(p) {
+    const m = /^(\d{4})-(\d{2})$/.exec(p || '');
+    monthEl.value = m ? m[1] + '-W' + m[2] : '';
+    updateWeekHint();
+  }
+  monthEl.addEventListener('change', updateWeekHint);
+  monthEl.addEventListener('input', updateWeekHint);
   const authorEl = document.getElementById('author');
 
   const step1El = document.getElementById('step-1');
@@ -538,23 +557,19 @@
       step2El.classList.add('hidden');
       p1.className = 'step-pill active'; p2.className = 'step-pill';
       line.className = 'step-line';
-      heroSub.textContent = "Step 1 — answer the questions below. Next you'll enter the month's metrics, then we assemble a draft you can review, tweak and publish.";
+      heroSub.textContent = "Step 1 — answer the questions below. Next you'll add this week's website figures, then we assemble a draft you can review, tweak and publish.";
     } else {
       step1El.classList.add('hidden');
       step2El.classList.remove('hidden');
       p1.className = 'step-pill done'; p2.className = 'step-pill active';
       line.className = 'step-line done';
-      heroSub.textContent = "Step 2 — enter this month's Google Ads figures. These power the metrics + top-campaign panels in the report.";
+      heroSub.textContent = "Step 2 — pull or enter this week's website traffic and search figures (and rankings or screenshots if you have them). These power the traffic panels in the report.";
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function defaultMonth() {
-    const now = new Date();
-    const y = now.getUTCFullYear();
-    const m = now.getUTCMonth();
-    const d = new Date(Date.UTC(y, m - 1, 1));
-    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+    return window.SCLReports.lastWeekPeriod();
   }
 
   function renderQuestions(values) {
@@ -949,12 +964,8 @@
     }
   }
 
-  function monthToDateRange(month) {
-    const [y, m] = month.split('-').map(Number);
-    const since = `${y}-${String(m).padStart(2, '0')}-01`;
-    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    const until = `${y}-${String(m).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    return { since, until };
+  function monthToDateRange(period) {
+    return window.SCLReports.weekRange(period) || { since: '', until: '' };
   }
 
   metaAccountSel?.addEventListener('change', () => {
@@ -964,9 +975,9 @@
   document.getElementById('meta-refresh')?.addEventListener('click', refreshMetaStatus);
 
   metaPullBtn?.addEventListener('click', async () => {
-    const month = monthEl.value;
+    const month = getPeriod();
     const account = metaAccountSel.value;
-    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!month) { alert('Please choose a report week first.'); setStep(1); monthEl.focus(); return; }
     if (!account) { showMetaError('Pick an ad account first.'); return; }
     showMetaError('');
     const original = metaPullBtn.textContent;
@@ -1334,9 +1345,9 @@
   document.getElementById('add-webtraffic-page').addEventListener('click', () => addWebtrafficPageRow({}));
 
   webtrafficPullBtn?.addEventListener('click', async () => {
-    const month = monthEl.value;
+    const month = getPeriod();
     const property = webtrafficPropertySel.value;
-    if (!month) { alert('Please choose a report month first.'); setStep(1); monthEl.focus(); return; }
+    if (!month) { alert('Please choose a report week first.'); setStep(1); monthEl.focus(); return; }
     if (!property) { showWebtrafficError('Pick an Analytics property first.'); return; }
     showWebtrafficError('');
     const original = webtrafficPullBtn.textContent;
@@ -1389,8 +1400,8 @@
   }
 
   async function buildBase(status) {
-    const month = monthEl.value;
-    if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
+    const month = getPeriod();
+    if (!month) { alert('Please choose a report week.'); setStep(1); monthEl.focus(); return null; }
     const answers = readAnswers();
     const id = month;
     const existing = await window.SCLReports.get(id);
@@ -1427,7 +1438,7 @@
       const res = await fetch(AI_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client: { name: 'SCL', sector: 'Security · Technology' }, ...fields }),
+        body: JSON.stringify({ client: { name: 'SCL', sector: 'Children’s activities' }, ...fields }),
         signal: controller.signal,
       });
       if (!res.ok) {
@@ -1502,7 +1513,7 @@
 
   async function loadExisting() {
     if (!editingId) {
-      monthEl.value = defaultMonth();
+      setPeriod(defaultMonth());
       renderQuestions({});
       addCampaignRow({});
       addSeRow({});
@@ -1512,7 +1523,7 @@
     }
     const r = await window.SCLReports.get(editingId);
     if (!r) {
-      monthEl.value = defaultMonth();
+      setPeriod(defaultMonth());
       renderQuestions({});
       addCampaignRow({});
       addSeRow({});
@@ -1520,7 +1531,7 @@
       loadWebTraffic(null);
       return;
     }
-    monthEl.value = r.month || defaultMonth();
+    setPeriod(r.month || defaultMonth());
     authorEl.value = r.author || '';
     renderQuestions(r.answers || {});
     if (r.manualData) {
@@ -1571,9 +1582,9 @@
   document.getElementById('screenshot-input').addEventListener('change', async (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    const month = monthEl.value;
+    const month = getPeriod();
     if (!month) {
-      alert('Please choose a report month (Step 1) before uploading screenshots.');
+      alert('Please choose a report week (Step 1) before uploading screenshots.');
       e.target.value = '';
       return;
     }

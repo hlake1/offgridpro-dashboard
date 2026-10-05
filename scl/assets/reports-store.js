@@ -1,7 +1,7 @@
 /*!
  * SCL Dashboard — Reports store
  *
- * Manages monthly reports created via the admin builder. Reports are
+ * Manages weekly reports created via the admin builder. Reports are
  * stored centrally via the Tweak Reports Worker (Cloudflare Worker +
  * Supabase), so a published report is visible from any device or
  * browser — not just the one that created it.
@@ -14,12 +14,12 @@
   const CLIENT_SLUG = 'scl';
 
   const QUESTIONS = [
-    { id: 'wentWell', label: 'What went well this month?', hint: 'One item per line — these appear as a table on the Overview.', rows: 4 },
+    { id: 'wentWell', label: 'What went well this week?', hint: 'One item per line — these appear as a table on the Overview.', rows: 4 },
     { id: 'needsWork', label: 'What needs to be worked on?', hint: 'One item per line — these appear as a table on the Overview.', rows: 4 },
-    { id: 'topWin', label: 'What\'s the top win this month?', hint: 'The single headline result — this leads the report.', rows: 3 },
-    { id: 'workedOn', label: 'What did you work on this month?', hint: 'Summarise the work carried out — this appears on the Content page.', rows: 4 },
+    { id: 'topWin', label: 'What\'s the top win this week?', hint: 'The single headline result — this leads the report.', rows: 3 },
+    { id: 'workedOn', label: 'What did you work on this week?', hint: 'Summarise the work carried out — this appears on the Content page.', rows: 4 },
     { id: 'neededFromClient', label: 'Do you need anything from SCL?', hint: 'Outstanding approvals, assets, access, or anything else you\'re waiting on. One per line — leave blank if nothing.', rows: 4 },
-    { id: 'nextMonthPlan', label: 'What\'s the plan for next month?', hint: 'The priorities for next month, one per line — these appear in Next Steps.', rows: 4 },
+    { id: 'nextMonthPlan', label: 'What\'s the plan for next week?', hint: 'The priorities for next week, one per line — these appear in Next Steps.', rows: 4 },
   ];
 
   function getToken() {
@@ -163,7 +163,7 @@
     const neededFromClient = splitList(answers.neededFromClient);
     const nextMonthPlan = splitList(answers.nextMonthPlan, 5);
 
-    const topWin = (answers.topWin || '').trim() || 'Solid month of steady growth across active campaigns.';
+    const topWin = (answers.topWin || '').trim() || 'A steady week of progress.';
     const workedOn = (answers.workedOn || '').trim();
 
     return {
@@ -178,16 +178,60 @@
     };
   }
 
-  function monthLabel(month) {
-    if (!month || !/^\d{4}-\d{2}$/.test(month)) return month || '';
-    const [y, m] = month.split('-').map(Number);
-    const d = new Date(Date.UTC(y, m - 1, 1));
-    return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  // ---- Weekly periods ------------------------------------------------------
+  // ISO weeks (Monday–Sunday). A period id is YYYY-WW, e.g. 2026-41.
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function isoWeekOf(date) {
+    const t = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    const day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    const y = t.getUTCFullYear();
+    const jan1 = new Date(Date.UTC(y, 0, 1));
+    return { y, w: Math.ceil(((t - jan1) / 86400000 + 1) / 7) };
+  }
+  function weekBounds(period) {
+    const m = /^(\d{4})-(\d{2})$/.exec(period || '');
+    if (!m) return null;
+    const y = Number(m[1]), w = Number(m[2]);
+    if (w < 1 || w > 53) return null;
+    const jan4 = new Date(Date.UTC(y, 0, 4));
+    const day = jan4.getUTCDay() || 7;
+    const mon = new Date(jan4);
+    mon.setUTCDate(jan4.getUTCDate() - day + 1 + (w - 1) * 7);
+    const sun = new Date(mon);
+    sun.setUTCDate(mon.getUTCDate() + 6);
+    const thu = new Date(mon);
+    thu.setUTCDate(mon.getUTCDate() + 3);
+    const chk = isoWeekOf(thu);
+    if (chk.y !== y || chk.w !== w) return null; // e.g. week 53 in a 52-week year
+    return { mon, sun };
+  }
+  function isoDate(d) { return d.toISOString().slice(0, 10); }
+  function weekRange(period) {
+    const b = weekBounds(period);
+    return b ? { since: isoDate(b.mon), until: isoDate(b.sun) } : null;
+  }
+  function periodForDate(date) { const p = isoWeekOf(date); return p.y + '-' + pad2(p.w); }
+  function lastWeekPeriod() {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - 7);
+    return periodForDate(d);
+  }
+  // Name kept as monthLabel so the shared report / index code keeps working;
+  // for weekly clients it returns the week label.
+  function monthLabel(period) {
+    const b = weekBounds(period);
+    if (!b) return period || '';
+    const sameYear = b.mon.getUTCFullYear() === b.sun.getUTCFullYear();
+    const fmt = (d, withYear) => d.toLocaleDateString('en-GB', withYear
+      ? { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }
+      : { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    return 'Week ' + Number(period.slice(5)) + ' · ' + fmt(b.mon, !sameYear) + ' – ' + fmt(b.sun, true);
   }
 
   window.SCLReports = {
     QUESTIONS, list, listPublished, listDrafts, get, upsert,
-    publish, unpublish, addRevisionNote, generateSummary, monthLabel,
+    publish, unpublish, addRevisionNote, generateSummary, monthLabel, weekRange, lastWeekPeriod, periodForDate,
     uploadScreenshot, deleteScreenshot,
   };
 })();

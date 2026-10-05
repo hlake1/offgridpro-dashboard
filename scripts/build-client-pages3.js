@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* view.html + june placeholder */
 
-function viewHTML(c) {
+function viewHTMLBase(c) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -890,6 +890,11 @@ function juneHTML(c) {
 </body>
 </html>
 `;
+}
+
+function viewHTML(c) {
+  const html = viewHTMLBase(c);
+  return c.weekly ? require('./weekly-variant.js').weeklyView(html, c) : html;
 }
 
 module.exports = { viewHTML, juneHTML };

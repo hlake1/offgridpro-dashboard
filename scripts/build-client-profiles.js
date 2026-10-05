@@ -33,8 +33,12 @@ const CLIENTS = [
     clientCode: 'Scl',         // login access code (client)
     name: 'SCL',
     fullName: 'SCL',
-    tagline: 'Secure Communications & Logistics',
-    sector: 'Security · Technology',
+    // PLACEHOLDER: SCL runs a weekly children's activity programme (to be confirmed with the team).
+    // Weekly report, no Google Ads: see scripts/weekly-variant.js.
+    weekly: true,
+    noAds: true,
+    tagline: 'Weekly performance reports',
+    sector: 'Children\u2019s activities',
     location: 'UK',
     accountManager: 'Daniela',
     // Branding: turquoise primary, purple accent, white/black
@@ -466,7 +470,7 @@ function authJS(c) {
 `;
 }
 
-function reportsStoreJS(c) {
+function reportsStoreJSBase(c) {
   return `/*!
  * ${c.name} Dashboard — Reports store
  *
@@ -661,6 +665,12 @@ function reportsStoreJS(c) {
   };
 })();
 `;
+}
+
+// Weekly (no-Ads) clients get the weekly variant of the store; everyone else is unchanged.
+function reportsStoreJS(c) {
+  const js = reportsStoreJSBase(c);
+  return c.weekly ? require('./weekly-variant.js').weeklyStore(js, c) : js;
 }
 
 module.exports = { CLIENTS, ROOT, authJS, reportsStoreJS, TEAM_MEMBERS };
