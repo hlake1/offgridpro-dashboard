@@ -28,6 +28,15 @@
   .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
   .metric-value { font-variant-numeric: tabular-nums; }
   .prototype-badge { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.25); font-weight: 500; letter-spacing: 0.08em; }
+  .btn-primary { background: var(--lm-dark); color: #fff; padding: 0.55rem 1.2rem; font-weight: 500; letter-spacing: 0.02em; transition: background 0.2s ease; border: none; cursor: pointer; }
+  .btn-primary:hover { filter: brightness(1.25); }
+  .admin-only { display: none; }
+  html.ipps-admin .admin-only { display: block; }
+  html.ipps-admin .admin-only.flex { display: flex; }
+  .admin-badge { background: var(--lm-dark); color:#fff; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; padding: 3px 8px; border-radius: 2px; font-weight:600; }
+  .admin-panel { background: #f6f9fc; border: 1px solid #e5e7eb; border-left: 4px solid var(--lm-dark); border-radius: 4px; }
+  .save-flash { background:#dcfce7; color:#166534; padding: 6px 12px; border-radius:2px; font-size:0.8rem; font-weight:600; opacity: 0; transition: opacity 0.25s ease; }
+  .save-flash.on { opacity: 1; }
 </style>
 </head>
 <body>
@@ -69,6 +78,47 @@
     </div>
   </div>
 </header>
+
+<!-- =============================================================== -->
+<!-- ADMIN ONLY: Live Metrics setup (connect Google + pick account)  -->
+<!-- =============================================================== -->
+<section class="admin-only max-w-6xl mx-auto px-6 mt-10">
+  <div class="admin-panel p-6">
+    <div class="flex items-start justify-between flex-wrap gap-4 mb-4">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="admin-badge">Admin &middot; Tweak</span>
+          <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold">Live Metrics setup</p>
+        </div>
+        <h2 class="text-xl font-medium text-gray-900 mt-1">Connect &amp; pick the Google Ads account</h2>
+      </div>
+      <span class="admin-badge" id="live-setup-badge">Checking&hellip;</span>
+    </div>
+
+    <div class="mb-4">
+      <label class="text-xs uppercase tracking-widest text-gray-500 font-semibold block mb-1" for="live-setup-member-select">Connecting as</label>
+      <select id="live-setup-member-select" class="border border-gray-300 rounded px-3 py-2 text-sm"></select>
+      <p class="text-xs text-gray-500 mt-1">Any team member's connected Google account works &mdash; pick whoever's logged in.</p>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-3" id="live-setup-status-text">Checking connection&hellip;</p>
+
+    <div id="live-setup-connect-row" class="flex items-center gap-3 flex-wrap" style="display:none;">
+      <a id="live-setup-connect-link" href="#" target="_blank" rel="noopener" class="btn-primary rounded-sm no-underline text-sm px-4 py-2 inline-block">Connect Google Account</a>
+      <button type="button" id="live-setup-refresh" class="text-sm text-gray-500 underline">Refresh connection status</button>
+    </div>
+
+    <div id="live-setup-picker-row" class="flex items-end gap-3 flex-wrap" style="display:none;">
+      <div>
+        <label class="text-xs uppercase tracking-widest text-gray-500 font-semibold block mb-1" for="live-setup-customer-select">Which Google Ads account is this client?</label>
+        <select id="live-setup-customer-select" class="border border-gray-300 rounded px-3 py-2 text-sm" style="min-width:320px;"></select>
+      </div>
+      <button type="button" id="live-setup-save" class="btn-primary rounded-sm text-sm px-4 py-2">Save for this client</button>
+      <span id="live-setup-save-flash" class="save-flash">Saved</span>
+    </div>
+    <p id="live-setup-error" class="text-sm mt-2" style="display:none; color:#b91c1c;"></p>
+  </div>
+</section>
 
 <main class="max-w-6xl mx-auto px-6 py-16 space-y-12">
   <div id="liveDataContent">
@@ -242,6 +292,154 @@
     document.getElementById('liveDataContent').innerHTML = html;
     document.getElementById('lastUpdated').textContent = `Data pulled ${timeAgo(payload.cachedAt || data.meta.pulledAt)}`;
   }
+
+  // ---------------------------------------------------------------------
+  // Live Metrics setup panel (admin only) — connect a team member's
+  // Google account and pick which of their visible Ads accounts belongs
+  // to THIS client. Saved server-side (not localStorage) since the daily
+  // automated pull has no browser to read a saved choice from, and so
+  // one member's login covering several clients never mixes up whose
+  // numbers are whose.
+  // ---------------------------------------------------------------------
+  const TEAM_MEMBERS = ["Daniela","Imogen","Louise","Herbie","Rob","Jeremy","Bethanie","Georgia"];
+  const TEAM_MEMBER_KEY = 'tweak_connect_member';
+  function slugify(name) { return (name || '').toLowerCase().replace(/[^a-z0-9._-]/g, ''); }
+  let currentMember = localStorage.getItem(TEAM_MEMBER_KEY) || slugify('daniela');
+
+  const liveSetupBadge = document.getElementById('live-setup-badge');
+  const liveSetupStatusText = document.getElementById('live-setup-status-text');
+  const liveSetupConnectRow = document.getElementById('live-setup-connect-row');
+  const liveSetupConnectLink = document.getElementById('live-setup-connect-link');
+  const liveSetupPickerRow = document.getElementById('live-setup-picker-row');
+  const liveSetupCustomerSelect = document.getElementById('live-setup-customer-select');
+  const liveSetupSaveBtn = document.getElementById('live-setup-save');
+  const liveSetupSaveFlash = document.getElementById('live-setup-save-flash');
+  const liveSetupError = document.getElementById('live-setup-error');
+  const liveSetupMemberSelect = document.getElementById('live-setup-member-select');
+
+  function showLiveSetupError(msg) {
+    if (!liveSetupError) return;
+    liveSetupError.textContent = msg || '';
+    liveSetupError.style.display = msg ? 'block' : 'none';
+  }
+
+  if (liveSetupMemberSelect) {
+    liveSetupMemberSelect.innerHTML = TEAM_MEMBERS.map((name) => {
+      const slug = slugify(name);
+      return `<option value="${slug}"${slug === currentMember ? ' selected' : ''}>${name}</option>`;
+    }).join('');
+    if (!TEAM_MEMBERS.some((name) => slugify(name) === currentMember)) {
+      currentMember = slugify(TEAM_MEMBERS[0] || '');
+      liveSetupMemberSelect.value = currentMember;
+    }
+    liveSetupMemberSelect.addEventListener('change', () => {
+      currentMember = liveSetupMemberSelect.value;
+      localStorage.setItem(TEAM_MEMBER_KEY, currentMember);
+      refreshLiveSetup();
+    });
+  }
+
+  async function refreshLiveSetup() {
+    if (!liveSetupBadge) return;
+    showLiveSetupError('');
+    try {
+      const statusRes = await fetch(`${WORKER_URL}/status?member=${encodeURIComponent(currentMember)}`);
+      const status = await statusRes.json();
+      if (!status.connected) {
+        liveSetupBadge.textContent = 'Not connected';
+        liveSetupStatusText.textContent = `${currentMember} hasn't connected a Google account yet.`;
+        liveSetupConnectLink.href = `${WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+        liveSetupConnectRow.style.display = 'flex';
+        liveSetupPickerRow.style.display = 'none';
+        return;
+      }
+
+      liveSetupConnectRow.style.display = 'none';
+
+      const [accountsRes, savedRes] = await Promise.all([
+        fetch(`${WORKER_URL}/google-ads-accounts?member=${encodeURIComponent(currentMember)}`),
+        fetch(`${WORKER_URL}/customer-id?client=${encodeURIComponent(CLIENT_SLUG)}`),
+      ]);
+      const accountsData = await accountsRes.json();
+      const saved = await savedRes.json();
+
+      if (!accountsRes.ok) {
+        liveSetupBadge.textContent = 'Unavailable';
+        liveSetupStatusText.textContent = `Couldn't list ${currentMember}'s Google Ads accounts: ${accountsData.error || 'unknown error'}`;
+        if (accountsData.reconnectNeeded) {
+          liveSetupConnectLink.href = `${WORKER_URL}/start?member=${encodeURIComponent(currentMember)}`;
+          liveSetupConnectRow.style.display = 'flex';
+        }
+        liveSetupPickerRow.style.display = 'none';
+        return;
+      }
+
+      const accounts = accountsData.accounts || [];
+      if (!accounts.length) {
+        liveSetupBadge.textContent = 'No accounts found';
+        liveSetupStatusText.textContent = `${currentMember}'s connected Google login can't see any Google Ads accounts.`;
+        liveSetupPickerRow.style.display = 'none';
+        return;
+      }
+
+      liveSetupCustomerSelect.innerHTML = accounts.map((a) =>
+        `<option value="${a.id}">${a.name ? a.name.replace(/</g, '&lt;') + ' (' + a.id + ')' : 'Customer ID ' + a.id}</option>`
+      ).join('');
+      if (saved && saved.customerId && accounts.some((a) => a.id === saved.customerId)) {
+        liveSetupCustomerSelect.value = saved.customerId;
+      }
+
+      if (saved && saved.customerId) {
+        liveSetupBadge.textContent = 'Live';
+        liveSetupStatusText.textContent = `Connected as ${currentMember}. Pulling from Customer ID ${saved.customerId} once a day — pick a different one below if that's wrong.`;
+      } else {
+        liveSetupBadge.textContent = 'Pick an account';
+        liveSetupStatusText.textContent = `Connected as ${currentMember} — choose which of these accounts is this client below.`;
+      }
+      liveSetupPickerRow.style.display = 'flex';
+    } catch (err) {
+      liveSetupBadge.textContent = 'Unavailable';
+      liveSetupStatusText.textContent = 'Could not check Live Metrics setup right now.';
+      liveSetupConnectRow.style.display = 'none';
+      liveSetupPickerRow.style.display = 'none';
+    }
+  }
+
+  document.getElementById('live-setup-refresh')?.addEventListener('click', refreshLiveSetup);
+
+  liveSetupSaveBtn?.addEventListener('click', async () => {
+    const customerId = liveSetupCustomerSelect.value;
+    if (!customerId) { showLiveSetupError('Pick an account first.'); return; }
+    showLiveSetupError('');
+    const original = liveSetupSaveBtn.textContent;
+    liveSetupSaveBtn.disabled = true;
+    liveSetupSaveBtn.textContent = 'Saving…';
+    try {
+      const res = await fetch(`${WORKER_URL}/customer-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client: CLIENT_SLUG, customerId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Save failed (${res.status})`);
+      liveSetupSaveFlash.classList.add('on');
+      clearTimeout(liveSetupSaveFlash._t);
+      liveSetupSaveFlash._t = setTimeout(() => liveSetupSaveFlash.classList.remove('on'), 1500);
+      await refreshLiveSetup();
+      await loadLiveData(true);
+    } catch (err) {
+      showLiveSetupError(`Couldn't save: ${String(err.message || err)}`);
+    } finally {
+      liveSetupSaveBtn.disabled = false;
+      liveSetupSaveBtn.textContent = original;
+    }
+  });
+
+  function initLiveSetupPanel(role) {
+    if (role === 'admin') refreshLiveSetup();
+  }
+  document.addEventListener('ipps:auth', (e) => initLiveSetupPanel(e.detail.role));
+  if (window.IPPSAuth && window.IPPSAuth.isAuthed && window.IPPSAuth.isAuthed()) initLiveSetupPanel(window.IPPSAuth.getRole());
 
   async function loadLiveData(force) {
     try {

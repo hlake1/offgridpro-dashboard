@@ -57,8 +57,8 @@ function liveHTML(c) {
   .btn-primary { background: var(--lm-dark); color: #fff; padding: 0.55rem 1.2rem; font-weight: 500; letter-spacing: 0.02em; transition: background 0.2s ease; border: none; cursor: pointer; }
   .btn-primary:hover { filter: brightness(1.25); }
   .admin-only { display: none; }
-  html.${c.slug}-admin .admin-only { display: block; }
-  html.${c.slug}-admin .admin-only.flex { display: flex; }
+  html.${c.adminClass} .admin-only { display: block; }
+  html.${c.adminClass} .admin-only.flex { display: flex; }
   .admin-badge { background: var(--lm-dark); color:#fff; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; padding: 3px 8px; border-radius: 2px; font-weight:600; }
   .admin-panel { background: #f6f9fc; border: 1px solid #e5e7eb; border-left: 4px solid var(--lm-dark); border-radius: 4px; }
   .save-flash { background:#dcfce7; color:#166534; padding: 6px 12px; border-radius:2px; font-size:0.8rem; font-weight:600; opacity: 0; transition: opacity 0.25s ease; }

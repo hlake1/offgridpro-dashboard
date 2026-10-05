@@ -153,16 +153,32 @@ async function getFreshAccessToken(env, member) {
 // offgridpro is intentionally not listed here — it already has its own
 // working Live Metrics page powered by Maton (see /offgridpro/live and
 // scripts/pull-google-ads.js at the repo root). Don't add it here too.
+// `member` = whose stored Google login pulls this client's data. Everyone shares
+// Daniela's login (tweakmarketinguk@gmail.com), which sees every client account
+// under the Tweak UK manager account. `match` = name fragments used to auto-pick
+// the client's Google Ads account (see autoMatchClients).
+const DEFAULT_MEMBER = 'daniela';
 const CLIENTS_CONFIG = {
-  // Imogen's stored Google login lacks the Google Ads scope ("insufficient authentication scopes"),
-  // so GFS pulls through Daniela's login, which can see GFS Deliver via the Tweak UK manager account.
-  gfs:          { member: 'daniela' },
-  scl:          { member: 'daniela' },
-  autowatch:    { member: 'louise' },
-  autoid:       { member: 'louise' },
-  stjarnagloss: { member: 'daniela' },
-  aslotel:      { member: 'daniela' },
+  gfs:           { member: 'daniela', match: ['gfs'] },
+  scl:           { member: 'daniela', match: ['scl', 'secure communications'] },
+  autowatch:     { member: 'daniela', match: ['autowatch'] },
+  autoid:        { member: 'daniela', match: ['autoid'] },
+  stjarnagloss:  { member: 'daniela', match: ['stjarnagloss', 'stjärnagloss'] },
+  aslotel:       { member: 'daniela', match: ['aslotel'] },
+  bafmotorsport: { member: 'daniela', match: ['baf motorsport', 'bafmotorsport'] },
+  ipps:          { member: 'daniela', match: ['innovative paint protection', 'ipps'] },
 };
+
+// Any well-formed client slug works without a code change: it pulls through the
+// default login and auto-matches a Google Ads account whose name contains the
+// slug. (offgridpro has its own separate pipeline and is deliberately excluded.)
+function clientConfig(slug) {
+  if (typeof slug !== 'string') return null;
+  if (CLIENTS_CONFIG[slug]) return CLIENTS_CONFIG[slug];
+  if (slug === 'offgridpro' || !/^[a-z0-9-]{2,40}$/.test(slug)) return null;
+  return { member: DEFAULT_MEMBER, match: [slug] };
+}
+
 
 // The Google Ads Customer ID (and, if needed, the manager/MCC account id
 // used to reach it) is looked up here instead of hardcoded above, because
@@ -288,10 +304,20 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
 }
 
 async function computeMetricsForClient(env, slug) {
-  const cfg = CLIENTS_CONFIG[slug];
+  const cfg = clientConfig(slug);
   if (!cfg) return { configured: false, reason: `Unknown client "${slug}"` };
 
-  const { customerId, managerCustomerId } = await getClientCustomerConfig(env, slug);
+  let { customerId, managerCustomerId } = await getClientCustomerConfig(env, slug);
+  if (!customerId) {
+    // Try to pick this client's Google Ads account automatically by name (at most
+    // once every 10 minutes per client so a busy page can't hammer Google).
+    const throttleKey = `automatch:${slug}`;
+    if (!(await env.OAUTH_TOKENS.get(throttleKey))) {
+      await env.OAUTH_TOKENS.put(throttleKey, '1', { expirationTtl: 600 });
+      try { await autoMatchClients(env, [slug]); } catch { /* fall through to the not-configured message */ }
+      ({ customerId, managerCustomerId } = await getClientCustomerConfig(env, slug));
+    }
+  }
   if (!customerId) return { configured: false, reason: 'No Google Ads Customer ID set for this client yet — connect and pick an account in the panel above' };
 
   const statusRaw = await env.OAUTH_TOKENS.get(`member:${cfg.member}`);
@@ -360,10 +386,79 @@ async function handleGoogleAdsAccounts(url, env, origin) {
   }
 }
 
+// Saves which Google Ads account feeds a client's live page. If the account sits
+// under a manager (MCC), Google needs that manager's id as login-customer-id, so
+// work it out here (unless the caller already knows it) and the person picking
+// never has to.
+async function saveClientAccount(env, client, customerId, managerCustomerId, auto = false) {
+  let resolvedManager = managerCustomerId === undefined ? null : managerCustomerId;
+  if (managerCustomerId === undefined) {
+    try {
+      const member = clientConfig(client).member;
+      const accessToken = await getFreshAccessToken(env, member);
+      const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+      const hierarchy = await buildAccountHierarchy(accessToken, ids, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+      if (hierarchy[customerId] && hierarchy[customerId].manager !== customerId) resolvedManager = hierarchy[customerId].manager;
+    } catch { /* leave null; the daily pull will report a clear error if one is needed */ }
+  }
+  await env.OAUTH_TOKENS.put(`customerid:${client}`, JSON.stringify({
+    customerId,
+    managerCustomerId: resolvedManager,
+    setAt: new Date().toISOString(),
+    ...(auto ? { auto: true } : {}),
+  }));
+  // Invalidate any cached metrics so the very next /metrics call re-pulls with the
+  // newly-set account instead of serving a stale "not configured" result.
+  await env.OAUTH_TOKENS.delete(`metrics:${client}`);
+}
+
+function normName(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+// For each client that has no account saved yet, look through the Google Ads
+// accounts its login can see and pick the one whose name contains one of the
+// client's `match` fragments. Only ever saves when EXACTLY ONE account matches,
+// so it can't put another client's numbers on the wrong page; anything unclear
+// is left for a person to pick in the admin panel.
+async function autoMatchClients(env, slugs) {
+  const byMember = {};
+  for (const slug of slugs) {
+    const cfg = clientConfig(slug);
+    if (!cfg) continue;
+    const existing = await getClientCustomerConfig(env, slug);
+    if (existing.customerId) continue;
+    (byMember[cfg.member] ||= []).push([slug, cfg]);
+  }
+  const matched = [];
+  for (const [member, list] of Object.entries(byMember)) {
+    let accounts;
+    try { accounts = await listGoogleAdsAccountsForMember(env, member); } catch { continue; }
+    for (const [slug, cfg] of list) {
+      const keys = (cfg.match || [slug]).map(normName).filter(Boolean);
+      const hits = accounts.filter((a) => a.name && !/manager/i.test(a.name) && keys.some((k) => normName(a.name).includes(k)));
+      if (hits.length === 1) {
+        await saveClientAccount(env, slug, hits[0].id, hits[0].viaManager || null, true);
+        matched.push({ slug, id: hits[0].id, name: hits[0].name });
+      }
+    }
+  }
+  return matched;
+}
+
+// Every client slug the worker should refresh daily: the configured ones plus any
+// new client whose live page has been opened (those self-register in KV).
+async function allKnownClientSlugs(env) {
+  const slugs = new Set(Object.keys(CLIENTS_CONFIG));
+  try {
+    const list = await env.OAUTH_TOKENS.list({ prefix: 'seen:' });
+    for (const k of list.keys) slugs.add(k.name.slice('seen:'.length));
+  } catch { /* ignore */ }
+  return [...slugs];
+}
+
 async function handleGetCustomerId(url, env, origin) {
   const slug = url.searchParams.get('client');
   const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
-  if (!slug || !CLIENTS_CONFIG[slug]) {
+  if (!slug || !clientConfig(slug)) {
     return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
   }
   const cfg = await getClientCustomerConfig(env, slug);
@@ -379,7 +474,7 @@ async function handleSetCustomerId(request, env, origin) {
     return jsonResponse({ error: 'Invalid JSON body' }, 400, headers);
   }
   const { client, customerId, managerCustomerId } = body || {};
-  if (!client || !CLIENTS_CONFIG[client]) {
+  if (!client || !clientConfig(client)) {
     return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
   }
   if (!isValidCustomerId(customerId)) {
@@ -388,27 +483,7 @@ async function handleSetCustomerId(request, env, origin) {
   if (managerCustomerId != null && managerCustomerId !== '' && !isValidCustomerId(managerCustomerId)) {
     return jsonResponse({ error: 'managerCustomerId must be 6-12 digits, no dashes' }, 400, headers);
   }
-  // If the chosen account sits under a manager (MCC), Google needs that manager's
-  // id as login-customer-id. Work it out here so the person picking doesn't have to.
-  let resolvedManager = managerCustomerId || null;
-  if (!resolvedManager) {
-    try {
-      const member = CLIENTS_CONFIG[client].member;
-      const accessToken = await getFreshAccessToken(env, member);
-      const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
-      const hierarchy = await buildAccountHierarchy(accessToken, ids, env.GOOGLE_ADS_DEVELOPER_TOKEN);
-      if (hierarchy[customerId] && hierarchy[customerId].manager !== customerId) resolvedManager = hierarchy[customerId].manager;
-    } catch { /* leave null; the daily pull will report a clear error if one is needed */ }
-  }
-  await env.OAUTH_TOKENS.put(`customerid:${client}`, JSON.stringify({
-    customerId,
-    managerCustomerId: resolvedManager,
-    setAt: new Date().toISOString(),
-  }));
-  // Invalidate any cached metrics so the very next /metrics call for this
-  // client re-pulls with the newly-set account instead of serving a stale
-  // "not configured" (or, worse, a previous client's) cached result.
-  await env.OAUTH_TOKENS.delete(`metrics:${client}`);
+  await saveClientAccount(env, client, customerId, managerCustomerId || undefined);
   return jsonResponse({ ok: true }, 200, headers);
 }
 
@@ -416,7 +491,8 @@ async function handleSetCustomerId(request, env, origin) {
 // Refreshes every configured client and caches each result in KV — a
 // broken/unconnected client is logged and skipped, it never blocks the rest.
 async function refreshAllClientMetrics(env) {
-  const slugs = Object.keys(CLIENTS_CONFIG);
+  const slugs = await allKnownClientSlugs(env);
+  try { await autoMatchClients(env, slugs); } catch { /* per-client pulls below report their own errors */ }
   await Promise.all(slugs.map(async (slug) => {
     try {
       const result = await computeMetricsForClient(env, slug);
@@ -434,11 +510,22 @@ async function refreshAllClientMetrics(env) {
 async function handleMetrics(url, env, origin) {
   const slug = url.searchParams.get('client');
   const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
-  if (!slug || !CLIENTS_CONFIG[slug]) {
+  if (!slug || !clientConfig(slug)) {
     return jsonResponse({ configured: false, reason: 'Unknown or missing "client"' }, 200, headers);
   }
+  // A client that isn't in CLIENTS_CONFIG registers itself on first visit so the
+  // daily refresh covers it too.
+  if (!CLIENTS_CONFIG[slug] && !(await env.OAUTH_TOKENS.get(`seen:${slug}`))) {
+    await env.OAUTH_TOKENS.put(`seen:${slug}`, '1');
+  }
   const cached = await env.OAUTH_TOKENS.get(`metrics:${slug}`);
-  if (cached) return jsonResponse(JSON.parse(cached), 200, headers);
+  if (cached) {
+    const parsed = JSON.parse(cached);
+    // A cached "not configured" result is retried after 10 minutes so a client whose
+    // account has just become matchable fixes itself without waiting for the next cron.
+    const stale = parsed.configured === false && (!parsed.cachedAt || Date.now() - Date.parse(parsed.cachedAt) > 10 * 60 * 1000);
+    if (!stale) return jsonResponse(parsed, 200, headers);
+  }
 
   // No cached result yet (e.g. right after connecting, before the next
   // daily cron run) — pull live once and cache it so the next load is instant.
@@ -455,7 +542,7 @@ async function handleMetrics(url, env, origin) {
 async function handleMetricsRefresh(url, env, origin) {
   const slug = url.searchParams.get('client');
   const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
-  if (!slug || !CLIENTS_CONFIG[slug]) {
+  if (!slug || !clientConfig(slug)) {
     return jsonResponse({ configured: false, reason: 'Unknown or missing "client"' }, 400, headers);
   }
   try {
@@ -543,6 +630,14 @@ async function handleCallback(url, env) {
     scope: tokens.scope,
     connectedAt: new Date().toISOString(),
   }));
+
+  // A newly connected Google login: immediately link every client that has no
+  // account yet to the matching Google Ads account, so live pages light up with
+  // no further clicking.
+  try {
+    const known = (await allKnownClientSlugs(env)).filter((slug) => clientConfig(slug).member === member);
+    await autoMatchClients(env, known);
+  } catch { /* the daily run will try again */ }
 
   return htmlResponse(`
     <!doctype html><meta charset="utf-8">
