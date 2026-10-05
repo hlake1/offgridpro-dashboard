@@ -193,7 +193,7 @@ async function googleAdsSearch(accessToken, customerId, managerCustomerId, devel
   if (managerCustomerId) headers['login-customer-id'] = managerCustomerId;
   const res = await fetch(
     `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers/${customerId}/googleAds:search`,
-    { method: 'POST', headers, body: JSON.stringify({ query, pageSize: 200 }) }
+    { method: 'POST', headers, body: JSON.stringify({ query }) }
   );
   const data = await readGoogleJson(res, 'Google Ads API');
   if (!res.ok) {
