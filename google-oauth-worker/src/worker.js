@@ -265,7 +265,7 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
     channelType: r.campaign.advertisingChannelType,
     impressions: Number(r.metrics.impressions || 0),
     clicks: Number(r.metrics.clicks || 0),
-    conversions: Number(r.metrics.conversions || 0),
+    conversions: round2(Number(r.metrics.conversions || 0)),
     cost: round2(Number(r.metrics.costMicros || 0) / 1e6),
     ctr: round2(Number(r.metrics.ctr || 0) * 100),
     cpc: round2(Number(r.metrics.averageCpc || 0) / 1e6),
@@ -282,6 +282,7 @@ async function fetchGoogleAdsMetrics(accessToken, customerId, managerCustomerId,
     { impressions: 0, clicks: 0, conversions: 0, cost: 0 }
   );
   totals.cost = round2(totals.cost);
+  totals.conversions = round2(totals.conversions);
   totals.ctr = totals.impressions ? round2((totals.clicks / totals.impressions) * 100) : 0;
   totals.cpc = totals.clicks ? round2(totals.cost / totals.clicks) : 0;
 
