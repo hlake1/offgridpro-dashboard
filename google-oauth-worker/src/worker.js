@@ -300,22 +300,27 @@ async function computeMetricsForClient(env, slug) {
 // harder to pick the wrong client's account by mistake. A name lookup that
 // fails (e.g. an account only reachable through a manager/MCC login this
 // Worker isn't told about) still lists the id, just without a name.
-async function listGoogleAdsAccountsForMember(env, member) {
-  const accessToken = await getFreshAccessToken(env, member);
-  const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
-  // Accounts reached through a manager (MCC) can't be named directly. Ask each
-  // account that IS a manager for its child accounts and build an id -> name map.
+// Maps every enabled client account reachable through a manager (MCC) account
+// the login can see: { customerId: { name, manager } }.
+async function buildAccountHierarchy(accessToken, ids, developerToken) {
   const hierarchy = {};
   await Promise.all(ids.map(async (mgrId) => {
     try {
-      const rows = await googleAdsSearch(accessToken, mgrId, mgrId, env.GOOGLE_ADS_DEVELOPER_TOKEN,
-        'SELECT customer_client.id, customer_client.descriptive_name, customer_client.manager FROM customer_client');
+      const rows = await googleAdsSearch(accessToken, mgrId, mgrId, developerToken,
+        "SELECT customer_client.id, customer_client.descriptive_name, customer_client.manager, customer_client.status FROM customer_client WHERE customer_client.status = 'ENABLED'");
       for (const r of rows) {
         const c = r.customerClient || {};
-        if (c.id && c.descriptiveName) hierarchy[String(c.id)] = { name: c.descriptiveName, manager: mgrId };
+        if (c.id && !c.manager) hierarchy[String(c.id)] = { name: c.descriptiveName || null, manager: mgrId };
       }
     } catch { /* not a manager, or no access: ignore */ }
   }));
+  return hierarchy;
+}
+
+async function listGoogleAdsAccountsForMember(env, member) {
+  const accessToken = await getFreshAccessToken(env, member);
+  const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+  const hierarchy = await buildAccountHierarchy(accessToken, ids, env.GOOGLE_ADS_DEVELOPER_TOKEN);
   const accounts = await Promise.all(ids.map(async (id) => {
     try {
       const rows = await googleAdsSearch(accessToken, id, null, env.GOOGLE_ADS_DEVELOPER_TOKEN, 'SELECT customer.descriptive_name FROM customer LIMIT 1');
@@ -326,6 +331,10 @@ async function listGoogleAdsAccountsForMember(env, member) {
       return { id, name: null, nameError: String(err.message || err).slice(0, 300) };
     }
   }));
+  // Client accounts that sit under a manager but aren't in the directly-accessible list.
+  for (const [id, h] of Object.entries(hierarchy)) {
+    if (!ids.includes(id)) accounts.push({ id, name: h.name, viaManager: h.manager });
+  }
   return accounts;
 }
 
@@ -371,9 +380,21 @@ async function handleSetCustomerId(request, env, origin) {
   if (managerCustomerId != null && managerCustomerId !== '' && !isValidCustomerId(managerCustomerId)) {
     return jsonResponse({ error: 'managerCustomerId must be 6-12 digits, no dashes' }, 400, headers);
   }
+  // If the chosen account sits under a manager (MCC), Google needs that manager's
+  // id as login-customer-id. Work it out here so the person picking doesn't have to.
+  let resolvedManager = managerCustomerId || null;
+  if (!resolvedManager) {
+    try {
+      const member = CLIENTS_CONFIG[client].member;
+      const accessToken = await getFreshAccessToken(env, member);
+      const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+      const hierarchy = await buildAccountHierarchy(accessToken, ids, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+      if (hierarchy[customerId] && hierarchy[customerId].manager !== customerId) resolvedManager = hierarchy[customerId].manager;
+    } catch { /* leave null; the daily pull will report a clear error if one is needed */ }
+  }
   await env.OAUTH_TOKENS.put(`customerid:${client}`, JSON.stringify({
     customerId,
-    managerCustomerId: managerCustomerId || null,
+    managerCustomerId: resolvedManager,
     setAt: new Date().toISOString(),
   }));
   // Invalidate any cached metrics so the very next /metrics call for this
