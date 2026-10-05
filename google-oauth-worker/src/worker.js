@@ -197,7 +197,11 @@ async function googleAdsSearch(accessToken, customerId, managerCustomerId, devel
   );
   const data = await readGoogleJson(res, 'Google Ads API');
   if (!res.ok) {
-    const msg = data.error?.message || (Array.isArray(data) && data[0]?.error?.message) || `Google Ads API error (${res.status})`;
+    const err = data.error || (Array.isArray(data) && data[0]?.error) || {};
+    let msg = err.message || `Google Ads API error (${res.status})`;
+    // Google's top-level message is often generic ("invalid argument"); the real reason is in details.
+    const detail = (err.details || []).flatMap((d) => d.errors || []).map((e) => `${Object.entries(e.errorCode || {}).map(([k, v]) => `${k}=${v}`).join(',')}: ${e.message || ''}`).filter(Boolean).slice(0, 2).join(' | ');
+    if (detail) msg += ` [${detail}]`;
     throw new Error(msg);
   }
   return data.results || [];
@@ -299,11 +303,25 @@ async function computeMetricsForClient(env, slug) {
 async function listGoogleAdsAccountsForMember(env, member) {
   const accessToken = await getFreshAccessToken(env, member);
   const ids = await fetchGoogleAdsAccounts(accessToken, env.GOOGLE_ADS_DEVELOPER_TOKEN);
+  // Accounts reached through a manager (MCC) can't be named directly. Ask each
+  // account that IS a manager for its child accounts and build an id -> name map.
+  const hierarchy = {};
+  await Promise.all(ids.map(async (mgrId) => {
+    try {
+      const rows = await googleAdsSearch(accessToken, mgrId, mgrId, env.GOOGLE_ADS_DEVELOPER_TOKEN,
+        'SELECT customer_client.id, customer_client.descriptive_name, customer_client.manager FROM customer_client');
+      for (const r of rows) {
+        const c = r.customerClient || {};
+        if (c.id && c.descriptiveName) hierarchy[String(c.id)] = { name: c.descriptiveName, manager: mgrId };
+      }
+    } catch { /* not a manager, or no access: ignore */ }
+  }));
   const accounts = await Promise.all(ids.map(async (id) => {
     try {
       const rows = await googleAdsSearch(accessToken, id, null, env.GOOGLE_ADS_DEVELOPER_TOKEN, 'SELECT customer.descriptive_name FROM customer LIMIT 1');
-      return { id, name: rows[0]?.customer?.descriptiveName || null };
+      return { id, name: rows[0]?.customer?.descriptiveName || hierarchy[id]?.name || null };
     } catch (err) {
+      if (hierarchy[id]) return { id, name: hierarchy[id].name, viaManager: hierarchy[id].manager };
       // nameError is for diagnosing why a name couldn't be read; the picker UI ignores it.
       return { id, name: null, nameError: String(err.message || err).slice(0, 300) };
     }
