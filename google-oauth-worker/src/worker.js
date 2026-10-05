@@ -45,7 +45,13 @@ const NONCE_TTL_SECONDS = 600; // 10 minutes to complete the Google consent scre
 
 function corsHeaders(origin, allowedOrigin) {
   const headers = { 'Vary': 'Origin' };
-  if (origin === allowedOrigin) headers['Access-Control-Allow-Origin'] = allowedOrigin;
+  if (origin === allowedOrigin) {
+    headers['Access-Control-Allow-Origin'] = allowedOrigin;
+    // Needed for the browser's preflight on JSON POSTs (e.g. saving a client's Google Ads account).
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type';
+    headers['Access-Control-Max-Age'] = '86400';
+  }
   return headers;
 }
 
@@ -148,7 +154,9 @@ async function getFreshAccessToken(env, member) {
 // working Live Metrics page powered by Maton (see /offgridpro/live and
 // scripts/pull-google-ads.js at the repo root). Don't add it here too.
 const CLIENTS_CONFIG = {
-  gfs:          { member: 'imogen' },
+  // Imogen's stored Google login lacks the Google Ads scope ("insufficient authentication scopes"),
+  // so GFS pulls through Daniela's login, which can see GFS Deliver via the Tweak UK manager account.
+  gfs:          { member: 'daniela' },
   scl:          { member: 'daniela' },
   autowatch:    { member: 'louise' },
   autoid:       { member: 'louise' },
