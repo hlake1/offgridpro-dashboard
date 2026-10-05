@@ -303,8 +303,9 @@ async function listGoogleAdsAccountsForMember(env, member) {
     try {
       const rows = await googleAdsSearch(accessToken, id, null, env.GOOGLE_ADS_DEVELOPER_TOKEN, 'SELECT customer.descriptive_name FROM customer LIMIT 1');
       return { id, name: rows[0]?.customer?.descriptiveName || null };
-    } catch {
-      return { id, name: null };
+    } catch (err) {
+      // nameError is for diagnosing why a name couldn't be read; the picker UI ignores it.
+      return { id, name: null, nameError: String(err.message || err).slice(0, 300) };
     }
   }));
   return accounts;
