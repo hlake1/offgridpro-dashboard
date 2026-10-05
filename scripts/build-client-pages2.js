@@ -364,6 +364,46 @@ function builderHTML(c) {
           <tbody id="webtraffic-page-rows"></tbody>
         </table>
       </div>
+
+      <div class="mt-9">
+        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Search visibility (Google Search Console)</h3>
+        <p class="hint mt-1" id="sc-status-text">Pulled together with the traffic above when a Search Console site is matched for this client — or enter the figures manually.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-4">
+          <div class="qbox">
+            <label for="sc_clicks">Search clicks</label>
+            <input id="sc_clicks" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 640" />
+          </div>
+          <div class="qbox">
+            <label for="sc_impressions">Search impressions</label>
+            <input id="sc_impressions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 18200" />
+          </div>
+          <div class="qbox">
+            <label for="sc_ctr">Click-through rate</label>
+            <div class="field-suffix"><input id="sc_ctr" type="number" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 3.5" /><span class="suffix">%</span></div>
+          </div>
+          <div class="qbox">
+            <label for="sc_position">Avg. position</label>
+            <input id="sc_position" type="number" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 14.2" />
+          </div>
+        </div>
+        <div class="flex items-center justify-between flex-wrap gap-2 mt-6">
+          <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Top search queries</h4>
+          <button id="add-sc-query" type="button" class="btn btn-ghost text-sm">+ Add query</button>
+        </div>
+        <div class="overflow-x-auto mt-3">
+          <table class="data-grid">
+            <thead>
+              <tr>
+                <th style="min-width:240px;">Query</th>
+                <th class="col-num" style="min-width:90px;">Clicks</th>
+                <th class="col-num" style="min-width:110px;">Impressions</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="sc-query-rows"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <section class="card p-6 mt-6">
@@ -1100,6 +1140,12 @@ function builderHTML(c) {
   const webtrafficPullBtn = document.getElementById('webtraffic-pull');
   const webtrafficPullError = document.getElementById('webtraffic-pull-error');
   const webtrafficPageRows = document.getElementById('webtraffic-page-rows');
+  const scQueryRows = document.getElementById('sc-query-rows');
+  const scStatusText = document.getElementById('sc-status-text');
+  // { member, ga4Property, gscSite } — the worker auto-matches these by client
+  // name, so the right property/site is already chosen when the builder opens.
+  let webCfg = null;
+  const webMember = () => (webCfg && webCfg.member) || currentMember;
 
   function showWebtrafficError(msg) {
     webtrafficPullError.textContent = msg || '';
@@ -1108,7 +1154,7 @@ function builderHTML(c) {
 
   async function loadGA4Properties() {
     try {
-      const res = await fetch(\`\${GOOGLE_WORKER_URL}/ga4-properties?member=\${encodeURIComponent(currentMember)}\`);
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/ga4-properties?member=\${encodeURIComponent(webMember())}\`);
       const data = await res.json();
       if (!res.ok) {
         if (data.reconnectNeeded) { webtrafficPullRow.style.display = 'none'; return; }
@@ -1123,7 +1169,8 @@ function builderHTML(c) {
       webtrafficPropertySel.innerHTML = properties.map((p) =>
         \`<option value="\${p.id}">\${(p.name || p.id).replace(/</g, '&lt;')} — \${(p.account || '').replace(/</g, '&lt;')}</option>\`
       ).join('');
-      if (saved && properties.some((p) => p.id === saved)) webtrafficPropertySel.value = saved;
+      if (webCfg && webCfg.ga4Property && properties.some((p) => p.id === webCfg.ga4Property)) webtrafficPropertySel.value = webCfg.ga4Property;
+      else if (saved && properties.some((p) => p.id === saved)) webtrafficPropertySel.value = saved;
     } catch (err) {
       showWebtrafficError(String(err.message || err));
     }
@@ -1140,11 +1187,19 @@ function builderHTML(c) {
       return;
     }
     try {
-      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(currentMember)}\`);
+      try {
+        const wr = await fetch(\`\${GOOGLE_WORKER_URL}/web-config?client=\${encodeURIComponent('${c.slug}')}\`);
+        if (wr.ok) webCfg = await wr.json();
+      } catch { /* fall back to the signed-in team member */ }
+      const res = await fetch(\`\${GOOGLE_WORKER_URL}/status?member=\${encodeURIComponent(webMember())}\`);
       const data = await res.json();
       if (data.connected) {
         webtrafficBadge.textContent = 'Connected';
-        webtrafficStatusText.textContent = \`Connected as \${data.email || currentMember}. Pick the GA4 property for this client, then pull — or enter the figures manually below.\`;
+        const autoBits = [];
+        if (webCfg && webCfg.ga4Property) autoBits.push('Analytics property matched automatically');
+        if (webCfg && webCfg.gscSite) autoBits.push(\`Search Console: \${webCfg.gscSite}\`);
+        webtrafficStatusText.textContent = \`Connected as \${data.email || webMember()}. \${autoBits.length ? autoBits.join(' · ') + '. Check the property below, then pull' : 'Pick the GA4 property for this client, then pull'} — or enter the figures manually below.\`;
+        if (scStatusText) scStatusText.textContent = webCfg && webCfg.gscSite ? \`Pulled with the button above from \${webCfg.gscSite} — or enter the figures manually.\` : 'No Search Console site matched for this client (check the Tweak login has full access to it) — enter the figures manually.';
         webtrafficPullRow.style.display = 'flex';
         await loadGA4Properties();
       } else {
@@ -1160,7 +1215,61 @@ function builderHTML(c) {
 
   webtrafficPropertySel?.addEventListener('change', () => {
     localStorage.setItem(WEBTRAFFIC_PROPERTY_KEY, webtrafficPropertySel.value);
+    // Remember the choice for this client so the next report starts on the right property.
+    fetch(\`\${GOOGLE_WORKER_URL}/web-config\`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client: '${c.slug}', ga4Property: webtrafficPropertySel.value }),
+    }).then(() => { if (webCfg) webCfg.ga4Property = webtrafficPropertySel.value; }).catch(() => {});
   });
+
+  function scQueryRowHTML(q) {
+    q = q || {};
+    return \`
+      <tr>
+        <td><input type="text" class="sc-q-text" value="\${(q.query || '').replace(/"/g, '&quot;')}" placeholder="search phrase" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="sc-q-clicks" value="\${q.clicks ?? ''}" /></td>
+        <td class="col-num"><input type="number" min="0" step="1" class="sc-q-impr" value="\${q.impressions ?? ''}" /></td>
+        <td><button type="button" class="row-del" title="Remove">×</button></td>
+      </tr>\`;
+  }
+
+  function addScQueryRow(q) {
+    scQueryRows.insertAdjacentHTML('beforeend', scQueryRowHTML(q));
+    const row = scQueryRows.lastElementChild;
+    row.querySelector('.row-del').addEventListener('click', () => row.remove());
+  }
+
+  function readSearchConsole() {
+    const num = (id) => {
+      const raw = document.getElementById(id).value.trim();
+      return raw === '' ? null : Number(raw);
+    };
+    const totals = { clicks: num('sc_clicks'), impressions: num('sc_impressions'), ctr: num('sc_ctr'), position: num('sc_position') };
+    const topQueries = [];
+    Array.from(scQueryRows.querySelectorAll('tr')).forEach((row) => {
+      const query = row.querySelector('.sc-q-text').value.trim();
+      const clicks = row.querySelector('.sc-q-clicks').value.trim();
+      const impressions = row.querySelector('.sc-q-impr').value.trim();
+      if (!query && !clicks && !impressions) return;
+      topQueries.push({ query, clicks: clicks === '' ? 0 : Number(clicks), impressions: impressions === '' ? 0 : Number(impressions) });
+    });
+    if (!Object.values(totals).some((v) => v !== null) && !topQueries.length) return null;
+    return { totals, topQueries };
+  }
+
+  function loadSearchConsole(sc) {
+    const t = (sc && sc.totals) || {};
+    document.getElementById('sc_clicks').value = t.clicks ?? '';
+    document.getElementById('sc_impressions').value = t.impressions ?? '';
+    document.getElementById('sc_ctr').value = t.ctr ?? '';
+    document.getElementById('sc_position').value = t.position ?? '';
+    scQueryRows.innerHTML = '';
+    ((sc && sc.topQueries) || []).forEach(addScQueryRow);
+    if (!sc || !(sc.topQueries || []).length) addScQueryRow({});
+  }
+
+  document.getElementById('add-sc-query').addEventListener('click', () => addScQueryRow({}));
 
   function webtrafficPageRowHTML(p) {
     p = p || {};
@@ -1207,8 +1316,9 @@ function builderHTML(c) {
       });
     });
 
-    if (!hasAnyTotal && !topPages.length) return null;
-    return { totals, topPages, updatedAt: new Date().toISOString() };
+    const searchConsole = readSearchConsole();
+    if (!hasAnyTotal && !topPages.length && !searchConsole) return null;
+    return { totals, topPages, ...(searchConsole ? { searchConsole } : {}), updatedAt: new Date().toISOString() };
   }
 
   function loadWebTraffic(wt) {
@@ -1222,6 +1332,7 @@ function builderHTML(c) {
     webtrafficPageRows.innerHTML = '';
     ((wt && wt.topPages) || []).forEach(addWebtrafficPageRow);
     if (!wt || !(wt.topPages || []).length) addWebtrafficPageRow({});
+    loadSearchConsole(wt && wt.searchConsole);
   }
 
   document.getElementById('add-webtraffic-page').addEventListener('click', () => addWebtrafficPageRow({}));
@@ -1237,7 +1348,7 @@ function builderHTML(c) {
     webtrafficPullBtn.textContent = 'Pulling…';
     try {
       const { since, until } = monthToDateRange(month);
-      const url = \`\${GOOGLE_WORKER_URL}/ga4-report?member=\${encodeURIComponent(currentMember)}&property=\${encodeURIComponent(property)}&start=\${since}&end=\${until}\`;
+      const url = \`\${GOOGLE_WORKER_URL}/ga4-report?member=\${encodeURIComponent(webMember())}&property=\${encodeURIComponent(property)}&start=\${since}&end=\${until}\`;
       const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) {
@@ -1245,6 +1356,17 @@ function builderHTML(c) {
         throw new Error(data.error || \`Worker responded \${res.status}\`);
       }
       loadWebTraffic({ totals: data.totals, topPages: data.topPages });
+      // Search Console is pulled alongside when a site has been matched for this client.
+      if (webCfg && webCfg.gscSite) {
+        try {
+          const scRes = await fetch(\`\${GOOGLE_WORKER_URL}/searchconsole-report?member=\${encodeURIComponent(webMember())}&site=\${encodeURIComponent(webCfg.gscSite)}&start=\${since}&end=\${until}\`);
+          const sc = await scRes.json();
+          if (!scRes.ok) throw new Error(sc.error || \`Worker responded \${scRes.status}\`);
+          loadSearchConsole({ totals: sc.totals, topQueries: sc.topQueries });
+        } catch (scErr) {
+          showWebtrafficError(\`Website traffic pulled, but Search Console failed: \${String(scErr.message || scErr)}\`);
+        }
+      }
       showFlash('webtraffic-pull-flash', 'Pulled');
     } catch (err) {
       showWebtrafficError(\`Couldn't pull website traffic: \${String(err.message || err)}\`);

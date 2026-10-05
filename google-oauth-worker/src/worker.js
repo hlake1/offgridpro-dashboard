@@ -159,14 +159,14 @@ async function getFreshAccessToken(env, member) {
 // the client's Google Ads account (see autoMatchClients).
 const DEFAULT_MEMBER = 'daniela';
 const CLIENTS_CONFIG = {
-  gfs:           { member: 'daniela', match: ['gfs'] },
-  scl:           { member: 'daniela', match: ['scl', 'secure communications'] },
+  gfs:           { member: 'daniela', match: ['gfs'], domains: ['gfsdeliver'] },
+  scl:           { member: 'daniela', match: ['scl', 'secure communications'], domains: ['scl'] },
   autowatch:     { member: 'daniela', match: ['autowatch'] },
   autoid:        { member: 'daniela', match: ['autoid'] },
   stjarnagloss:  { member: 'daniela', match: ['stjarnagloss', 'stjärnagloss'] },
   aslotel:       { member: 'daniela', match: ['aslotel'] },
-  bafmotorsport: { member: 'daniela', match: ['baf motorsport', 'bafmotorsport'] },
-  ipps:          { member: 'daniela', match: ['innovative paint protection', 'ipps'] },
+  bafmotorsport: { member: 'daniela', match: ['baf motorsport', 'bafmotorsport'], domains: ['bafmotorsport'] },
+  ipps:          { member: 'daniela', match: ['innovative paint protection', 'ipps'], domains: ['innovativepaintprotection', 'ipps'] },
 };
 
 // Any well-formed client slug works without a code change: it pulls through the
@@ -456,6 +456,149 @@ async function allKnownClientSlugs(env) {
   return [...slugs];
 }
 
+// ---------------------------------------------------------------------------
+// Website sources (GA4 property + Search Console site) per client.
+// Same idea as the Google Ads account: matched automatically by name when a
+// login is connected, daily, and when the report builder asks; a person can
+// override from the builder. Stored in KV as web:<slug>.
+// ---------------------------------------------------------------------------
+function webClientConfig(slug) {
+  if (slug === 'offgridpro') return { member: DEFAULT_MEMBER, match: ['offgridpro', 'off grid pro'], domains: ['offgridpro'] };
+  return clientConfig(slug);
+}
+
+async function getWebConfig(env, slug) {
+  const raw = await env.OAUTH_TOKENS.get(`web:${slug}`);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function siteDomainKey(u) {
+  return normName(String(u).replace(/^sc-domain:/, '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, ''));
+}
+
+// Picks a client's GA4 property and Search Console site by name. Only saves when
+// exactly one property / one website matches, so it never guesses between clients.
+async function autoMatchWebSources(env, slug) {
+  const cfg = webClientConfig(slug);
+  if (!cfg) return {};
+  const existing = await getWebConfig(env, slug);
+  if (existing.ga4Property && existing.gscSite) return existing;
+  const accessToken = await getFreshAccessToken(env, cfg.member);
+  const keys = (cfg.match || [slug]).map(normName).filter(Boolean);
+  const domKeys = (cfg.domains || cfg.match || [slug]).map(normName).filter(Boolean);
+  const next = { ...existing };
+
+  if (!next.ga4Property) {
+    try {
+      const props = await listGA4Properties(accessToken);
+      const hits = props.filter((p) => keys.some((k) => normName(p.name).includes(k) || normName(p.account).includes(k)));
+      if (hits.length === 1) { next.ga4Property = hits[0].id; next.ga4Name = hits[0].name; }
+    } catch { /* API not reachable for this login: leave unset */ }
+  }
+  if (!next.gscSite) {
+    try {
+      const sites = (await fetchSearchConsoleSites(accessToken)).filter((x) => x.permission !== 'siteUnverifiedUser');
+      const hits = sites.filter((x) => domKeys.some((k) => siteDomainKey(x.url).includes(k)));
+      if (new Set(hits.map((x) => siteDomainKey(x.url))).size === 1) {
+        const rank = (u) => (u.startsWith('sc-domain:') ? 0 : u.startsWith('https://') ? 1 : 2);
+        next.gscSite = hits.sort((a, b) => rank(a.url) - rank(b.url))[0].url;
+      }
+    } catch { /* leave unset */ }
+  }
+  if (next.ga4Property !== existing.ga4Property || next.gscSite !== existing.gscSite) {
+    await env.OAUTH_TOKENS.put(`web:${slug}`, JSON.stringify({ ...next, auto: true, setAt: new Date().toISOString() }));
+  }
+  return next;
+}
+
+async function handleWebConfig(request, url, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  if (request.method === 'POST') {
+    let body;
+    try { body = await request.json(); } catch { return jsonResponse({ error: 'Invalid JSON body' }, 400, headers); }
+    const { client, ga4Property, gscSite } = body || {};
+    if (!client || !webClientConfig(client)) return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
+    const current = await getWebConfig(env, client);
+    const next = { ...current, setAt: new Date().toISOString(), auto: false };
+    if (ga4Property !== undefined) {
+      if (ga4Property && !isValidGA4Property(ga4Property)) return jsonResponse({ error: 'Invalid GA4 property' }, 400, headers);
+      next.ga4Property = ga4Property || null;
+    }
+    if (gscSite !== undefined) {
+      if (gscSite && !isValidSearchConsoleSite(gscSite)) return jsonResponse({ error: 'Invalid Search Console site' }, 400, headers);
+      next.gscSite = gscSite || null;
+    }
+    await env.OAUTH_TOKENS.put(`web:${client}`, JSON.stringify(next));
+    return jsonResponse({ ok: true }, 200, headers);
+  }
+  const slug = url.searchParams.get('client');
+  const cfg = slug && webClientConfig(slug);
+  if (!cfg) return jsonResponse({ error: 'Unknown or missing "client"' }, 400, headers);
+  let web = await getWebConfig(env, slug);
+  if (!(web.ga4Property && web.gscSite)) {
+    const throttleKey = `webmatch:${slug}`;
+    if (!(await env.OAUTH_TOKENS.get(throttleKey))) {
+      await env.OAUTH_TOKENS.put(throttleKey, '1', { expirationTtl: 600 });
+      try { web = await autoMatchWebSources(env, slug); } catch { /* member not connected yet */ }
+    }
+  }
+  return jsonResponse({ member: cfg.member, ga4Property: web.ga4Property || null, ga4Name: web.ga4Name || null, gscSite: web.gscSite || null }, 200, headers);
+}
+
+function isValidSearchConsoleSite(s) {
+  return typeof s === 'string' && s.length < 200 && /^(sc-domain:[a-z0-9.-]+|https?:\/\/[^\s]+)$/i.test(s);
+}
+
+// Search Console performance for one site and date range (clicks, impressions,
+// CTR, average position, plus top queries and top pages).
+async function fetchSearchConsoleReport(accessToken, site, start, end) {
+  const base = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`;
+  const call = async (extra) => {
+    const res = await fetch(base, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startDate: start, endDate: end, ...extra }),
+    });
+    const data = await readGoogleJson(res, 'Search Console API');
+    if (!res.ok) throw new Error(data.error?.message || `Search Console API error (${res.status})`);
+    return data.rows || [];
+  };
+  const [totalRows, queryRows, pageRows] = await Promise.all([
+    call({}),
+    call({ dimensions: ['query'], rowLimit: 10 }),
+    call({ dimensions: ['page'], rowLimit: 10 }),
+  ]);
+  const t = totalRows[0] || {};
+  return {
+    meta: { source: 'Google Search Console', pulledAt: new Date().toISOString(), site, period: { start, end } },
+    totals: {
+      clicks: Math.round(t.clicks || 0),
+      impressions: Math.round(t.impressions || 0),
+      ctr: round2((t.ctr || 0) * 100),
+      position: Math.round((t.position || 0) * 10) / 10,
+    },
+    topQueries: queryRows.map((r) => ({ query: r.keys[0], clicks: Math.round(r.clicks || 0), impressions: Math.round(r.impressions || 0), ctr: round2((r.ctr || 0) * 100), position: Math.round((r.position || 0) * 10) / 10 })),
+    topPages: pageRows.map((r) => ({ page: r.keys[0], clicks: Math.round(r.clicks || 0), impressions: Math.round(r.impressions || 0) })),
+  };
+}
+
+async function handleSearchConsoleReport(url, env, origin) {
+  const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
+  const member = url.searchParams.get('member');
+  const site = url.searchParams.get('site');
+  const start = url.searchParams.get('start');
+  const end = url.searchParams.get('end');
+  if (!isValidMemberSlug(member)) return jsonResponse({ error: 'Missing or invalid "member"' }, 400, headers);
+  if (!isValidSearchConsoleSite(site)) return jsonResponse({ error: 'Missing or invalid "site"' }, 400, headers);
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+  if (!isoDate.test(start || '') || !isoDate.test(end || '')) return jsonResponse({ error: 'start and end must be YYYY-MM-DD' }, 400, headers);
+  let accessToken;
+  try { accessToken = await getFreshAccessToken(env, member); }
+  catch (err) { return jsonResponse({ error: String(err.message || err), reconnectNeeded: true }, 409, headers); }
+  try { return jsonResponse(await fetchSearchConsoleReport(accessToken, site, start, end), 200, headers); }
+  catch (err) { return jsonResponse({ error: String(err.message || err) }, 502, headers); }
+}
+
 async function handleGetCustomerId(url, env, origin) {
   const slug = url.searchParams.get('client');
   const headers = corsHeaders(origin, env.ALLOWED_ORIGIN);
@@ -494,6 +637,7 @@ async function handleSetCustomerId(request, env, origin) {
 async function refreshAllClientMetrics(env) {
   const slugs = await allKnownClientSlugs(env);
   try { await autoMatchClients(env, slugs); } catch { /* per-client pulls below report their own errors */ }
+  for (const slug of [...slugs, 'offgridpro']) { try { await autoMatchWebSources(env, slug); } catch { /* not connected, or API off */ } }
   await Promise.all(slugs.map(async (slug) => {
     try {
       const result = await computeMetricsForClient(env, slug);
@@ -638,6 +782,7 @@ async function handleCallback(url, env) {
   try {
     const known = (await allKnownClientSlugs(env)).filter((slug) => clientConfig(slug).member === member);
     await autoMatchClients(env, known);
+    for (const slug of [...known, 'offgridpro']) { try { await autoMatchWebSources(env, slug); } catch { /* ignore */ } }
   } catch { /* the daily run will try again */ }
 
   return htmlResponse(`
@@ -923,6 +1068,8 @@ export default {
     if (url.pathname === '/google-ads-accounts') return handleGoogleAdsAccounts(url, env, origin);
     if (url.pathname === '/ga4-properties') return handleGA4Properties(url, env, origin);
     if (url.pathname === '/ga4-report') return handleGA4Report(url, env, origin);
+    if (url.pathname === '/searchconsole-report') return handleSearchConsoleReport(url, env, origin);
+    if (url.pathname === '/web-config') return handleWebConfig(request, url, env, origin);
     if (url.pathname === '/customer-id' && request.method === 'GET') return handleGetCustomerId(url, env, origin);
     if (url.pathname === '/customer-id' && request.method === 'POST') return handleSetCustomerId(request, env, origin);
 

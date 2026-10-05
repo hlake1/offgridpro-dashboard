@@ -176,6 +176,32 @@ function viewHTML(c) {
     </div>
   </section>
 
+  <section id="searchconsole-section" class="card p-8" style="display:none;">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Search</p>
+        <h2 class="text-2xl font-medium text-gray-900 mt-1">Search visibility</h2>
+      </div>
+      <p class="text-xs text-gray-500">Google Search Console</p>
+    </div>
+    <div id="searchconsole-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <div id="searchconsole-queries-wrap" class="mt-6" style="display:none;">
+      <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-3">Top search queries</p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-gray-500 text-xs uppercase tracking-wide">
+              <th class="py-2 pr-4">Query</th>
+              <th class="py-2 pr-4">Clicks</th>
+              <th class="py-2">Impressions</th>
+            </tr>
+          </thead>
+          <tbody id="searchconsole-queries-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section id="insights-section" class="card p-6 cl-soft-bg" style="display:none; border-left:4px solid var(--cl-2);">
     <p class="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Key insights</p>
     <h3 class="text-lg font-medium text-gray-900 mt-1">What the data shows</h3>
@@ -524,6 +550,46 @@ function viewHTML(c) {
       }
     } else {
       wtSection.style.display = 'none';
+    }
+
+    const scSection = document.getElementById('searchconsole-section');
+    const sc = wt && wt.searchConsole;
+    const scTotals = sc && sc.totals;
+    if (scTotals && Object.values(scTotals).some((v) => v !== null && v !== undefined)) {
+      scSection.style.display = 'block';
+      document.getElementById('searchconsole-grid').innerHTML = \`
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Search clicks</p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(scTotals.clicks || 0)}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Impressions</p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${numFmt.format(scTotals.impressions || 0)}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Click-through rate</p>
+          <p class="font-bold text-2xl mt-1" style="color:var(--cl-1);">\${scTotals.ctr != null ? scTotals.ctr + '%' : '—'}</p>
+        </div>
+        <div class="stat-pill p-4">
+          <p class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Avg. position<button class="tw-glossary-btn" type="button" data-term="Position">?</button></p>
+          <p class="font-bold text-gray-900 text-2xl mt-1">\${scTotals.position != null ? scTotals.position : '—'}</p>
+        </div>
+      \`;
+      const queries = (sc.topQueries || []).filter((q) => q.query);
+      const qWrap = document.getElementById('searchconsole-queries-wrap');
+      if (queries.length) {
+        qWrap.style.display = 'block';
+        document.getElementById('searchconsole-queries-list').innerHTML = queries.map((q) => \`
+          <tr class="border-t border-gray-100">
+            <td class="py-2 pr-4 text-gray-900">\${esc(q.query)}</td>
+            <td class="py-2 pr-4">\${numFmt.format(q.clicks || 0)}</td>
+            <td class="py-2">\${numFmt.format(q.impressions || 0)}</td>
+          </tr>\`).join('');
+      } else {
+        qWrap.style.display = 'none';
+      }
+    } else {
+      scSection.style.display = 'none';
     }
 
     const setText = (elId, text) => {
