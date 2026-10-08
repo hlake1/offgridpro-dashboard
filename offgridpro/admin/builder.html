@@ -1393,7 +1393,14 @@
     if (!month) { alert('Please choose a report month.'); setStep(1); monthEl.focus(); return null; }
     const answers = readAnswers();
     const id = month;
-    const existing = await window.OGPReports.get(id);
+    // A failed lookup must not block saving. If the existing report can't be
+    // fetched (e.g. the session has expired), carry on with the answers entered.
+    let existing = null;
+    try {
+      existing = await window.OGPReports.get(id);
+    } catch (err) {
+      console.warn('Could not load existing report for', id, err);
+    }
     return {
       id, month,
       title: window.OGPReports.monthLabel(month),
@@ -1601,15 +1608,40 @@
     e.target.value = '';
   });
 
+  // Every button reports failures on screen. Before, an unhandled rejection
+  // here looked like the button did nothing.
+  function reportFailure(what, err) {
+    console.error(what + ' failed:', err);
+    alert(what + ' failed — your answers are still on screen.\n\n' + ((err && err.message) || err));
+  }
+
   document.getElementById('save-draft-1').addEventListener('click', async () => {
-    const r = await saveReport('draft', false);
-    if (r) showFlash('save-flash-1', 'Draft saved');
+    try {
+      const r = await saveReport('draft', false);
+      if (r) showFlash('save-flash-1', 'Draft saved');
+    } catch (err) {
+      reportFailure('Saving the draft', err);
+    }
   });
   document.getElementById('save-draft-2').addEventListener('click', async () => {
-    const r = await saveReport('draft', false);
-    if (r) showFlash('save-flash-2', 'Draft saved');
+    try {
+      const r = await saveReport('draft', false);
+      if (r) showFlash('save-flash-2', 'Draft saved');
+    } catch (err) {
+      reportFailure('Saving the draft', err);
+    }
   });
-  document.getElementById('generate').addEventListener('click', () => saveReport('draft', true, true));
+  document.getElementById('generate').addEventListener('click', async () => {
+    try {
+      // Save the answers before the AI step, so nothing is lost if the
+      // Worker call or the redirect fails.
+      const saved = await saveReport('draft', false, false);
+      if (!saved) return;
+      await saveReport('draft', true, true);
+    } catch (err) {
+      reportFailure('Generating the draft', err);
+    }
+  });
 
   document.getElementById('logout-btn').addEventListener('click', () => window.OGPAuth.logout('../'));
 
