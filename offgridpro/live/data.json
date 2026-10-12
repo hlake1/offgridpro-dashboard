@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-11T12:14:52.680Z",
+    "pulledAt": "2026-10-12T14:38:29.323Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-14",
-      "end": "2026-10-11",
+      "start": "2026-09-15",
+      "end": "2026-10-12",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 1936,
-    "clicks": 125,
+    "impressions": 1902,
+    "clicks": 124,
     "conversions": 2,
-    "cost": 232.49,
-    "ctr": 6.46,
-    "cpc": 1.86
+    "cost": 229.4,
+    "ctr": 6.52,
+    "cpc": 1.85
   },
   "campaigns": [
     {
@@ -32,12 +32,12 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1936,
-      "clicks": 125,
+      "impressions": 1902,
+      "clicks": 124,
       "conversions": 2,
-      "cost": 232.49,
-      "ctr": 6.46,
-      "cpc": 1.86
+      "cost": 229.4,
+      "ctr": 6.52,
+      "cpc": 1.85
     },
     {
       "id": "23758381168",
@@ -96,7 +96,7 @@
     {
       "term": "cheapest home battery storage uk",
       "campaign": "Energy Storage",
-      "impressions": 10,
+      "impressions": 9,
       "clicks": 2,
       "conversions": 0
     },
@@ -138,7 +138,7 @@
     {
       "term": "battery backup for home power outage uk",
       "campaign": "Energy Storage",
-      "impressions": 2,
+      "impressions": 3,
       "clicks": 1,
       "conversions": 0
     },
@@ -157,9 +157,16 @@
       "conversions": 0
     },
     {
+      "term": "battery system",
+      "campaign": "Energy Storage",
+      "impressions": 1,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
       "term": "best generator for home backup power uk",
       "campaign": "Energy Storage",
-      "impressions": 4,
+      "impressions": 3,
       "clicks": 1,
       "conversions": 0
     },
@@ -215,7 +222,7 @@
     {
       "term": "home battery storage uk",
       "campaign": "Energy Storage",
-      "impressions": 14,
+      "impressions": 12,
       "clicks": 1,
       "conversions": 0
     },
@@ -260,47 +267,9 @@
       "impressions": 2,
       "clicks": 1,
       "conversions": 1
-    },
-    {
-      "term": "salt battery for home",
-      "campaign": "Energy Storage",
-      "impressions": 2,
-      "clicks": 1,
-      "conversions": 0
     }
   ],
   "topAds": [
-    {
-      "id": "805359059744",
-      "campaign": "Energy Storage",
-      "type": "RESPONSIVE_SEARCH_AD",
-      "headlines": [
-        "{KeyWord:House Energy Storage}",
-        "Backup Power For Your Home",
-        "Cut Electricity Bills by 70%",
-        "0% VAT on Battery Storage",
-        "Save More with Battery Storage",
-        "Maximise Solar Investment",
-        "Emergency Power For Home",
-        "For Large Homes & Estates",
-        "Solar Systems For Big Homes",
-        "Battery Backup For Power Cuts",
-        "Grid + Battery Power Systems",
-        "Smart Home Battery Systems",
-        "Get the Best Electricity Rates",
-        "Request A Free Quote",
-        "Book Energy Consultation"
-      ],
-      "descriptions": [
-        "Never lose power again. Our home backup battery systems provide 24/7 energy security",
-        "Instant emergency power supply for large homes. Protection from UK power cuts and outages",
-        "Cut your electricity bill by 70%! Book your one-to-one consultation.",
-        "Buy electricity at the best rates and reduce your energy bills with home battery storage."
-      ],
-      "impressions": 837,
-      "clicks": 47,
-      "ctr": 5.62
-    },
     {
       "id": "823436679571",
       "campaign": "Energy Storage",
@@ -328,9 +297,40 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 837,
+      "impressions": 848,
       "clicks": 46,
-      "ctr": 5.5
+      "ctr": 5.42
+    },
+    {
+      "id": "805359059744",
+      "campaign": "Energy Storage",
+      "type": "RESPONSIVE_SEARCH_AD",
+      "headlines": [
+        "{KeyWord:House Energy Storage}",
+        "Backup Power For Your Home",
+        "Cut Electricity Bills by 70%",
+        "0% VAT on Battery Storage",
+        "Save More with Battery Storage",
+        "Maximise Solar Investment",
+        "Emergency Power For Home",
+        "For Large Homes & Estates",
+        "Solar Systems For Big Homes",
+        "Battery Backup For Power Cuts",
+        "Grid + Battery Power Systems",
+        "Smart Home Battery Systems",
+        "Get the Best Electricity Rates",
+        "Request A Free Quote",
+        "Book Energy Consultation"
+      ],
+      "descriptions": [
+        "Never lose power again. Our home backup battery systems provide 24/7 energy security",
+        "Instant emergency power supply for large homes. Protection from UK power cuts and outages",
+        "Cut your electricity bill by 70%! Book your one-to-one consultation.",
+        "Buy electricity at the best rates and reduce your energy bills with home battery storage."
+      ],
+      "impressions": 778,
+      "clicks": 42,
+      "ctr": 5.4
     },
     {
       "id": "819096374767",
@@ -359,9 +359,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 141,
-      "clicks": 19,
-      "ctr": 13.48
+      "impressions": 145,
+      "clicks": 22,
+      "ctr": 15.17
     },
     {
       "id": "823514840114",
@@ -390,9 +390,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 115,
-      "clicks": 12,
-      "ctr": 10.43
+      "impressions": 125,
+      "clicks": 13,
+      "ctr": 10.4
     },
     {
       "id": "821669539822",
