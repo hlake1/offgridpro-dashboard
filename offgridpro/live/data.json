@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-12T14:38:29.323Z",
+    "pulledAt": "2026-10-13T13:42:41.835Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-15",
-      "end": "2026-10-12",
+      "start": "2026-09-16",
+      "end": "2026-10-13",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 1902,
-    "clicks": 124,
-    "conversions": 2,
-    "cost": 229.4,
-    "ctr": 6.52,
-    "cpc": 1.85
+    "impressions": 1881,
+    "clicks": 123,
+    "conversions": 1,
+    "cost": 224.48,
+    "ctr": 6.54,
+    "cpc": 1.83
   },
   "campaigns": [
     {
@@ -32,12 +32,12 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1902,
-      "clicks": 124,
-      "conversions": 2,
-      "cost": 229.4,
-      "ctr": 6.52,
-      "cpc": 1.85
+      "impressions": 1881,
+      "clicks": 123,
+      "conversions": 1,
+      "cost": 224.48,
+      "ctr": 6.54,
+      "cpc": 1.83
     },
     {
       "id": "23758381168",
@@ -94,13 +94,6 @@
   },
   "searchTerms": [
     {
-      "term": "cheapest home battery storage uk",
-      "campaign": "Energy Storage",
-      "impressions": 9,
-      "clicks": 2,
-      "conversions": 0
-    },
-    {
       "term": "off peak electricity storage",
       "campaign": "Energy Storage",
       "impressions": 2,
@@ -112,6 +105,13 @@
       "campaign": "Energy Storage",
       "impressions": 1,
       "clicks": 2,
+      "conversions": 0
+    },
+    {
+      "term": "10 kw battery storage",
+      "campaign": "Energy Storage",
+      "impressions": 1,
+      "clicks": 1,
       "conversions": 0
     },
     {
@@ -171,9 +171,23 @@
       "conversions": 0
     },
     {
+      "term": "best tariff for solar and battery uk",
+      "campaign": "Energy Storage",
+      "impressions": 3,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
       "term": "cheap solar system for home",
       "campaign": "Energy Storage",
       "impressions": 1,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
+      "term": "cheapest home battery storage uk",
+      "campaign": "Energy Storage",
+      "impressions": 8,
       "clicks": 1,
       "conversions": 0
     },
@@ -215,7 +229,7 @@
     {
       "term": "hinen battery",
       "campaign": "Energy Storage",
-      "impressions": 8,
+      "impressions": 10,
       "clicks": 1,
       "conversions": 0
     },
@@ -253,20 +267,6 @@
       "impressions": 1,
       "clicks": 1,
       "conversions": 0
-    },
-    {
-      "term": "planet bloom solar",
-      "campaign": "Energy Storage",
-      "impressions": 1,
-      "clicks": 1,
-      "conversions": 0
-    },
-    {
-      "term": "powerflow sundial",
-      "campaign": "Energy Storage",
-      "impressions": 2,
-      "clicks": 1,
-      "conversions": 1
     }
   ],
   "topAds": [
@@ -297,9 +297,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 848,
-      "clicks": 46,
-      "ctr": 5.42
+      "impressions": 868,
+      "clicks": 48,
+      "ctr": 5.53
     },
     {
       "id": "805359059744",
@@ -328,9 +328,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 778,
-      "clicks": 42,
-      "ctr": 5.4
+      "impressions": 739,
+      "clicks": 38,
+      "ctr": 5.14
     },
     {
       "id": "819096374767",
@@ -359,9 +359,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 145,
+      "impressions": 147,
       "clicks": 22,
-      "ctr": 15.17
+      "ctr": 14.97
     },
     {
       "id": "823514840114",
@@ -390,9 +390,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 125,
-      "clicks": 13,
-      "ctr": 10.4
+      "impressions": 121,
+      "clicks": 14,
+      "ctr": 11.57
     },
     {
       "id": "821669539822",
