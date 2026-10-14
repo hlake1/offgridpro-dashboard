@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-13T13:42:41.835Z",
+    "pulledAt": "2026-10-14T11:21:10.551Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-16",
-      "end": "2026-10-13",
+      "start": "2026-09-17",
+      "end": "2026-10-14",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 1881,
-    "clicks": 123,
+    "impressions": 1927,
+    "clicks": 122,
     "conversions": 1,
-    "cost": 224.48,
-    "ctr": 6.54,
-    "cpc": 1.83
+    "cost": 224.76,
+    "ctr": 6.33,
+    "cpc": 1.84
   },
   "campaigns": [
     {
@@ -32,12 +32,12 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1881,
-      "clicks": 123,
+      "impressions": 1927,
+      "clicks": 122,
       "conversions": 1,
-      "cost": 224.48,
-      "ctr": 6.54,
-      "cpc": 1.83
+      "cost": 224.76,
+      "ctr": 6.33,
+      "cpc": 1.84
     },
     {
       "id": "23758381168",
@@ -101,9 +101,23 @@
       "conversions": 0
     },
     {
+      "term": "solar battery",
+      "campaign": "Energy Storage",
+      "impressions": 5,
+      "clicks": 2,
+      "conversions": 0
+    },
+    {
       "term": "generator to power a house",
       "campaign": "Energy Storage",
       "impressions": 1,
+      "clicks": 2,
+      "conversions": 0
+    },
+    {
+      "term": "solar battery storage",
+      "campaign": "Energy Storage",
+      "impressions": 6,
       "clicks": 2,
       "conversions": 0
     },
@@ -138,7 +152,7 @@
     {
       "term": "battery backup for home power outage uk",
       "campaign": "Energy Storage",
-      "impressions": 3,
+      "impressions": 4,
       "clicks": 1,
       "conversions": 0
     },
@@ -187,7 +201,7 @@
     {
       "term": "cheapest home battery storage uk",
       "campaign": "Energy Storage",
-      "impressions": 8,
+      "impressions": 9,
       "clicks": 1,
       "conversions": 0
     },
@@ -229,7 +243,7 @@
     {
       "term": "hinen battery",
       "campaign": "Energy Storage",
-      "impressions": 10,
+      "impressions": 12,
       "clicks": 1,
       "conversions": 0
     },
@@ -249,20 +263,6 @@
     },
     {
       "term": "largest home battery",
-      "campaign": "Energy Storage",
-      "impressions": 1,
-      "clicks": 1,
-      "conversions": 0
-    },
-    {
-      "term": "my grid battery",
-      "campaign": "Energy Storage",
-      "impressions": 1,
-      "clicks": 1,
-      "conversions": 0
-    },
-    {
-      "term": "off grid generator and battery system",
       "campaign": "Energy Storage",
       "impressions": 1,
       "clicks": 1,
@@ -297,9 +297,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 868,
-      "clicks": 48,
-      "ctr": 5.53
+      "impressions": 924,
+      "clicks": 49,
+      "ctr": 5.3
     },
     {
       "id": "805359059744",
@@ -328,9 +328,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 739,
-      "clicks": 38,
-      "ctr": 5.14
+      "impressions": 718,
+      "clicks": 36,
+      "ctr": 5.01
     },
     {
       "id": "819096374767",
@@ -359,9 +359,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 147,
+      "impressions": 148,
       "clicks": 22,
-      "ctr": 14.97
+      "ctr": 14.86
     },
     {
       "id": "823514840114",
@@ -390,9 +390,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 121,
+      "impressions": 131,
       "clicks": 14,
-      "ctr": 11.57
+      "ctr": 10.69
     },
     {
       "id": "821669539822",
