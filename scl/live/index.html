@@ -81,11 +81,7 @@
     <p class="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">Website traffic</p>
     <h2 class="text-2xl font-medium text-gray-900">Who visited</h2>
     <div class="lm-accent-bar w-16 mt-3 mb-6"></div>
-    <div id="traffic-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-    <div class="mt-8">
-      <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Most visited pages</h3>
-      <div class="overflow-x-auto stat-card"><table class="lm-table w-full"><thead><tr><th>Page</th><th class="num">Visits</th><th class="num">Pageviews</th></tr></thead><tbody id="pages-rows"></tbody></table></div>
-    </div>
+    <div id="traffic-blocks" class="space-y-12"></div>
   </section>
 
   <section id="search-section" class="hidden">
@@ -144,7 +140,21 @@
     cache[url] = data;
     return data;
   }
-  const ga4 = (mon) => { const r = weekRange(mon); return getJson(WORKER + '/ga4-report?member=' + encodeURIComponent(cfg.member) + '&property=' + encodeURIComponent(cfg.ga4Property) + '&start=' + r.start + '&end=' + r.end); };
+  // Every GA4 property shown on this page. The first three are the SCL and
+  // Kick Off in Business properties; any property the worker has matched is
+  // added as well, so nothing that is already showing drops off.
+  const PROPERTIES = [
+    { name: 'SCL group', id: '291905614' },
+    { name: 'SCL Active', id: '305356389' },
+    { name: 'Kick Off in Business', id: '399413141' }
+  ];
+  function propertyList() {
+    const list = PROPERTIES.slice();
+    const matched = cfg && cfg.ga4Property ? String(cfg.ga4Property).replace(/^properties\//, '') : '';
+    if (matched && !list.some((p) => p.id === matched)) list.push({ name: cfg.ga4Name || 'Matched property', id: matched });
+    return list;
+  }
+  const ga4 = (mon, prop) => { const r = weekRange(mon); return getJson(WORKER + '/ga4-report?member=' + encodeURIComponent(cfg.member) + '&property=' + encodeURIComponent('properties/' + prop) + '&start=' + r.start + '&end=' + r.end); };
   const gsc = (mon) => { const r = weekRange(mon); return getJson(WORKER + '/searchconsole-report?member=' + encodeURIComponent(cfg.member) + '&site=' + encodeURIComponent(cfg.gscSite) + '&start=' + r.start + '&end=' + r.end); };
 
   function delta(cur, prev, invert) {
@@ -169,32 +179,59 @@
     $('next-week').disabled = monday.getTime() >= lastFullMonday.getTime();
   }
 
+  async function renderTrafficBlock(p, prev, container) {
+    const wrap = document.createElement('div');
+    wrap.className = 'space-y-4';
+    wrap.innerHTML =
+      '<div class="flex items-baseline justify-between flex-wrap gap-2">' +
+        '<h3 class="text-lg font-medium text-gray-900">' + esc(p.name) + '</h3>' +
+        '<span class="text-xs text-gray-400">Property ' + esc(p.id) + '</span>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 md:grid-cols-3 gap-4" data-grid></div>' +
+      '<div class="overflow-x-auto stat-card"><table class="lm-table w-full"><thead><tr><th>Page</th><th class="num">Visits</th><th class="num">Pageviews</th></tr></thead><tbody data-rows></tbody></table></div>' +
+      '<p class="text-xs text-gray-500 hidden" data-status></p>';
+    container.appendChild(wrap);
+    const grid = wrap.querySelector('[data-grid]');
+    const rows = wrap.querySelector('[data-rows]');
+    const status = wrap.querySelector('[data-status]');
+    try {
+      const [cur, pre] = await Promise.all([ga4(monday, p.id), ga4(prev, p.id).catch(() => null)]);
+      const t = cur.totals || {}, pt = pre && pre.totals;
+      grid.innerHTML =
+        card('Visits (sessions)', num.format(t.sessions || 0), delta(t.sessions, pt && pt.sessions)) +
+        card('Visitors', num.format(t.users || 0), delta(t.users, pt && pt.users)) +
+        card('New visitors', num.format(t.newUsers || 0), delta(t.newUsers, pt && pt.newUsers)) +
+        card('Pages viewed', num.format(t.pageviews || 0), delta(t.pageviews, pt && pt.pageviews)) +
+        card('Engaged visits', (t.engagementRate || 0) + '%', delta(t.engagementRate, pt && pt.engagementRate)) +
+        card('Avg. time on site', dur(t.avgSessionDuration), delta(t.avgSessionDuration, pt && pt.avgSessionDuration));
+      rows.innerHTML = (cur.topPages || []).slice(0, 8).map((r) => '<tr><td>' + esc(r.path) + '</td><td class="num">' + num.format(r.sessions || 0) + '</td><td class="num">' + num.format(r.pageviews || 0) + '</td></tr>').join('') || '<tr><td colspan="3">No page data for this week.</td></tr>';
+    } catch (e) {
+      console.warn('Traffic for ' + p.name + ' (' + p.id + ') not loaded:', e);
+      grid.remove();
+      wrap.querySelector('.stat-card').remove();
+      status.textContent = 'Figures for this property are not available yet.';
+      status.classList.remove('hidden');
+    }
+  }
+
   async function render() {
     updateLabel();
     hideMsg();
     $('traffic-section').classList.add('hidden');
     $('search-section').classList.add('hidden');
     if (!cfg) return;
-    if (!cfg.ga4Property && !cfg.gscSite) {
+    if (!propertyList().length && !cfg.gscSite) {
       showMsg('<h3 class="text-lg font-medium text-gray-900">Weekly metrics aren&rsquo;t connected yet for SCL</h3><p class="text-sm text-gray-600 mt-2">Your Tweak Marketing team is linking the website&rsquo;s Google Analytics and Search Console. Weekly figures will appear here as soon as that is done.</p>');
       return;
     }
     const prev = new Date(monday.getTime() - 7 * DAY);
     const errors = [];
-    if (cfg.ga4Property) {
-      try {
-        const [cur, pre] = await Promise.all([ga4(monday), ga4(prev).catch(() => null)]);
-        const t = cur.totals || {}, p = pre && pre.totals;
-        $('traffic-grid').innerHTML =
-          card('Visits (sessions)', num.format(t.sessions || 0), delta(t.sessions, p && p.sessions)) +
-          card('Visitors', num.format(t.users || 0), delta(t.users, p && p.users)) +
-          card('New visitors', num.format(t.newUsers || 0), delta(t.newUsers, p && p.newUsers)) +
-          card('Pages viewed', num.format(t.pageviews || 0), delta(t.pageviews, p && p.pageviews)) +
-          card('Engaged visits', (t.engagementRate || 0) + '%', delta(t.engagementRate, p && p.engagementRate)) +
-          card('Avg. time on site', dur(t.avgSessionDuration), delta(t.avgSessionDuration, p && p.avgSessionDuration));
-        $('pages-rows').innerHTML = (cur.topPages || []).slice(0, 8).map((r) => '<tr><td>' + esc(r.path) + '</td><td class="num">' + num.format(r.sessions || 0) + '</td><td class="num">' + num.format(r.pageviews || 0) + '</td></tr>').join('') || '<tr><td colspan="3" class="text-gray-400">No page data for this week.</td></tr>';
-        $('traffic-section').classList.remove('hidden');
-      } catch (e) { errors.push('website traffic (' + (e.message || e) + ')'); }
+    const blocks = $('traffic-blocks');
+    blocks.innerHTML = '';
+    const props = propertyList();
+    if (props.length) {
+      await Promise.all(props.map((p) => renderTrafficBlock(p, prev, blocks)));
+      $('traffic-section').classList.remove('hidden');
     }
     if (cfg.gscSite) {
       try {
