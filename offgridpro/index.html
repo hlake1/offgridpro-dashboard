@@ -386,7 +386,7 @@
         const label = window.OGPReports.monthLabel(r.month);
         const headline = esc(r.summary?.headline || '');
         return `
-          <a href="./admin/view.html?id=${encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
+          <a href="${r.id === '2026-09' ? './september-2026/' : './admin/view.html?id=' + encodeURIComponent(r.id)}" class="report-card block bg-white p-8 group">
             <div class="flex items-start justify-between mb-4">
               <div>
                 <p class="text-[11px] uppercase tracking-widest font-semibold" style="color: var(--ogp-accent-2);">Monthly report</p>
