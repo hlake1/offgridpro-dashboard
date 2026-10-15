@@ -1035,6 +1035,10 @@
         googleBadge.textContent = 'Connected';
         googleStatusText.textContent = `Connected as ${data.email || currentMember}.`;
         googlePreviewRow.style.display = 'block';
+      } else if (data.reconnectNeeded) {
+        googleBadge.textContent = 'Reconnect needed';
+        googleStatusText.textContent = `The connection for ${data.email || currentMember} has expired (Google connections for this app last 7 days). Click Connect Google Account to sign in again.`;
+        googlePreviewRow.style.display = 'none';
       } else {
         googleBadge.textContent = 'Not connected';
         googleStatusText.textContent = `${currentMember} hasn't connected a Google account yet.`;

@@ -1043,6 +1043,13 @@ async function handleStatus(url, env, origin) {
   const raw = await env.OAUTH_TOKENS.get(`member:${member}`);
   if (!raw) return jsonResponse({ connected: false }, 200, headers);
   const record = JSON.parse(raw);
+  // Test the stored refresh token, not just that a record exists. Testing-mode
+  // connections expire after 7 days, so an old record can still be saved here.
+  try {
+    await refreshAccessToken(env, record.refreshToken);
+  } catch (err) {
+    return jsonResponse({ connected: false, reconnectNeeded: true, email: record.email, error: String(err.message || err) }, 200, headers);
+  }
   return jsonResponse({ connected: true, email: record.email, connectedAt: record.connectedAt }, 200, headers);
 }
 
