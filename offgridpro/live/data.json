@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-14T11:21:10.551Z",
+    "pulledAt": "2026-10-15T10:58:29.551Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-17",
-      "end": "2026-10-14",
+      "start": "2026-09-18",
+      "end": "2026-10-15",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 1927,
-    "clicks": 122,
+    "impressions": 1815,
+    "clicks": 125,
     "conversions": 1,
-    "cost": 224.76,
-    "ctr": 6.33,
-    "cpc": 1.84
+    "cost": 225.67,
+    "ctr": 6.89,
+    "cpc": 1.81
   },
   "campaigns": [
     {
@@ -32,12 +32,12 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1927,
-      "clicks": 122,
+      "impressions": 1815,
+      "clicks": 125,
       "conversions": 1,
-      "cost": 224.76,
-      "ctr": 6.33,
-      "cpc": 1.84
+      "cost": 225.67,
+      "ctr": 6.89,
+      "cpc": 1.81
     },
     {
       "id": "23758381168",
@@ -166,7 +166,7 @@
     {
       "term": "battery storage northern ireland",
       "campaign": "Energy Storage",
-      "impressions": 2,
+      "impressions": 1,
       "clicks": 1,
       "conversions": 0
     },
@@ -187,7 +187,7 @@
     {
       "term": "best tariff for solar and battery uk",
       "campaign": "Energy Storage",
-      "impressions": 3,
+      "impressions": 1,
       "clicks": 1,
       "conversions": 0
     },
@@ -241,16 +241,9 @@
       "conversions": 0
     },
     {
-      "term": "hinen battery",
-      "campaign": "Energy Storage",
-      "impressions": 12,
-      "clicks": 1,
-      "conversions": 0
-    },
-    {
       "term": "home battery storage uk",
       "campaign": "Energy Storage",
-      "impressions": 12,
+      "impressions": 13,
       "clicks": 1,
       "conversions": 0
     },
@@ -263,6 +256,13 @@
     },
     {
       "term": "largest home battery",
+      "campaign": "Energy Storage",
+      "impressions": 1,
+      "clicks": 1,
+      "conversions": 0
+    },
+    {
+      "term": "my grid battery",
       "campaign": "Energy Storage",
       "impressions": 1,
       "clicks": 1,
@@ -297,9 +297,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 924,
-      "clicks": 49,
-      "ctr": 5.3
+      "impressions": 899,
+      "clicks": 50,
+      "ctr": 5.56
     },
     {
       "id": "805359059744",
@@ -328,9 +328,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 718,
-      "clicks": 36,
-      "ctr": 5.01
+      "impressions": 623,
+      "clicks": 35,
+      "ctr": 5.62
     },
     {
       "id": "819096374767",
@@ -359,9 +359,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 148,
-      "clicks": 22,
-      "ctr": 14.86
+      "impressions": 156,
+      "clicks": 24,
+      "ctr": 15.38
     },
     {
       "id": "823514840114",
@@ -390,9 +390,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 131,
-      "clicks": 14,
-      "ctr": 10.69
+      "impressions": 132,
+      "clicks": 15,
+      "ctr": 11.36
     },
     {
       "id": "821669539822",
@@ -421,7 +421,7 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 5,
+      "impressions": 4,
       "clicks": 0,
       "ctr": 0
     },
