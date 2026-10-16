@@ -1,12 +1,12 @@
 {
   "meta": {
-    "pulledAt": "2026-10-15T10:58:29.551Z",
+    "pulledAt": "2026-10-16T10:52:31.445Z",
     "source": "Google Ads API via Maton",
     "period": {
       "mode": "rolling",
       "label": "Last 28 days",
-      "start": "2026-09-18",
-      "end": "2026-10-15",
+      "start": "2026-09-19",
+      "end": "2026-10-16",
       "days": 28
     },
     "customer": {
@@ -19,12 +19,12 @@
     "readOnly": true
   },
   "totals": {
-    "impressions": 1815,
-    "clicks": 125,
+    "impressions": 1672,
+    "clicks": 124,
     "conversions": 1,
-    "cost": 225.67,
-    "ctr": 6.89,
-    "cpc": 1.81
+    "cost": 226.67,
+    "ctr": 7.42,
+    "cpc": 1.83
   },
   "campaigns": [
     {
@@ -32,12 +32,12 @@
       "name": "Energy Storage",
       "status": "ENABLED",
       "channelType": "SEARCH",
-      "impressions": 1815,
-      "clicks": 125,
+      "impressions": 1672,
+      "clicks": 124,
       "conversions": 1,
-      "cost": 225.67,
-      "ctr": 6.89,
-      "cpc": 1.81
+      "cost": 226.67,
+      "ctr": 7.42,
+      "cpc": 1.83
     },
     {
       "id": "23758381168",
@@ -104,6 +104,13 @@
       "term": "solar battery",
       "campaign": "Energy Storage",
       "impressions": 5,
+      "clicks": 2,
+      "conversions": 0
+    },
+    {
+      "term": "solar battery near me",
+      "campaign": "Energy Storage",
+      "impressions": 2,
       "clicks": 2,
       "conversions": 0
     },
@@ -260,13 +267,6 @@
       "impressions": 1,
       "clicks": 1,
       "conversions": 0
-    },
-    {
-      "term": "my grid battery",
-      "campaign": "Energy Storage",
-      "impressions": 1,
-      "clicks": 1,
-      "conversions": 0
     }
   ],
   "topAds": [
@@ -297,9 +297,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 899,
-      "clicks": 50,
-      "ctr": 5.56
+      "impressions": 843,
+      "clicks": 48,
+      "ctr": 5.69
     },
     {
       "id": "805359059744",
@@ -328,9 +328,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 623,
-      "clicks": 35,
-      "ctr": 5.62
+      "impressions": 548,
+      "clicks": 37,
+      "ctr": 6.75
     },
     {
       "id": "819096374767",
@@ -359,9 +359,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 156,
+      "impressions": 152,
       "clicks": 24,
-      "ctr": 15.38
+      "ctr": 15.79
     },
     {
       "id": "823514840114",
@@ -390,9 +390,9 @@
         "Cut your electricity bill by 70%! Book your one-to-one consultation.",
         "Buy electricity at the best rates and reduce your energy bills with home battery storage."
       ],
-      "impressions": 132,
-      "clicks": 15,
-      "ctr": 11.36
+      "impressions": 124,
+      "clicks": 14,
+      "ctr": 11.29
     },
     {
       "id": "821669539822",
