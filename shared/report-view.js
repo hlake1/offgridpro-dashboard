@@ -90,6 +90,24 @@
       }).join('') + '</tbody></table></div>';
   }
 
+  // Shows the first `limit` rows, with a button to expand the rest.
+  function expandableTable(headers, rows, limit) {
+    if (!rows.length) return '';
+    var more = rows.length - limit;
+    if (more <= 0) return table(headers, rows);
+    var body = rows.map(function (row, i) {
+      return '<tr class="border-b border-slate-50"' + (i >= limit ? ' data-extra hidden' : '') + '>' +
+        row.map(function (c) { return '<td class="py-2 pr-4 text-slate-800">' + esc(c) + '</td>'; }).join('') + '</tr>';
+    }).join('');
+    return '<div class="mt-5" data-expandable>' +
+      '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-500">' +
+      headers.map(function (h) { return '<th class="py-2 pr-4 font-semibold">' + esc(h) + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + body + '</tbody></table></div>' +
+      '<button type="button" data-expand aria-expanded="false" class="mt-3 text-sm font-semibold text-emerald-700 hover:underline" ' +
+      'data-more="Show all ' + rows.length + ' keywords" data-less="Show fewer">Show all ' + rows.length + ' keywords</button>' +
+      '</div>';
+  }
+
   // ---- Panels ----------------------------------------------------------
 
   function overviewPanel(r) {
@@ -216,9 +234,9 @@
     if (rows.length) {
       out += card(
         heading('SEO', 'Keyword rankings', (r.seRankings.updatedAt ? 'Updated ' + new Date(r.seRankings.updatedAt).toLocaleDateString('en-GB') : '')) +
-        table(['Keyword', 'Position', 'Change', 'Volume', 'URL'], rows.map(function (k) {
+        expandableTable(['Keyword', 'Position', 'Change', 'Volume', 'URL'], rows.map(function (k) {
           return [k.keyword, k.position || '—', k.change || '—', k.volume || '—', k.url || '—'];
-        })),
+        }), 5),
         out ? 'mt-6' : ''
       );
     }
@@ -352,6 +370,15 @@
           p.hidden = p.getAttribute('data-panel') !== btn.getAttribute('data-tab');
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+    document.querySelectorAll('[data-expand]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var box = btn.closest('[data-expandable]');
+        var open = btn.getAttribute('aria-expanded') !== 'true';
+        box.querySelectorAll('[data-extra]').forEach(function (tr) { tr.hidden = !open; });
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.textContent = open ? btn.getAttribute('data-less') : btn.getAttribute('data-more');
       });
     });
     var logout = document.getElementById('logout-btn');
